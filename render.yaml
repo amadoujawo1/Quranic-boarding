@@ -16,7 +16,7 @@ services:
     name: qbsms-backend
     env: docker
     rootDir: backend
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: ./backend/Dockerfile
     envVars:
       - key: DATABASE_URL
         sync: false # You will need to provide your MySQL database URL in the Render dashboard
