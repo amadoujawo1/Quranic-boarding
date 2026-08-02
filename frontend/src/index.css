@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 font-sans antialiased selection:bg-islamic-gold selection:text-islamic-deepGreen dark:bg-slate-950 dark:text-slate-100;
+  }
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #f7d363 0%, #d4af37 50%, #947214 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@keyframes slow-pan {
+  0% { background-position: 0 0, 15px 15px; }
+  100% { background-position: 60px 60px, 75px 75px; }
+}
+
+.islamic-pattern {
+  background-color: #042714;
+  background-image: radial-gradient(#d4af37 0.75px, transparent 0.75px), radial-gradient(#d4af37 0.75px, #042714 0.75px);
+  background-size: 30px 30px;
+  background-position: 0 0, 15px 15px;
+  opacity: 0.95;
+  animation: slow-pan 120s linear infinite;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.80);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+}
+
+.dark .glass-card {
+  background: rgba(15, 23, 42, 0.70);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}

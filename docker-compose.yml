@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: qbsms_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: qbsms_db
+      MYSQL_USER: qbsms_user
+      MYSQL_PASSWORD: qbsms_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  redis:
+    image: redis:7-alpine
+    container_name: qbsms_redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  backend:
+    build: ./backend
+    container_name: qbsms_backend
+    restart: always
+    environment:
+      DATABASE_URL: mysql+pymysql://qbsms_user:qbsms_password@db:3306/qbsms_db
+      JWT_SECRET_KEY: super-secret-qbsms-jwt-key
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+      - redis
+
+  frontend:
+    build: ./frontend
+    container_name: qbsms_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
