@@ -38,21 +38,21 @@ export const AdminDashboard: React.FC = () => {
         .catch(() => {
           setStats({
             overview: {
-              total_students: 450,
-              active_students: 432,
-              teachers: 38,
-              parents: 380,
-              staff: 65,
-              hostel_occupancy_percentage: 84.5,
-              occupied_beds: 338,
-              total_beds: 400
+              total_students: 0,
+              active_students: 0,
+              teachers: 0,
+              parents: 0,
+              staff: 0,
+              hostel_occupancy_percentage: 0,
+              occupied_beds: 0,
+              total_beds: 0
             },
-            attendance_today: { school_present: 425, fajr_jamaat: 412, school_attendance_percentage: 94.4, fajr_attendance_percentage: 97.2 },
+            attendance_today: { school_present: 0, fajr_jamaat: 0, school_attendance_percentage: 0, fajr_attendance_percentage: 0 },
             financials: {
-              total_revenue: 145000,
-              outstanding_fees: 32500,
-              total_donations: 28400,
-              total_expenses: 62000
+              total_revenue: 0,
+              outstanding_fees: 0,
+              total_donations: 0,
+              total_expenses: 0
             },
             recent_activity: []
           });

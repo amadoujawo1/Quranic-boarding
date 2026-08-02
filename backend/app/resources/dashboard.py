@@ -27,7 +27,7 @@ class AdminDashboardStats(Resource):
         # Boarding / Hostel occupancy
         total_beds = Bed.query.count()
         occupied_beds = Bed.query.filter_by(is_occupied=True).count()
-        occupancy_rate = round((occupied_beds / total_beds * 100), 1) if total_beds > 0 else 78.5 # Demo placeholder if empty
+        occupancy_rate = round((occupied_beds / total_beds * 100), 1) if total_beds > 0 else 0.0
 
         # Attendance today
         today = datetime.utcnow().date()
@@ -37,10 +37,10 @@ class AdminDashboardStats(Resource):
         fajr_attendance_percentage = round((fajr_att / today_att * 100), 1) if today_att > 0 else 0.0
 
         # Financial totals
-        total_revenue = db.session.query(db.func.sum(FeeInvoice.amount_paid)).scalar() or 145000.0
-        outstanding_fees = db.session.query(db.func.sum(FeeInvoice.total_amount - FeeInvoice.amount_paid)).scalar() or 32500.0
-        total_donations = db.session.query(db.func.sum(Donation.amount)).scalar() or 28400.0
-        total_expenses = db.session.query(db.func.sum(Expense.amount)).scalar() or 62000.0
+        total_revenue = db.session.query(db.func.sum(FeeInvoice.amount_paid)).scalar() or 0.0
+        outstanding_fees = db.session.query(db.func.sum(FeeInvoice.total_amount - FeeInvoice.amount_paid)).scalar() or 0.0
+        total_donations = db.session.query(db.func.sum(Donation.amount)).scalar() or 0.0
+        total_expenses = db.session.query(db.func.sum(Expense.amount)).scalar() or 0.0
 
         # Hifz Progress (Cumulative Juz)
         hifz_records = HifzProgress.query.order_by(HifzProgress.date).all()
