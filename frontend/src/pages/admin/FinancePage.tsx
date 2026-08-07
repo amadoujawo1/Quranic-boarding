@@ -59,8 +59,10 @@ export const FinancePage: React.FC = () => {
   const [invoices, setInvoices]   = useState<any[]>([]);
   const [donations, setDonations] = useState<any[]>([]);
   const [expenses, setExpenses]   = useState<any[]>([]);
+  const [students, setStudents]   = useState<any[]>([]);
   const [search, setSearch]       = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [studentSearchQuery, setStudentSearchQuery] = useState('');
 
   // Modals
   const [showInvoiceModal, setShowInvoiceModal]   = useState(false);
@@ -68,10 +70,8 @@ export const FinancePage: React.FC = () => {
   const [showDonationModal, setShowDonationModal] = useState(false);
   const [showExpenseModal, setShowExpenseModal]   = useState(false);
 
-  const [newInvoice, setNewInvoice] = useState({
-    student_name: '', invoice_number: '', academic_term: 'Term 1', academic_year: '2026/2027',
-    tuition_fee: 1200, due_date: '2026-09-30'
-  });
+  const BLANK_INVOICE = { student_id: '', student_name: '', invoice_number: '', academic_term: 'Term 1', academic_year: '2026/2027', tuition_fee: 1200, due_date: '2026-09-30' };
+  const [newInvoice, setNewInvoice] = useState<any>(BLANK_INVOICE);
   const [payAmount, setPayAmount]   = useState('');
   const [payMethod, setPayMethod]   = useState('Bank Transfer');
   const [newDonation, setNewDonation] = useState({ donor_name: '', amount: '', purpose: 'General Sadaqah' });
@@ -85,6 +85,8 @@ export const FinancePage: React.FC = () => {
       .then(r => r.ok ? r.json() : null).then(d => { if (d && d.length) setInvoices(d); }).catch(() => {});
     fetch('/api/finance/donations', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.ok ? r.json() : null).then(d => { if (d && d.length) setDonations(d); }).catch(() => {});
+    fetch('/api/students?per_page=500', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.ok ? r.json() : null).then(d => { if (d && d.students) setStudents(d.students); }).catch(() => {});
   }, []);
 
   // Stats
@@ -180,7 +182,9 @@ export const FinancePage: React.FC = () => {
     e.preventDefault();
     const token = localStorage.getItem('token');
     const total = newInvoice.tuition_fee;
-    
+
+    const resetForm = () => { setShowInvoiceModal(false); setEditInvoiceId(null); setNewInvoice(BLANK_INVOICE); setStudentSearchQuery(''); };
+
     if (editInvoiceId) {
       const res = await fetch(`/api/finance/invoices/${editInvoiceId}`, {
         method: 'PUT',
@@ -190,36 +194,52 @@ export const FinancePage: React.FC = () => {
       if (res.ok) {
         const updated = await res.json();
         setInvoices(invoices.map((i:any) => i.id === editInvoiceId ? updated : i));
-        setShowInvoiceModal(false); setEditInvoiceId(null); setNewInvoice({ student_name: '', invoice_number: '', academic_term: 'Term 1', academic_year: '2026/2027', tuition_fee: 1200, due_date: '2026-09-30' });
-        setEditInvoiceId(null);
+        resetForm();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.message || 'Failed to update invoice.');
       }
     } else {
       const res = await fetch('/api/finance/invoices', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({...newInvoice, total_amount: total})
+        body: JSON.stringify({ ...newInvoice, total_amount: total })
       });
       if (res.ok) {
         const created = await res.json();
         setInvoices([created, ...invoices]);
-        setShowInvoiceModal(false); setEditInvoiceId(null); setNewInvoice({ student_name: '', invoice_number: '', academic_term: 'Term 1', academic_year: '2026/2027', tuition_fee: 1200, due_date: '2026-09-30' });
+        resetForm();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.message || 'Failed to create invoice. Please check all fields.');
       }
     }
-    setNewInvoice({ student_name: '', invoice_number: '', academic_term: 'Term 1', academic_year: '2026/2027', tuition_fee: 1200, due_date: '2026-09-30' });
   };
 
 
-  const handleRecordPayment = (e: React.FormEvent) => {
+  const handleRecordPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     const amt = parseFloat(payAmount);
-    if (!showPaymentModal || isNaN(amt)) return;
-    setInvoices(invoices.map(inv => {
-      if (inv.id !== showPaymentModal.id) return inv;
-      const newPaid = inv.amount_paid + amt;
-      const newBal  = Math.max(0, inv.total_amount - newPaid);
-      return { ...inv, amount_paid: newPaid, balance_due: newBal, status: newBal <= 0 ? 'Paid' : 'Partial' };
-    }));
-    setShowPaymentModal(null); setPayAmount('');
+    if (!showPaymentModal || isNaN(amt) || amt <= 0) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/finance/invoices/${showPaymentModal.id}/pay`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ amount: amt, payment_method: payMethod })
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setInvoices(invoices.map(inv => inv.id === updated.id ? updated : inv));
+        setShowPaymentModal(null);
+        setPayAmount('');
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.message || 'Failed to record payment.');
+      }
+    } catch {
+      alert('Network error. Could not reach the server.');
+    }
   };
 
   const handleAddDonation = async (e: React.FormEvent) => {
@@ -283,6 +303,12 @@ export const FinancePage: React.FC = () => {
     setNewExpense({ category: 'Kitchen & Nutrition', description: '', amount: '' });
   };
 
+
+  const filteredModalStudents = students.filter((s: any) => {
+    const q = studentSearchQuery.toLowerCase().trim();
+    if (!q) return true;
+    return (s.full_name || '').toLowerCase().includes(q) || (s.student_id_number || '').toLowerCase().includes(q);
+  });
 
   const filteredInvoices = invoices.filter((inv: any) => {
     const studentName = (inv.student_name || '').toLowerCase();
@@ -520,35 +546,67 @@ export const FinancePage: React.FC = () => {
               <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
                 <ReceiptText className="w-5 h-5 text-gold-500" /> {editInvoiceId ? 'Edit Fee Invoice' : 'New Fee Invoice'}
               </h3>
-              <button type="button" onClick={() => { setShowInvoiceModal(false); setEditInvoiceId(null); setNewInvoice({ student_name: '', invoice_number: '', academic_term: 'Term 1', academic_year: '2026/2027', tuition_fee: 1200, due_date: '2026-09-30' }); }} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
+              <button type="button" onClick={() => { setShowInvoiceModal(false); setEditInvoiceId(null); setNewInvoice(BLANK_INVOICE); }} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
             </div>
-            {[
-              { label: 'Student Full Name', key: 'student_name', type: 'text', required: true },
-              { label: 'Invoice Number (auto if blank)', key: 'invoice_number', type: 'text', required: false },
-              { label: 'Due Date', key: 'due_date', type: 'date', required: true },
-            ].map(f => (
-              <div key={f.key}>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{f.label}</label>
-                <input type={f.type} required={f.required} value={(newInvoice as any)[f.key]}
-                  onChange={e => setNewInvoice({ ...newInvoice, [f.key]: e.target.value })}
-                  className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:border-gold-500" />
+
+            {/* Student dropdown with search */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                Student <span className="text-rose-500">*</span>
+              </label>
+              <div className="relative mb-1.5">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                <input
+                  type="text"
+                  placeholder="Type student name or ID to filter..."
+                  value={studentSearchQuery}
+                  onChange={e => setStudentSearchQuery(e.target.value)}
+                  className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-gold-500"
+                />
               </div>
-            ))}
-            <div className="grid grid-cols-1 gap-3">
-              {([{ label: 'Tuition (D)', key: 'tuition_fee' }]).map(f => (
-                <div key={f.key}>
-                  <label className="block text-[10px] font-semibold text-slate-700 dark:text-slate-300 mb-1">{f.label}</label>
-                  <input type="number" value={(newInvoice as any)[f.key]}
-                    onChange={e => setNewInvoice({ ...newInvoice, [f.key]: parseFloat(e.target.value) })}
-                    className="w-full px-2 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none" />
-                </div>
-              ))}
+              <select required value={newInvoice.student_id}
+                onChange={e => {
+                  const s = students.find((s: any) => String(s.id) === e.target.value);
+                  setNewInvoice({ ...newInvoice, student_id: e.target.value, student_name: s ? s.full_name : '' });
+                }}
+                className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:border-gold-500">
+                <option value="">— Select a student ({filteredModalStudents.length} found) —</option>
+                {filteredModalStudents.map((s: any) => (
+                  <option key={s.id} value={s.id}>{s.full_name} ({s.student_id_number})</option>
+                ))}
+                {filteredModalStudents.length === 0 && (
+                  <option value="" disabled>No students matching "{studentSearchQuery}"</option>
+                )}
+              </select>
             </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Invoice Number <span className="text-slate-400 font-normal">(auto if blank)</span></label>
+              <input type="text" value={newInvoice.invoice_number}
+                onChange={e => setNewInvoice({ ...newInvoice, invoice_number: e.target.value })}
+                placeholder="e.g. INV-2026-0001"
+                className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:border-gold-500" />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Due Date <span className="text-rose-500">*</span></label>
+              <input type="date" required value={newInvoice.due_date}
+                onChange={e => setNewInvoice({ ...newInvoice, due_date: e.target.value })}
+                className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:border-gold-500" />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-semibold text-slate-700 dark:text-slate-300 mb-1">Tuition Fee (D)</label>
+              <input type="number" min="0" value={newInvoice.tuition_fee}
+                onChange={e => setNewInvoice({ ...newInvoice, tuition_fee: parseFloat(e.target.value) || 0 })}
+                className="w-full px-2 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none" />
+            </div>
+
             <div className="text-xs text-slate-500 font-semibold">
-              Total: <span className="text-emerald-600 font-extrabold">D{newInvoice.tuition_fee.toLocaleString()}</span>
+              Total: <span className="text-emerald-600 font-extrabold">D{(newInvoice.tuition_fee || 0).toLocaleString()}</span>
             </div>
             <div className="flex gap-3 pt-2">
-              <button type="button" onClick={() => { setShowInvoiceModal(false); setEditInvoiceId(null); setNewInvoice({ student_name: '', invoice_number: '', academic_term: 'Term 1', academic_year: '2026/2027', tuition_fee: 1200, due_date: '2026-09-30' }); }} className="w-1/2 py-2.5 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl">Cancel</button>
+              <button type="button" onClick={() => { setShowInvoiceModal(false); setEditInvoiceId(null); setNewInvoice(BLANK_INVOICE); }} className="w-1/2 py-2.5 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl">Cancel</button>
               <button type="submit" className="w-1/2 py-2.5 bg-gradient-to-r from-gold-500 to-gold-600 text-emerald-950 font-bold text-xs rounded-xl hover:brightness-110 transition">{editInvoiceId ? 'Save Changes' : 'Generate Invoice'}</button>
             </div>
           </motion.form>

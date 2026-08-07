@@ -15,7 +15,7 @@ export const Contact: React.FC = () => {
         <div className="max-w-3xl mx-auto space-y-6">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-gold-600 dark:text-gold-400">Get in Touch</span>
-            <h1 className="text-4xl font-bold text-slate-900 dark:text-white mt-3">Contact Quranic Boarding School</h1>
+            <h1 className="text-4xl font-bold text-slate-900 dark:text-white mt-3">Contact the Centre for Quranic Memorization</h1>
             <p className="text-slate-600 dark:text-slate-300 mt-3 text-sm sm:text-base leading-relaxed">
               Reach out for admissions guidance, program inquiries, or general questions about our boarding and Hifz curriculum.
             </p>
@@ -30,7 +30,7 @@ export const Contact: React.FC = () => {
 
               {contactSubmitted ? (
                 <div className="bg-emerald-950/90 border border-gold-400 text-gold-400 p-4 rounded-xl text-sm">
-                  Thank you for contacting QBSMS! Our admissions officer will reply to your email shortly.
+                  Thank you for contacting us! Our admissions officer will reply to your email shortly.
                 </div>
               ) : (
                 <form onSubmit={(e) => { e.preventDefault(); setContactSubmitted(true); }} className="space-y-4">
@@ -56,7 +56,7 @@ export const Contact: React.FC = () => {
             <div className="space-y-4">
               <div className="rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 h-full">
                 <iframe
-                  title="QBSMS Campus Location"
+                  title="Campus Location"
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d116120.36423985557!2d39.54471589139151!3d24.46721045974051!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x15bdbe5119934273%3A0xb35a3b9347895e7b!2sMadinah%20Saudi%20Arabia!5e0!3m2!1sen!2s!4v1700000000000!5m2!1sen!2s"
                   width="100%"
                   height="100%"

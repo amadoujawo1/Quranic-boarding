@@ -63,19 +63,55 @@ class InvoiceList(Resource):
 
     @jwt_required()
     def post(self):
+        from ..models.student import Student
+        from ..models.user import User as UserModel
         data = request.get_json() or {}
-        tuition_fee = float(data.get('tuition_fee', 0.0) or 0.0)
-        uniform_fee = float(data.get('uniform_fee', 0.0) or 0.0)
-        transport_fee = float(data.get('transport_fee', 0.0) or 0.0)
-        books_fee = float(data.get('books_fee', 0.0) or 0.0)
+
+        # ── Resolve student ──────────────────────────────────────────────────
+        student_id = data.get('student_id')
+        student_name = (data.get('student_name') or '').strip()
+
+        if not student_id and student_name:
+            # Look up by full name via the joined User table
+            match = (Student.query
+                     .join(UserModel, Student.user_id == UserModel.id)
+                     .filter(UserModel.full_name.ilike(student_name))
+                     .first())
+            if match:
+                student_id = match.id
+            else:
+                return {'message': f'No student found with name "{student_name}". '
+                                   'Please check the name or use the student ID.'}, 404
+
+        if not student_id:
+            return {'message': 'student_id or student_name is required.'}, 400
+
+        # ── Auto-generate invoice number if blank ────────────────────────────
+        invoice_number = (data.get('invoice_number') or '').strip()
+        if not invoice_number:
+            count = FeeInvoice.query.count() + 1
+            invoice_number = f'INV-{datetime.utcnow().year}-{count:04d}'
+            # Ensure uniqueness in case of concurrent inserts
+            while FeeInvoice.query.filter_by(invoice_number=invoice_number).first():
+                count += 1
+                invoice_number = f'INV-{datetime.utcnow().year}-{count:04d}'
+
+        if FeeInvoice.query.filter_by(invoice_number=invoice_number).first():
+            return {'message': f'Invoice number "{invoice_number}" already exists.'}, 409
+
+        # ── Fee fields ───────────────────────────────────────────────────────
+        tuition_fee          = float(data.get('tuition_fee', 0.0)          or 0.0)
+        uniform_fee          = float(data.get('uniform_fee', 0.0)          or 0.0)
+        transport_fee        = float(data.get('transport_fee', 0.0)        or 0.0)
+        books_fee            = float(data.get('books_fee', 0.0)            or 0.0)
         discount_scholarship = float(data.get('discount_scholarship', 0.0) or 0.0)
         total_amount = data.get('total_amount')
         if total_amount is None:
             total_amount = tuition_fee + uniform_fee + transport_fee + books_fee - discount_scholarship
 
         inv = FeeInvoice(
-            invoice_number=data.get('invoice_number'),
-            student_id=data.get('student_id'),
+            invoice_number=invoice_number,
+            student_id=student_id,
             academic_term=data.get('academic_term', 'Term 1'),
             academic_year=data.get('academic_year', '2026/2027'),
             tuition_fee=tuition_fee,

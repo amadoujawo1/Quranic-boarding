@@ -72,8 +72,14 @@ class Login(Resource):
 class UsersList(Resource):
     @jwt_required()
     def get(self):
-        # Ideally check if current user is admin, but for now we'll allow logged-in users to list
-        users = User.query.order_by(User.created_at.desc()).all()
+        # Exclude users whose roles are exclusively Student or Parent —
+        # those are managed via Student Management, not Users & Roles.
+        excluded_roles = {'Student', 'Parent'}
+        all_users = User.query.order_by(User.created_at.desc()).all()
+        users = [
+            u for u in all_users
+            if not u.roles or not set(r.name for r in u.roles).issubset(excluded_roles)
+        ]
         return [u.to_dict() for u in users], 200
 
 @auth_ns.route('/register')

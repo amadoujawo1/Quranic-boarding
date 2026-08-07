@@ -176,7 +176,7 @@ export const Programmes: React.FC = () => {
       >
         <div className="text-center max-w-2xl mx-auto space-y-3">
           <span className="text-xs font-bold uppercase tracking-wider text-gold-400">Structured Daily Life</span>
-          <h2 className="text-3xl font-extrabold text-white">A Day in the Life of a QBSMS Boarding Student</h2>
+          <h2 className="text-3xl font-extrabold text-white">A Day in the Life of Our Boarding Students</h2>
           <p className="text-slate-300 text-sm">
             Our daily schedule balances spiritual worship, Quranic memorization, academic studies, physical activity, and adequate rest.
           </p>

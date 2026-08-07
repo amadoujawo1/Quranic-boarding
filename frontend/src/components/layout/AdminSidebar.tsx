@@ -27,13 +27,15 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ user, onLogout }) =>
   return (
     <aside className="w-64 bg-emerald-950 text-slate-300 flex flex-col border-r border-gold-500/20 shrink-0 min-h-screen">
       {/* Brand Header */}
-      <div className="p-6 border-b border-gold-500/20 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-gold-500 text-emerald-950 flex items-center justify-center font-bold">
-          <BookOpen className="w-5 h-5" />
-        </div>
+      <div className="p-5 border-b border-gold-500/20 flex items-center gap-3">
+        <img
+          src="/logo.png"
+          alt="School Logo"
+          className="w-12 h-12 rounded-full object-cover shrink-0 ring-2 ring-gold-500/30"
+        />
         <div>
-          <h2 className="text-white font-extrabold tracking-wide text-base">QBSMS ERP</h2>
-          <span className="text-[10px] text-gold-400 font-semibold block">Boarding Management System</span>
+          <h2 className="text-white font-extrabold tracking-wide text-sm leading-tight">Centre for Quranic Memorization</h2>
+          <span className="text-[10px] text-gold-400 font-semibold block leading-tight"></span>
         </div>
       </div>
 

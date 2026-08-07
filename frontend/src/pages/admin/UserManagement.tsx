@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, PlusCircle, ShieldCheck, Search, X, Check, Edit, Trash2 } from 'lucide-react';
+import { Users, PlusCircle, ShieldCheck, Search, X, Check, Edit, Trash2, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const UserManagement: React.FC = () => {
@@ -7,15 +7,29 @@ export const UserManagement: React.FC = () => {
   const [search, setSearch] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState<any>(null);
+  const [showStudentModal, setShowStudentModal] = useState(false);
+  const [studentCount, setStudentCount] = useState(0);
 
   // Form State
   const [newUser, setNewUser] = useState({ username: '', email: '', password: '', full_name: '', role: 'Teacher' });
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+
+  const [newStudent, setNewStudent] = useState({
+    full_name: '',
+    email: '',
+    student_id_number: '',
+    gender: 'Male',
+    date_of_birth: '2013-01-01',
+    parent_name: '',
+    parent_phone: '',
+    parent_relationship: 'Father'
+  });
   
   const allRoles = ['Super Admin', 'Admin', 'Teacher', 'Parent', 'Student', 'Hifz Coordinator', 'Accountant'];
 
   useEffect(() => {
     fetchUsers();
+    fetchStudentCount();
   }, []);
 
   const fetchUsers = async () => {
@@ -29,6 +43,17 @@ export const UserManagement: React.FC = () => {
     } catch (e) {
       console.error(e);
     }
+  };
+
+  const fetchStudentCount = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/students', { headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) {
+        const data = await res.json();
+        setStudentCount(data.total || (data.students || []).length);
+      }
+    } catch (e) { /* ignore */ }
   };
 
   const handleCreateUser = async (e: React.FormEvent) => {
@@ -49,6 +74,41 @@ export const UserManagement: React.FC = () => {
       }
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const handleRegisterStudent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token');
+      const payload = {
+        ...newStudent,
+        student_id_number: newStudent.student_id_number || `QBS-2026-${String(studentCount + 1).padStart(3, '0')}`,
+        email: newStudent.email || `std_QBS-2026-${String(studentCount + 1).padStart(3, '0')}@qbsms.edu`
+      };
+      const res = await fetch('/api/students', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload)
+      });
+      if (res.status === 401) {
+        alert('Your session has expired. Please log in again.');
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+        return;
+      }
+      if (res.ok) {
+        setShowStudentModal(false);
+        setNewStudent({ full_name: '', email: '', student_id_number: '', gender: 'Male', date_of_birth: '2013-01-01', parent_name: '', parent_phone: '', parent_relationship: 'Father' });
+        fetchUsers();
+        fetchStudentCount();
+        alert('Student registered successfully!');
+      } else {
+        const err = await res.json();
+        alert(err.message || 'Failed to register student.');
+      }
+    } catch (error) {
+      alert('Network error: Could not reach the server.');
     }
   };
 
@@ -94,12 +154,18 @@ export const UserManagement: React.FC = () => {
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
             <Users className="w-6 h-6 text-gold-500" /> User & Role Management
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">Create accounts and manage system privileges.</p>
+          <p className="text-xs text-slate-500 mt-0.5">Create accounts, register students, and manage system privileges.</p>
         </div>
-        <button onClick={() => setShowCreateModal(true)}
-          className="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 text-white hover:brightness-110 transition flex items-center gap-1.5 shadow-md">
-          <PlusCircle className="w-4 h-4" /> Add New User
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setShowStudentModal(true)}
+            className="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-gold-500 to-gold-600 text-emerald-950 hover:brightness-110 transition flex items-center gap-1.5 shadow-md">
+            <GraduationCap className="w-4 h-4" /> Register Student
+          </button>
+          <button onClick={() => setShowCreateModal(true)}
+            className="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 text-white hover:brightness-110 transition flex items-center gap-1.5 shadow-md">
+            <PlusCircle className="w-4 h-4" /> Add New User
+          </button>
+        </div>
       </motion.div>
 
       {/* Users Table */}
@@ -162,6 +228,74 @@ export const UserManagement: React.FC = () => {
 
       {/* MODALS */}
       <AnimatePresence>
+        {/* Register Student Modal */}
+        {showStudentModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <motion.form onSubmit={handleRegisterStudent} initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 max-w-md w-full space-y-4 shadow-2xl">
+              <div className="flex justify-between items-center">
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                  <GraduationCap className="w-5 h-5 text-gold-500" /> Register Student Admission
+                </h3>
+                <button type="button" onClick={() => setShowStudentModal(false)} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Student Full Name <span className="text-rose-500">*</span></label>
+                <input required type="text" value={newStudent.full_name} onChange={e => setNewStudent({ ...newStudent, full_name: e.target.value })}
+                  placeholder="e.g. Abdullahi Ceesay"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:border-gold-500" />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Parent / Guardian Full Name</label>
+                <input type="text" value={newStudent.parent_name} onChange={e => setNewStudent({ ...newStudent, parent_name: e.target.value })}
+                  placeholder="e.g. Sheikh Ibrahim Al-Faruq"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:border-gold-500" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Relationship</label>
+                  <select value={newStudent.parent_relationship} onChange={e => setNewStudent({ ...newStudent, parent_relationship: e.target.value })}
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs">
+                    <option value="Father">Father</option>
+                    <option value="Mother">Mother</option>
+                    <option value="Guardian">Guardian</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Parent Phone</label>
+                  <input type="text" value={newStudent.parent_phone} onChange={e => setNewStudent({ ...newStudent, parent_phone: e.target.value })}
+                    placeholder="+220 700 0000"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Gender</label>
+                  <select value={newStudent.gender} onChange={e => setNewStudent({ ...newStudent, gender: e.target.value })}
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Date of Birth</label>
+                  <input type="date" value={newStudent.date_of_birth} onChange={e => setNewStudent({ ...newStudent, date_of_birth: e.target.value })}
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs" />
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setShowStudentModal(false)} className="w-1/2 py-2.5 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl">Cancel</button>
+                <button type="submit" className="w-1/2 py-2.5 bg-gradient-to-r from-gold-500 to-gold-600 text-emerald-950 font-bold text-xs rounded-xl hover:brightness-110 transition">Register Student</button>
+              </div>
+            </motion.form>
+          </div>
+        )}
+
         {/* Create User Modal */}
         {showCreateModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">

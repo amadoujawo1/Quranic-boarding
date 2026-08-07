@@ -3,7 +3,7 @@ from flask import request
 from flask_restx import Namespace, Resource
 from flask_jwt_extended import jwt_required
 from .. import db
-from ..models.student import Student
+from ..models.student import Student, Alumni
 from ..models.user import User, Role
 from ..models.boarding import Bed
 from ..models.attendance import SchoolAttendance, PrayerAttendance
@@ -12,25 +12,59 @@ from ..models.quran import HifzProgress
 
 dashboard_ns = Namespace('dashboard', description='Aggregated Statistics for Dashboards')
 
+
+def build_overview_stats():
+    total_students = Student.query.count()
+    active_students = Student.query.filter_by(status='Active').count()
+
+    teachers_count = User.query.filter(
+        User.roles.any(Role.name.in_(['Quran Teacher', 'Academic Teacher']))
+    ).count()
+    parents_count = User.query.filter(User.roles.any(Role.name == 'Parent')).count()
+    staff_count = User.query.count() - total_students - parents_count
+
+    total_beds = Bed.query.count()
+    occupied_beds = Bed.query.filter_by(is_occupied=True).count()
+    occupancy_rate = round((occupied_beds / total_beds * 100), 1) if total_beds > 0 else 0.0
+
+    hifz_graduates = Alumni.query.filter(Alumni.hifz_completion_date.isnot(None)).count()
+
+    return {
+        'total_students': total_students,
+        'active_students': active_students,
+        'teachers': teachers_count,
+        'parents': parents_count,
+        'staff': staff_count,
+        'hostel_occupancy_percentage': occupancy_rate,
+        'occupied_beds': occupied_beds,
+        'total_beds': total_beds,
+        'hifz_graduates': hifz_graduates
+    }
+
+
+@dashboard_ns.route('/public-stats')
+class PublicDashboardStats(Resource):
+    def get(self):
+        overview = build_overview_stats()
+        return {
+            'overview': {
+                'total_students': overview['total_students'],
+                'hifz_graduates': overview['hifz_graduates'],
+                'teachers': overview['teachers'],
+                'total_beds': overview['total_beds']
+            },
+            'last_updated': datetime.utcnow().isoformat()
+        }, 200
+
 @dashboard_ns.route('/admin-stats')
 class AdminDashboardStats(Resource):
     @jwt_required()
     def get(self):
-        total_students = Student.query.count()
-        active_students = Student.query.filter_by(status='Active').count()
-        
-        # Count staff by roles
-        teachers_count = User.query.filter(User.roles.any(Role.name.in_(['Quran Teacher', 'Academic Teacher']))).count()
-        parents_count = User.query.filter(User.roles.any(Role.name == 'Parent')).count()
-        staff_count = User.query.count() - total_students - parents_count
-
-        # Boarding / Hostel occupancy
-        total_beds = Bed.query.count()
-        occupied_beds = Bed.query.filter_by(is_occupied=True).count()
-        occupancy_rate = round((occupied_beds / total_beds * 100), 1) if total_beds > 0 else 0.0
+        overview = build_overview_stats()
+        total_students = overview['total_students']
+        today = datetime.utcnow().date()
 
         # Attendance today
-        today = datetime.utcnow().date()
         today_att = SchoolAttendance.query.filter_by(date=today, status='Present').count()
         fajr_att = PrayerAttendance.query.filter_by(date=today, prayer_name='Fajr', status='Jamaat').count()
         school_attendance_percentage = round((today_att / total_students * 100), 1) if total_students > 0 else 0.0
@@ -145,14 +179,7 @@ class AdminDashboardStats(Resource):
 
         return {
             'overview': {
-                'total_students': total_students,
-                'active_students': active_students,
-                'teachers': teachers_count,
-                'parents': parents_count,
-                'staff': staff_count,
-                'hostel_occupancy_percentage': occupancy_rate,
-                'occupied_beds': occupied_beds,
-                'total_beds': total_beds
+                **overview
             },
             'attendance_today': {
                 'school_present': today_att,

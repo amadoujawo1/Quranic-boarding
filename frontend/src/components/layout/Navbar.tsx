@@ -59,14 +59,13 @@ export const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode, user, onL
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20">
           {/* Logo & School Name */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-gold-600 via-gold-400 to-gold-500 p-0.5 shadow-lg shadow-gold-500/10">
-              <div className="w-full h-full bg-emerald-950 rounded-full flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-gold-400 group-hover:scale-110 transition-transform" />
-              </div>
-            </div>
+            <img
+              src="/logo.png"
+              alt="Centre for Quranic Memorization"
+              className="w-14 h-14 rounded-full object-cover shadow-lg ring-2 ring-gold-500/40 group-hover:ring-gold-400 transition-all"
+            />
             <div>
-              <span className="text-xl font-extrabold tracking-wide text-white block">QBSMS</span>
-              <span className="text-xs text-gold-400 font-medium tracking-wider">Quranic Boarding School</span>
+              <span className="text-xl font-extrabold tracking-wide text-white block">Centre for Quranic Memorization</span>
             </div>
           </Link>
 

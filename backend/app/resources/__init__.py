@@ -5,8 +5,8 @@ api_bp = Blueprint('api', __name__)
 api = Api(
     api_bp,
     version='1.0',
-    title='Quranic Boarding School Management System (QBSMS) API',
-    description='Comprehensive RESTful API for QBSMS managing Academics, Hifz, Boarding, Attendance, Fees & Portals.',
+    title='Centre for Quranic Memorization API',
+    description='Comprehensive RESTful API for managing Academics, Hifz, Boarding, Attendance, Fees & Portals.',
     doc='/docs'
 )
 
@@ -42,4 +42,3 @@ from flask_jwt_extended.exceptions import JWTExtendedException, NoAuthorizationE
 @api.errorhandler(PyJWTError)
 def handle_jwt_exceptions(error):
     return {'message': str(error) or 'Authentication token invalid or expired'}, 401
-

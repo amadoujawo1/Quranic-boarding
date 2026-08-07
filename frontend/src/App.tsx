@@ -33,6 +33,11 @@ const LayoutWrapper: React.FC<{
 }> = ({ children, user, darkMode, setDarkMode, onLogout }) => {
   const location = useLocation();
   const isAdminOrPortalRoute = location.pathname.startsWith('/admin') || location.pathname.startsWith('/portal');
+  const isLoginRoute = location.pathname === '/login';
+
+  if (isLoginRoute) {
+    return <>{children}</>;
+  }
 
   if (isAdminOrPortalRoute) {
     return (
