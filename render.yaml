@@ -16,20 +16,11 @@ services:
     name: qbsms-backend
     env: docker
     rootDir: backend
-    dockerfilePath: ./backend/Dockerfile
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: DATABASE_URL
-        sync: false # You will need to provide your MySQL database URL in the Render dashboard
+        sync: false
       - key: JWT_SECRET_KEY
         generateValue: true
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: qbsms-redis
-          property: connectionString
-
-  # Redis Instance
-  - type: redis
-    name: qbsms-redis
-    ipAllowList: [] # restricts access to internal services only
-    plan: free
+      - key: DEFAULT_ADMIN_PASSWORD
+        sync: false
