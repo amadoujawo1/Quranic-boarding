@@ -296,7 +296,7 @@ export const Home: React.FC = () => {
 
       {/* Contact & Google Maps Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-emerald-950 text-white rounded-3xl p-8 sm:p-12 border border-gold-500/30 grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="bg-emerald-950 text-white rounded-3xl p-8 sm:p-12 border border-gold-500/30">
           
           <div className="space-y-6">
             <h2 className="text-3xl font-bold">Contact Our Admissions Office</h2>
@@ -325,21 +325,6 @@ export const Home: React.FC = () => {
                 </button>
               </form>
             )}
-          </div>
-
-          <div className="space-y-4">
-            <h3 className="text-xl font-bold text-gold-400">Campus Location</h3>
-            <div className="w-full h-80 rounded-2xl overflow-hidden border border-gold-500/30">
-              <iframe
-                title="School Google Map"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d116120.36423985557!2d39.54471589139151!3d24.46721045974051!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x15bdbe5119934273%3A0xb35a3b9347895e7b!2sMadinah%20Saudi%20Arabia!5e0!3m2!1sen!2s!4v1700000000000!5m2!1sen!2s"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen={false}
-                loading="lazy"
-              ></iframe>
-            </div>
           </div>
 
         </div>

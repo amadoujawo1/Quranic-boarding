@@ -1,23 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Mail, Send, Heart, ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 
 export const Footer: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
-
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email) {
-      setSubscribed(true);
-      setEmail('');
-    }
-  };
-
   return (
     <footer className="bg-emerald-950 text-slate-300 border-t-4 border-gold-500 pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
           
           {/* Col 1: School Identity */}
           <div className="space-y-4">
@@ -55,40 +44,6 @@ export const Footer: React.FC = () => {
               <li><Link to="/login" className="text-gold-400 hover:underline flex items-center gap-1.5"><ShieldCheck className="w-4 h-4" /> Student Portal</Link></li>
               <li><Link to="/login" className="text-gold-400 hover:underline flex items-center gap-1.5"><ShieldCheck className="w-4 h-4" /> Staff & Teacher Portal</Link></li>
             </ul>
-          </div>
-
-          {/* Col 4: Newsletter */}
-          <div>
-            <h4 className="text-white font-semibold text-base mb-4 border-b border-gold-500/30 pb-2 inline-block">
-              Newsletter Subscription
-            </h4>
-            <p className="text-xs text-slate-400 mb-4">
-              Subscribe for school announcements, event dates, and Islamic educational insights.
-            </p>
-            {subscribed ? (
-              <div className="bg-emerald-900/80 border border-gold-500 text-gold-400 p-3 rounded-lg text-xs flex items-center gap-2">
-                <Heart className="w-4 h-4 fill-gold-400" /> JazakAllah Khair! Subscribed successfully.
-              </div>
-            ) : (
-              <form onSubmit={handleSubscribe} className="space-y-2">
-                <div className="relative">
-                  <input
-                    type="email"
-                    required
-                    placeholder="Enter parent email..."
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-gold-500"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="w-full py-2 bg-gradient-to-r from-gold-500 to-gold-600 text-emerald-950 font-bold text-xs rounded-lg hover:brightness-110 flex items-center justify-center gap-1.5 transition"
-                >
-                  <Send className="w-3.5 h-3.5" /> Subscribe Now
-                </button>
-              </form>
-            )}
           </div>
 
         </div>
