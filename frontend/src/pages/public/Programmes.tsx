@@ -39,22 +39,6 @@ export const Programmes: React.FC = () => {
       ]
     },
     {
-      id: 'stem',
-      icon: Compass,
-      badge: 'Integrated Academics',
-      badgeColor: 'bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30',
-      title: 'STEM & General Academics',
-      duration: 'Primary & Secondary',
-      targetAge: 'Ages 8 - 18',
-      description: 'Balanced modern school curriculum ensuring students maintain top academic standing in sciences, mathematics, humanities, and IT.',
-      highlights: [
-        'Mathematics, Physics, Chemistry & Biology',
-        'ICT, Computer Literacy & Coding Basics',
-        'English Language & Literature Mastery',
-        'Social Studies & History'
-      ]
-    },
-    {
       id: 'tarbiyah',
       icon: HeartHandshake,
       badge: 'Spiritual Life',
@@ -76,7 +60,7 @@ export const Programmes: React.FC = () => {
     { time: '04:30 AM - 05:30 AM', activity: 'Qiyam-ul-Layl & Fajr Congregational Prayer' },
     { time: '05:30 AM - 07:30 AM', activity: 'Morning Hifz Session: Sabaq (New Lesson Recitation)' },
     { time: '07:30 AM - 08:30 AM', activity: 'Healthy Breakfast & Morning Assembly' },
-    { time: '08:30 AM - 01:30 PM', activity: 'STEM & General Academic Classes' },
+    { time: '08:30 AM - 01:30 PM', activity: 'Academic & Shariah Classes' },
     { time: '01:30 PM - 02:30 PM', activity: 'Zuhr Prayer & Lunch Break' },
     { time: '02:30 PM - 04:30 PM', activity: 'Afternoon Session: Sabqi (Recent Revision) & Islamic Studies' },
     { time: '04:30 PM - 06:00 PM', activity: 'Asr Prayer, Sports, Recreation & Personal Time' },
@@ -100,12 +84,12 @@ export const Programmes: React.FC = () => {
           Educational Programmes & Curriculum
         </h1>
         <p className="text-slate-600 dark:text-slate-300 text-base md:text-lg leading-relaxed">
-          Discover our balanced educational tracks combining intensive Quranic memorization, authentic Shariah knowledge, modern STEM academics, and character development.
+          Discover our balanced educational tracks combining intensive Quranic memorization, authentic Shariah knowledge, academic studies, and character development.
         </p>
       </motion.div>
 
       {/* Main Programmes Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {mainProgrammes.map((prog, index) => {
           const Icon = prog.icon;
           return (
