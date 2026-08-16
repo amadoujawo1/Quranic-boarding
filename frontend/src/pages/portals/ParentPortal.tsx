@@ -208,7 +208,7 @@ export const ParentPortal: React.FC = () => {
           </div>
 
           <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">Hostel & School Summary</h3>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">School Summary</h3>
             <div className="p-4 bg-emerald-950 text-white rounded-2xl space-y-3 text-xs">
               <div className="flex justify-between">
                 <span className="text-slate-300">Linked Children:</span>
@@ -274,7 +274,7 @@ export const ParentPortal: React.FC = () => {
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Select Recipient:</label>
               <select className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white">
                 <option>Lead Hifz Teacher</option>
-                <option>Hostel Warden</option>
+                <option>Student Affairs</option>
                 <option>Academic Office</option>
               </select>
             </div>

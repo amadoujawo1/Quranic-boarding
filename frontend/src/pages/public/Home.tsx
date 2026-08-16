@@ -89,7 +89,7 @@ export const Home: React.FC = () => {
     { title: 'Students Enrolled', num: overviewStats.total_students, suffix: '', icon: Users },
     { title: 'Hifz Huffaz Graduates', num: overviewStats.hifz_graduates, suffix: '', icon: Award },
     { title: 'Qualified Teachers', num: overviewStats.teachers, suffix: '', icon: BookOpen },
-    { title: 'Hostel Capacity', num: overviewStats.total_beds, suffix: ' Beds', icon: HomeIcon },
+    { title: 'Core Programmes', num: 4, suffix: '', icon: HomeIcon },
   ];
 
   const programmes = [

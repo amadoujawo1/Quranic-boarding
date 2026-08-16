@@ -16,7 +16,6 @@ const PAGE_NAMES: Record<string, string> = {
   '/admin/students':         'Student Management',
   '/admin/hifz':             'Hifz Tracker',
   '/admin/prayer-attendance':'Prayer Attendance',
-  '/admin/hostel':           'Hostel Management',
   '/admin/finance':          'Fee & Financials',
   '/admin/academic':         'Academic Calendar',
   '/admin/staff':            'Staff Management',
