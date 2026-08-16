@@ -15,9 +15,8 @@ services:
   - type: web
     name: qbsms-backend
     runtime: python
-    rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn --bind 0.0.0.0:$PORT wsgi:app
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && gunicorn --bind 0.0.0.0:$PORT wsgi:app
     envVars:
       - key: DATABASE_URL
         sync: false
