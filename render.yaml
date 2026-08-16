@@ -11,12 +11,13 @@ services:
         source: /*
         destination: /index.html
 
-  # Backend Web Service (Docker)
+  # Backend Web Service (Python)
   - type: web
     name: qbsms-backend
-    env: docker
+    runtime: python
     rootDir: backend
-    dockerfilePath: ./Dockerfile
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT wsgi:app
     envVars:
       - key: DATABASE_URL
         sync: false
@@ -24,3 +25,5 @@ services:
         generateValue: true
       - key: DEFAULT_ADMIN_PASSWORD
         sync: false
+      - key: FLASK_DEBUG
+        value: false
