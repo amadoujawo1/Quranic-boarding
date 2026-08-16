@@ -1,14 +1,9 @@
 services:
-  # Single unified service: Flask serves both the API and the React SPA
+  # Single unified service: Docker builds React + Flask together
   - type: web
     name: qbsms-app
-    runtime: python
-    buildCommand: >
-      cd frontend && npm install && npm run build &&
-      cd .. &&
-      cp -r frontend/dist backend/dist &&
-      pip install -r backend/requirements.txt
-    startCommand: cd backend && gunicorn --bind 0.0.0.0:$PORT wsgi:app
+    env: docker
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: DATABASE_URL
         sync: false
