@@ -109,5 +109,23 @@ class Alumni(db.Model):
     higher_education = db.Column(db.String(150))
     contact_email = db.Column(db.String(120))
 
+    student = db.relationship('Student', backref=db.backref('alumni_record', uselist=False))
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    def to_dict(self):
+        full_name = self.student.user.full_name if self.student and self.student.user else None
+        student_id_number = self.student.student_id_number if self.student else None
+        return {
+            'id': self.id,
+            'student_id': self.student_id,
+            'student_id_number': student_id_number,
+            'full_name': full_name,
+            'graduation_year': self.graduation_year,
+            'hifz_completion_date': self.hifz_completion_date.isoformat() if self.hifz_completion_date else None,
+            'current_occupation': self.current_occupation,
+            'higher_education': self.higher_education,
+            'contact_email': self.contact_email
+        }
+

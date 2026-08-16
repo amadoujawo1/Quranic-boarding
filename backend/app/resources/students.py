@@ -280,3 +280,145 @@ class StudentImport(Resource):
             'summary': {'total': len(rows), 'imported': imported, 'failed': failed},
             'results': results
         }, 200
+
+
+@students_ns.route('/alumni')
+class AlumniList(Resource):
+    def get(self):
+        """List all Hifz Huffaz Graduates (Alumni)."""
+        search = request.args.get('search', '', type=str)
+        year = request.args.get('year', type=int)
+
+        query = Alumni.query.join(Student).join(User)
+
+        if search:
+            query = query.filter(
+                (User.full_name.ilike(f'%{search}%')) |
+                (Student.student_id_number.ilike(f'%{search}%')) |
+                (Alumni.current_occupation.ilike(f'%{search}%')) |
+                (Alumni.higher_education.ilike(f'%{search}%'))
+            )
+        if year:
+            query = query.filter(Alumni.graduation_year == year)
+
+        alumni_records = query.order_by(Alumni.graduation_year.desc(), Alumni.hifz_completion_date.desc()).all()
+        return {
+            'alumni': [a.to_dict() for a in alumni_records],
+            'total': len(alumni_records)
+        }, 200
+
+    @jwt_required()
+    def post(self):
+        """Input and register a new Hifz Huffaz Graduate."""
+        data = request.get_json() or {}
+
+        student_id = data.get('student_id')
+        full_name = data.get('full_name')
+
+        student = None
+        if student_id:
+            student = Student.query.get(student_id)
+
+        if not student and full_name:
+            existing_user = User.query.filter(User.full_name.ilike(full_name.strip())).first()
+            if existing_user and existing_user.student_profile:
+                student = existing_user.student_profile
+            else:
+                ts = int(datetime.utcnow().timestamp())
+                std_num = data.get('student_id_number') or f"QBS-GRAD-{ts % 10000:04d}"
+                username = f"hafiz_{std_num.replace(' ', '_').lower()}"
+                email = data.get('contact_email') or f"{username}@qbsms.edu"
+
+                if User.query.filter((User.username == username) | (User.email == email)).first():
+                    username = f"{username}_{ts}"
+                    email = f"grad_{ts}@qbsms.edu"
+
+                user = User(username=username, email=email, full_name=full_name.strip(), phone=data.get('phone'))
+                user.set_password('HafizPass123!')
+                role = Role.query.filter_by(name='Student').first()
+                if role:
+                    user.roles.append(role)
+                db.session.add(user)
+                db.session.flush()
+
+                student = Student(
+                    user_id=user.id,
+                    student_id_number=std_num,
+                    date_of_birth=datetime.utcnow().date(),
+                    gender=data.get('gender', 'Male'),
+                    status='Graduated'
+                )
+                db.session.add(student)
+                db.session.flush()
+
+        if not student:
+            return {'message': 'Student ID or valid Full Name is required to input graduate'}, 400
+
+        student.status = 'Graduated'
+
+        grad_year = data.get('graduation_year') or datetime.utcnow().year
+        completion_date_str = data.get('hifz_completion_date')
+        completion_date = None
+        if completion_date_str:
+            try:
+                completion_date = datetime.strptime(completion_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                completion_date = datetime.utcnow().date()
+        else:
+            completion_date = datetime.utcnow().date()
+
+        alumni = Alumni.query.filter_by(student_id=student.id).first()
+        if alumni:
+            alumni.graduation_year = grad_year
+            alumni.hifz_completion_date = completion_date
+            alumni.current_occupation = data.get('current_occupation', alumni.current_occupation)
+            alumni.higher_education = data.get('higher_education', alumni.higher_education)
+            alumni.contact_email = data.get('contact_email', alumni.contact_email)
+        else:
+            alumni = Alumni(
+                student_id=student.id,
+                graduation_year=grad_year,
+                hifz_completion_date=completion_date,
+                current_occupation=data.get('current_occupation', 'Alumni Hafiz'),
+                higher_education=data.get('higher_education', 'Higher Islamic & Secular Studies'),
+                contact_email=data.get('contact_email', student.user.email if student.user else None)
+            )
+            db.session.add(alumni)
+
+        db.session.commit()
+        return alumni.to_dict(), 201
+
+
+@students_ns.route('/alumni/<int:id>')
+class AlumniDetail(Resource):
+    @jwt_required()
+    def put(self, id):
+        alumni = Alumni.query.get_or_404(id)
+        data = request.get_json() or {}
+
+        if 'graduation_year' in data:
+            alumni.graduation_year = data['graduation_year']
+        if 'hifz_completion_date' in data and data['hifz_completion_date']:
+            try:
+                alumni.hifz_completion_date = datetime.strptime(data['hifz_completion_date'], '%Y-%m-%d').date()
+            except ValueError:
+                pass
+        if 'current_occupation' in data:
+            alumni.current_occupation = data['current_occupation']
+        if 'higher_education' in data:
+            alumni.higher_education = data['higher_education']
+        if 'contact_email' in data:
+            alumni.contact_email = data['contact_email']
+        if 'full_name' in data and alumni.student and alumni.student.user:
+            alumni.student.user.full_name = data['full_name']
+
+        db.session.commit()
+        return alumni.to_dict(), 200
+
+    @jwt_required()
+    def delete(self, id):
+        alumni = Alumni.query.get_or_404(id)
+        db.session.delete(alumni)
+        db.session.commit()
+        return {'message': 'Graduate record removed successfully'}, 200
+

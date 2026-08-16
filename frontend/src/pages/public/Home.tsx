@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Award, Users, Home as HomeIcon, CheckCircle2, ChevronRight, Calendar, Star, MapPin, Mail, Phone, Clock } from 'lucide-react';
+import { BookOpen, Award, Users, Home as HomeIcon, CheckCircle2, ChevronRight, Calendar, Star, MapPin, Mail, Phone, Clock, GraduationCap, X, Search, Sparkles, Loader2 } from 'lucide-react';
 import { motion, useInView, animate } from 'framer-motion';
 
 type PublicOverviewStats = {
@@ -40,6 +40,28 @@ export const Home: React.FC = () => {
     teachers: 0,
     total_beds: 0,
   });
+
+  const [showGraduatesModal, setShowGraduatesModal] = useState(false);
+  const [graduatesList, setGraduatesList] = useState<any[]>([]);
+  const [loadingGraduatesModal, setLoadingGraduatesModal] = useState(false);
+  const [graduateSearch, setGraduateSearch] = useState('');
+
+  const fetchPublicGraduates = async () => {
+    setShowGraduatesModal(true);
+    if (graduatesList.length > 0) return;
+    setLoadingGraduatesModal(true);
+    try {
+      const res = await fetch('/api/students/alumni');
+      if (res.ok) {
+        const data = await res.json();
+        setGraduatesList(data.alumni || []);
+      }
+    } catch {
+      // keep
+    } finally {
+      setLoadingGraduatesModal(false);
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -202,6 +224,8 @@ export const Home: React.FC = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {stats.map((item, idx) => {
             const Icon = item.icon;
+            const isGraduateCard = item.title === 'Hifz Huffaz Graduates';
+
             return (
               <motion.div 
                 key={idx} 
@@ -209,8 +233,14 @@ export const Home: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.5, delay: idx * 0.1 }}
-                className="glass-card p-6 rounded-2xl text-center shadow-sm border border-gold-500/20 hover:border-gold-500 transition group hover:-translate-y-1"
+                onClick={() => isGraduateCard && fetchPublicGraduates()}
+                className={`glass-card p-6 rounded-2xl text-center shadow-sm border border-gold-500/20 hover:border-gold-500 transition group hover:-translate-y-1 ${isGraduateCard ? 'cursor-pointer relative ring-2 ring-gold-500/30 hover:ring-gold-500' : ''}`}
               >
+                {isGraduateCard && (
+                  <span className="absolute top-2 right-2 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider rounded-full bg-gold-500 text-emerald-950 shadow-sm animate-pulse">
+                    Click to View
+                  </span>
+                )}
                 <div className="w-12 h-12 rounded-xl bg-gold-500/10 text-gold-500 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                   <Icon className="w-6 h-6" />
                 </div>
@@ -320,6 +350,117 @@ export const Home: React.FC = () => {
 
         </div>
       </section>
+
+      {/* PUBLIC HIFZ HUFFAZ GRADUATES SHOWCASE MODAL */}
+      {showGraduatesModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 border border-gold-500/30 rounded-3xl max-w-4xl w-full p-6 sm:p-8 shadow-2xl space-y-6 relative max-h-[90vh] overflow-y-auto">
+            
+            <button
+              onClick={() => setShowGraduatesModal(false)}
+              className="absolute top-6 right-6 p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Header */}
+            <div className="flex items-center gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-gold-500 to-amber-600 text-emerald-950 flex items-center justify-center shadow-md">
+                <GraduationCap className="w-7 h-7" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Hifz Huffaz Graduates Honor Roll</h2>
+                  <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-gold-400 font-bold text-xs rounded-full">
+                    {graduatesList.length} Huffaz
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500">Distinguished graduates who completed 30 Juz memorization with Tajweed mastery.</p>
+              </div>
+            </div>
+
+            {/* Search filter */}
+            <div className="relative">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+              <input
+                type="text"
+                placeholder="Search graduates by name, year, occupation, or university..."
+                value={graduateSearch}
+                onChange={(e) => setGraduateSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs"
+              />
+            </div>
+
+            {/* Graduates grid */}
+            {loadingGraduatesModal ? (
+              <div className="text-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-gold-500 mx-auto mb-2" />
+                <p className="text-xs text-slate-500">Loading Hifz Huffaz Graduates...</p>
+              </div>
+            ) : graduatesList.length === 0 ? (
+              <div className="text-center py-12 text-xs text-slate-500">
+                No graduate records found.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {graduatesList
+                  .filter(g => !graduateSearch || 
+                    g.full_name?.toLowerCase().includes(graduateSearch.toLowerCase()) ||
+                    g.current_occupation?.toLowerCase().includes(graduateSearch.toLowerCase()) ||
+                    g.higher_education?.toLowerCase().includes(graduateSearch.toLowerCase()) ||
+                    g.graduation_year?.toString().includes(graduateSearch)
+                  )
+                  .map((g) => (
+                    <div 
+                      key={g.id}
+                      className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 space-y-3 relative overflow-hidden"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-gold-500 to-amber-600 text-emerald-950 font-black text-xs flex items-center justify-center">
+                            {g.full_name?.substring(0, 2).toUpperCase() || 'HF'}
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-sm text-slate-900 dark:text-white">{g.full_name}</h3>
+                            <span className="text-[11px] text-emerald-600 dark:text-gold-400 font-semibold">{g.student_id_number || `GRAD-${g.graduation_year}`}</span>
+                          </div>
+                        </div>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gold-500/20 text-gold-600 dark:text-gold-400 border border-gold-500/30">
+                          Class of {g.graduation_year}
+                        </span>
+                      </div>
+
+                      <div className="space-y-1 text-xs text-slate-600 dark:text-slate-300 border-t border-slate-200 dark:border-slate-700/50 pt-2">
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Higher Education:</span>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">{g.higher_education || 'Islamic Studies'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Profession:</span>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">{g.current_occupation || 'Alumni Hafiz'}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[11px] text-emerald-600 dark:text-emerald-400 font-bold border-t border-slate-200 dark:border-slate-700/50 pt-2">
+                        <span>Completion Date: {g.hifz_completion_date || `${g.graduation_year}-05-15`}</span>
+                        <span className="flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" /> 30 Juz Complete</span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+
+            <div className="pt-2 text-center">
+              <button
+                onClick={() => setShowGraduatesModal(false)}
+                className="px-6 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl"
+              >
+                Close Showcase
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
