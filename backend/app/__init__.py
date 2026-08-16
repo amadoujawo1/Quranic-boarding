@@ -99,6 +99,17 @@ def create_app():
 
         db.session.commit()
 
+    # Health-check routes
+    @app.route('/')
+    @app.route('/health')
+    def health_check():
+        return {
+            'status': 'ok',
+            'service': 'Centre for Quranic Memorization API',
+            'version': '1.0',
+            'docs': '/api/docs'
+        }, 200
+
     # Register blueprints (to be created later)
     from .resources import api_bp
     app.register_blueprint(api_bp, url_prefix='/api')
