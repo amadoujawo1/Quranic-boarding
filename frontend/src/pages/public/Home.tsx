@@ -143,9 +143,6 @@ export const Home: React.FC = () => {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="space-y-6 text-center lg:text-left"
             >
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gold-500/20 border border-gold-500/40 text-gold-400 text-xs font-semibold">
-                <Star className="w-3.5 h-3.5 fill-gold-400" /> Premium Islamic Boarding Education
-              </div>
               <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight">
                 Empowering Minds with <span className="gold-gradient-text">Quranic Light</span> & Academic Excellence
               </h1>
