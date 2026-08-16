@@ -104,12 +104,6 @@ export const Home: React.FC = () => {
       desc: 'Comprehensive curriculum covering Aqeedah, Fiqh, Hadith, Tafsir, Seerah, and Classical Arabic literature.',
       badge: 'Academic',
       link: '/programmes'
-    },
-    {
-      title: 'Modern Science & STEM',
-      desc: 'Balanced state curriculum with Physics, Chemistry, Biology, Mathematics, Computer Science, and English.',
-      badge: 'Modern Curriculum',
-      link: '/programmes'
     }
   ];
 
@@ -264,7 +258,7 @@ export const Home: React.FC = () => {
           <p className="text-sm text-slate-600 dark:text-slate-400">Tailored path for spiritual growth and academic brilliance.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {programmes.map((prog, i) => (
             <motion.div 
               key={i} 
