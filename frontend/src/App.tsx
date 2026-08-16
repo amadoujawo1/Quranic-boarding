@@ -32,8 +32,13 @@ const LayoutWrapper: React.FC<{
   onLogout: () => void;
 }> = ({ children, user, darkMode, setDarkMode, onLogout }) => {
   const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const isAdminOrPortalRoute = location.pathname.startsWith('/admin') || location.pathname.startsWith('/portal');
   const isLoginRoute = location.pathname === '/login';
+
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
 
   if (isLoginRoute) {
     return <>{children}</>;
@@ -42,10 +47,10 @@ const LayoutWrapper: React.FC<{
   if (isAdminOrPortalRoute) {
     return (
       <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
-        <AdminSidebar user={user} onLogout={onLogout} />
+        <AdminSidebar user={user} onLogout={onLogout} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <div className="flex-1 flex flex-col min-w-0">
-          <AdminHeader user={user} darkMode={darkMode} setDarkMode={setDarkMode} onLogout={onLogout} />
-          <main className="p-6 md:p-8 flex-1 overflow-y-auto">
+          <AdminHeader user={user} darkMode={darkMode} setDarkMode={setDarkMode} onLogout={onLogout} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+          <main className="p-4 md:p-8 flex-1 overflow-y-auto">
             {children}
           </main>
         </div>

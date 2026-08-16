@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Sun, Moon, Bell, Calendar, LogOut, ChevronRight, Home } from 'lucide-react';
+import { Sun, Moon, Bell, Calendar, LogOut, ChevronRight, Home, Menu } from 'lucide-react';
 
 interface AdminHeaderProps {
   user: any;
   darkMode: boolean;
   setDarkMode: (val: boolean) => void;
   onLogout?: () => void;
+  onToggleSidebar?: () => void;
 }
 
 const PAGE_NAMES: Record<string, string> = {
@@ -25,7 +26,7 @@ const PAGE_NAMES: Record<string, string> = {
   '/portal/teacher':         'Teacher Portal',
 };
 
-export const AdminHeader: React.FC<AdminHeaderProps> = ({ user, darkMode, setDarkMode, onLogout }) => {
+export const AdminHeader: React.FC<AdminHeaderProps> = ({ user, darkMode, setDarkMode, onLogout, onToggleSidebar }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const location = useLocation();
 
@@ -39,26 +40,38 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ user, darkMode, setDar
   ];
 
   return (
-    <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-3.5 flex flex-col md:flex-row justify-between items-center gap-3">
+    <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 md:px-6 py-3.5 flex flex-col md:flex-row justify-between items-center gap-3">
 
-      {/* Left: Breadcrumb */}
-      <div className="flex flex-col w-full md:w-auto">
-        {/* Breadcrumb path */}
-        <div className="flex items-center gap-1 text-[10px] text-slate-400 font-medium">
-          <Home className="w-3 h-3" />
-          {pathSegments.map((seg, i) => (
-            <React.Fragment key={i}>
-              <ChevronRight className="w-3 h-3 opacity-50" />
-              <span className={i === pathSegments.length - 1 ? 'text-gold-500 font-semibold' : ''}>
-                {seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' ')}
-              </span>
-            </React.Fragment>
-          ))}
+      {/* Left: Breadcrumb & Mobile Menu Trigger */}
+      <div className="flex items-center gap-3 w-full md:w-auto">
+        {onToggleSidebar && (
+          <button
+            onClick={onToggleSidebar}
+            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:text-gold-500 md:hidden transition shrink-0"
+            title="Open navigation menu"
+            aria-label="Open navigation menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        )}
+        <div className="flex flex-col">
+          {/* Breadcrumb path */}
+          <div className="flex items-center gap-1 text-[10px] text-slate-400 font-medium">
+            <Home className="w-3 h-3" />
+            {pathSegments.map((seg, i) => (
+              <React.Fragment key={i}>
+                <ChevronRight className="w-3 h-3 opacity-50" />
+                <span className={i === pathSegments.length - 1 ? 'text-gold-500 font-semibold' : ''}>
+                  {seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' ')}
+                </span>
+              </React.Fragment>
+            ))}
+          </div>
+          {/* Page title */}
+          <h2 className="text-base font-extrabold text-slate-900 dark:text-white leading-tight mt-0.5">
+            {pageName}
+          </h2>
         </div>
-        {/* Page title */}
-        <h2 className="text-base font-extrabold text-slate-900 dark:text-white leading-tight mt-0.5">
-          {pageName}
-        </h2>
       </div>
 
       {/* Right Controls */}
