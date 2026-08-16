@@ -87,7 +87,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               <img src="/logo.png" alt="Logo" className="w-full h-full object-cover" />
             </div>
             <div>
-              <p className="text-white font-bold text-sm leading-tight">Quranic Boarding School</p>
+              <p className="text-white font-bold text-sm leading-tight">Imaam Naafi' Quranic Boarding School</p>
               <p className="text-white/60 text-xs">Admin · Teachers · Parents</p>
             </div>
           </div>
@@ -117,7 +117,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           </div>
 
           {/* Footer */}
-          <p className="text-white/40 text-xs">© {new Date().getFullYear()} Quranic Boarding School</p>
+          <p className="text-white/40 text-xs">© {new Date().getFullYear()} Imaam Naafi' Quranic Boarding School</p>
         </div>
       </div>
 
