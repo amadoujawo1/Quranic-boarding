@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
@@ -99,8 +99,11 @@ def create_app():
 
         db.session.commit()
 
-    # Health-check routes
-    @app.route('/')
+    # Register blueprints
+    from .resources import api_bp
+    app.register_blueprint(api_bp, url_prefix='/api')
+
+    # Health check endpoint
     @app.route('/health')
     def health_check():
         return {
@@ -110,8 +113,23 @@ def create_app():
             'docs': '/api/docs'
         }, 200
 
-    # Register blueprints (to be created later)
-    from .resources import api_bp
-    app.register_blueprint(api_bp, url_prefix='/api')
+    # Serve the React SPA for all non-API routes
+    frontend_dist = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'dist')
+
+    @app.route('/', defaults={'path': ''})
+    @app.route('/<path:path>')
+    def serve_spa(path):
+        if os.path.isdir(frontend_dist):
+            file_path = os.path.join(frontend_dist, path)
+            if path and os.path.isfile(file_path):
+                return send_from_directory(frontend_dist, path)
+            return send_from_directory(frontend_dist, 'index.html')
+        # No frontend build present — return API info
+        return {
+            'status': 'ok',
+            'service': 'Centre for Quranic Memorization API',
+            'version': '1.0',
+            'docs': '/api/docs'
+        }, 200
 
     return app
