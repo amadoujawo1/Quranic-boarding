@@ -108,7 +108,7 @@ def create_app():
     def health_check():
         return {
             'status': 'ok',
-            'service': 'Centre for Quranic Memorization API',
+            'service': "Imaam Naafi' Centre for Quranic Memorization API",
             'version': '1.0',
             'docs': '/api/docs'
         }, 200
@@ -127,7 +127,7 @@ def create_app():
         # No frontend build present — return API info
         return {
             'status': 'ok',
-            'service': 'Centre for Quranic Memorization API',
+            'service': "Imaam Naafi' Centre for Quranic Memorization API",
             'version': '1.0',
             'docs': '/api/docs'
         }, 200

@@ -12,7 +12,7 @@ export const About: React.FC = () => {
         className="text-center max-w-3xl mx-auto space-y-4"
       >
         <span className="text-xs font-bold uppercase tracking-wider text-gold-600 dark:text-gold-400">Our Sacred Legacy</span>
-        <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white">About the Centre for Quranic Memorization</h1>
+        <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white">About Imaam Naafi' Centre for Quranic Memorization</h1>
         <p className="text-slate-600 dark:text-slate-300 text-base leading-relaxed">
           Founded on authentic Islamic values, the Centre for Quranic Memorization provides an integrated boarding environment where pupils master Quranic memorization (Hifz), Tajweed science, Islamic jurisprudence, and modern academic subjects.
         </p>

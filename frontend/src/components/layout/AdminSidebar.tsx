@@ -51,7 +51,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ user, onLogout, isOp
               className="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-gold-500/30"
             />
             <div>
-              <h2 className="text-white font-extrabold tracking-wide text-xs leading-tight">Centre for Quranic Memorization</h2>
+              <h2 className="text-white font-extrabold tracking-wide text-xs leading-tight">Imaam Naafi' Centre for Quranic Memorization</h2>
             </div>
           </div>
           <button

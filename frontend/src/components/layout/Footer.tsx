@@ -15,7 +15,7 @@ export const Footer: React.FC = () => {
               <span className="text-xl font-bold text-white tracking-wide">Centre</span>
             </div>
             <p className="text-sm text-slate-400 leading-relaxed">
-              Centre for Quranic Memorization — Nurturing academic brilliance and spiritual perfection through authentic Islamic education and complete Hifz memorization.
+              Imaam Naafi' Centre for Quranic Memorization — Nurturing academic brilliance and spiritual perfection through authentic Islamic education and complete Hifz memorization.
             </p>
             <div className="text-gold-400 font-arabic text-lg pt-2">
               "خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ"
@@ -50,7 +50,7 @@ export const Footer: React.FC = () => {
 
         {/* Bottom Bar */}
         <div className="border-t border-slate-800 pt-6 flex flex-col md:flex-row justify-between items-center text-xs text-slate-500">
-          <p>© 2026 Centre for Quranic Memorization. All rights reserved.</p>
+          <p>© 2026 Imaam Naafi' Centre for Quranic Memorization. All rights reserved.</p>
           <div className="mt-2 md:mt-0 flex flex-col md:flex-row items-center gap-1.5 md:gap-3">
             <p className="text-slate-400">Created by Infra Vision Solutions</p>
             <p className="text-slate-400 font-arabic">وَوَفَّقَكُمُ ٱللَّهُ لِمَا يُحِبُّ وَيَرْضَىٰ</p>

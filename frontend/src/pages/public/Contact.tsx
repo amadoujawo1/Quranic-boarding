@@ -16,7 +16,7 @@ export const Contact: React.FC = () => {
         <div className="max-w-2xl mx-auto space-y-6">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-gold-600 dark:text-gold-400">Get in Touch</span>
-            <h1 className="text-4xl font-bold text-slate-900 dark:text-white mt-3">Contact the Centre for Quranic Memorization</h1>
+            <h1 className="text-4xl font-bold text-slate-900 dark:text-white mt-3">Contact Imaam Naafi' Centre for Quranic Memorization</h1>
             <p className="text-slate-600 dark:text-slate-300 mt-3 text-sm sm:text-base leading-relaxed">
               Reach out for admissions guidance, program inquiries, or general questions about our boarding and Hifz curriculum.
             </p>

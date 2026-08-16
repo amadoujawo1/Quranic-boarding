@@ -61,11 +61,11 @@ export const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode, user, onL
           <Link to="/" className="flex items-center gap-3 group">
             <img
               src="/logo.png"
-              alt="Centre for Quranic Memorization"
+              alt="Imaam Naafi' Centre for Quranic Memorization"
               className="w-14 h-14 rounded-full object-cover shadow-lg ring-2 ring-gold-500/40 group-hover:ring-gold-400 transition-all"
             />
             <div>
-              <span className="text-xl font-extrabold tracking-wide text-white block">Centre for Quranic Memorization</span>
+              <span className="text-xl font-extrabold tracking-wide text-white block">Imaam Naafi' Centre for Quranic Memorization</span>
             </div>
           </Link>
 

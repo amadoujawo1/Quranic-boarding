@@ -118,7 +118,7 @@ export const AdminDashboard: React.FC = () => {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-500/20 text-gold-400 text-xs font-semibold">
             <ShieldCheck className="w-3.5 h-3.5" /> Executive Control Panel
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Centre for Quranic Memorization Management</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight">Imaam Naafi' Centre for Quranic Memorization Management</h1>
           <p className="text-xs text-slate-300">Live operational metrics for Hifz, Academics, and Finances.</p>
         </div>
         <div className="bg-emerald-900/80 border border-gold-500/40 px-6 py-4 rounded-2xl text-center">
