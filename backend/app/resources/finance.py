@@ -44,7 +44,7 @@ def normalize_invoice(invoice):
 def is_admin():
     claims = get_jwt()
     roles = claims.get('roles', [])
-    return 'Admin' in roles or 'Super Admin' in roles
+    return 'Admin' in roles or 'Super Admin' in roles or 'Super Administrator' in roles
 
 @finance_ns.route('/invoices')
 class InvoiceList(Resource):

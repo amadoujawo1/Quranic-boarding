@@ -49,7 +49,7 @@ const StatusBadge = ({ status }: { status: string }) => {
 export const FinancePage: React.FC = () => {
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const isAdmin = user?.roles?.includes('Admin') || user?.roles?.includes('Super Admin');
+  const isAdmin = user?.roles?.includes('Admin') || user?.roles?.includes('Super Admin') || user?.roles?.includes('Super Administrator');
 
   const [editInvoiceId, setEditInvoiceId] = useState<number | null>(null);
   const [editDonationId, setEditDonationId] = useState<number | null>(null);

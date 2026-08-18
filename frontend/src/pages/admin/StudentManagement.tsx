@@ -3,7 +3,7 @@ import { Users, Search, Plus, QrCode, Filter, Eye, CheckCircle2, ShieldAlert, Pe
 
 export const StudentManagement: React.FC = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const isAdmin = user?.roles?.includes('Admin') || user?.roles?.includes('Super Admin');
+  const isAdmin = user?.roles?.includes('Admin') || user?.roles?.includes('Super Admin') || user?.roles?.includes('Super Administrator');
 
   const [search, setSearch] = useState('');
   const [showQrModal, setShowQrModal] = useState<any>(null);
