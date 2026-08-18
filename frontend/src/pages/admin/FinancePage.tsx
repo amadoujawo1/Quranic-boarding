@@ -174,8 +174,11 @@ export const FinancePage: React.FC = () => {
         if (type === 'invoices') setInvoices(invoices.filter((i:any) => i.id !== id));
         if (type === 'donations') setDonations(donations.filter((d:any) => d.id !== id));
         if (type === 'expenses') setExpenses(expenses.filter((e:any) => e.id !== id));
-      } else alert('Failed to delete.');
-    } catch (e) { alert('Error deleting record.'); }
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.message || 'Failed to delete.');
+      }
+    } catch (e) { alert('Error deleting record. Please check your connection.'); }
   };
 
   const handleAddInvoice = async (e: React.FormEvent) => {

@@ -169,6 +169,8 @@ class InvoiceResource(Resource):
         if not is_admin():
             return {'message': 'Admin privileges required'}, 403
         invoice = FeeInvoice.query.get_or_404(id)
+        # Delete child payment records first to avoid FK constraint errors
+        FeePayment.query.filter_by(invoice_id=id).delete()
         db.session.delete(invoice)
         db.session.commit()
         return {'message': 'Invoice deleted successfully'}, 200
