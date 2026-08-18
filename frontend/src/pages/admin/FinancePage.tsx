@@ -70,7 +70,7 @@ export const FinancePage: React.FC = () => {
   const [showDonationModal, setShowDonationModal] = useState(false);
   const [showExpenseModal, setShowExpenseModal]   = useState(false);
 
-  const BLANK_INVOICE = { student_id: '', student_name: '', invoice_number: '', academic_term: 'Term 1', academic_year: '2026/2027', tuition_fee: 1200, due_date: '2026-09-30' };
+  const BLANK_INVOICE = { student_id: '', student_name: '', invoice_number: '', academic_term: 'Term 1', academic_year: '2026/2027', period_type: 'Term', period_value: 'Term 1', tuition_fee: 1200, due_date: '2026-09-30' };
   const [newInvoice, setNewInvoice] = useState<any>(BLANK_INVOICE);
   const [payAmount, setPayAmount]   = useState('');
   const [payMethod, setPayMethod]   = useState('Bank Transfer');
@@ -429,7 +429,7 @@ export const FinancePage: React.FC = () => {
                   <tr>
                     <th className="p-4">Invoice #</th><th className="p-4">Student</th>
                     <th className="p-4">Total</th><th className="p-4">Paid</th>
-                    <th className="p-4">Balance</th><th className="p-4">Due Date</th>
+                    <th className="p-4">Balance</th><th className="p-4">Period</th><th className="p-4">Due Date</th>
                     <th className="p-4">Status</th><th className="p-4 text-right">Action</th>
                   </tr>
                 </thead>
@@ -441,6 +441,9 @@ export const FinancePage: React.FC = () => {
                       <td className="p-4 text-slate-700 dark:text-slate-300">D{inv.total_amount.toLocaleString()}</td>
                       <td className="p-4 text-emerald-600 font-semibold">D{inv.amount_paid.toLocaleString()}</td>
                       <td className="p-4 text-rose-600 font-semibold">D{inv.balance_due.toLocaleString()}</td>
+                      <td className="p-4 text-slate-700 dark:text-slate-300 font-semibold">
+                        {inv.period_type === 'Month' ? inv.period_value : inv.period_value}
+                      </td>
                       <td className="p-4 text-slate-500">
                         <div>{inv.due_date}</div>
                         {inv.last_edited_by && <div className="text-[9px] text-slate-400 mt-0.5">Edited by {inv.last_edited_by}</div>}
@@ -589,6 +592,34 @@ export const FinancePage: React.FC = () => {
                 onChange={e => setNewInvoice({ ...newInvoice, invoice_number: e.target.value })}
                 placeholder="e.g. INV-2026-0001"
                 className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:border-gold-500" />
+            </div>
+
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Payment Type</label>
+                <select value={newInvoice.period_type} onChange={e => setNewInvoice({ ...newInvoice, period_type: e.target.value, period_value: e.target.value === 'Term' ? 'Term 1' : 'January' })}
+                  className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none">
+                  <option value="Term">Termly</option>
+                  <option value="Month">Monthly</option>
+                </select>
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Period</label>
+                <select value={newInvoice.period_value} onChange={e => setNewInvoice({ ...newInvoice, period_value: e.target.value })}
+                  className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none">
+                  {newInvoice.period_type === 'Term' ? (
+                    <>
+                      <option>Term 1</option>
+                      <option>Term 2</option>
+                      <option>Term 3</option>
+                    </>
+                  ) : (
+                    ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
+                      <option key={m}>{m}</option>
+                    ))
+                  )}
+                </select>
+              </div>
             </div>
 
             <div>

@@ -114,6 +114,8 @@ class InvoiceList(Resource):
             student_id=student_id,
             academic_term=data.get('academic_term', 'Term 1'),
             academic_year=data.get('academic_year', '2026/2027'),
+            period_type=data.get('period_type', 'Term'),
+            period_value=data.get('period_value', 'Term 1'),
             tuition_fee=tuition_fee,
             boarding_fee=0.0,
             feeding_fee=0.0,
@@ -140,6 +142,8 @@ class InvoiceResource(Resource):
         
         if 'due_date' in data and data['due_date']:
             invoice.due_date = datetime.strptime(data['due_date'], '%Y-%m-%d').date()
+        if 'period_type' in data: invoice.period_type = data['period_type']
+        if 'period_value' in data: invoice.period_value = data['period_value']
         if 'tuition_fee' in data: invoice.tuition_fee = float(data['tuition_fee'])
         if 'boarding_fee' in data: invoice.boarding_fee = 0.0
         if 'feeding_fee' in data: invoice.feeding_fee = 0.0

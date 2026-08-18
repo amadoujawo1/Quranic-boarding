@@ -9,6 +9,8 @@ class FeeInvoice(db.Model):
     student_id = db.Column(db.Integer, db.ForeignKey('students.id', ondelete='CASCADE'), nullable=False)
     academic_term = db.Column(db.String(50))
     academic_year = db.Column(db.String(20))
+    period_type = db.Column(db.String(20), default='Term') # Term, Month
+    period_value = db.Column(db.String(50), default='Term 1') # Term 1, January, etc.
 
     tuition_fee = db.Column(db.Float, default=0.0)
     boarding_fee = db.Column(db.Float, default=0.0)
@@ -36,6 +38,10 @@ class FeeInvoice(db.Model):
             'invoice_number': self.invoice_number,
             'student_id': self.student_id,
             'student_name': self.student.user.full_name if self.student and self.student.user else None,
+            'academic_term': self.academic_term,
+            'academic_year': self.academic_year,
+            'period_type': self.period_type,
+            'period_value': self.period_value,
             'tuition_fee': self.tuition_fee,
             'uniform_fee': self.uniform_fee,
             'transport_fee': self.transport_fee,
