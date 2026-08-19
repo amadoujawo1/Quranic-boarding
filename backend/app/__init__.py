@@ -16,6 +16,28 @@ mail = Mail()
 limiter = Limiter(key_func=get_remote_address)
 
 
+def _safe_add_columns(db):
+    """Safely add missing columns to existing tables using raw SQL.
+
+    This is a lightweight migration shim for SQLite/MySQL that handles schema
+    changes that db.create_all() cannot apply to existing tables.
+    Each ALTER TABLE is wrapped in a try/except so it's idempotent and safe
+    to run on every startup.
+    """
+    migrations = [
+        "ALTER TABLE fee_invoices ADD COLUMN period_type VARCHAR(20) DEFAULT 'Term'",
+        "ALTER TABLE fee_invoices ADD COLUMN period_value VARCHAR(50) DEFAULT 'Term 1'",
+    ]
+    with db.engine.connect() as conn:
+        for sql in migrations:
+            try:
+                conn.execute(db.text(sql))
+                conn.commit()
+            except Exception:
+                # Column already exists or other benign error — skip silently
+                pass
+
+
 def create_app():
     """Application factory for the QBSMS backend.
 
@@ -77,6 +99,11 @@ def create_app():
         from .models.user import Role, User, UserRole
 
         db.create_all()
+
+        # ── Schema migration shim ──────────────────────────────────────────────
+        # db.create_all() won't add new columns to existing tables.
+        # This block safely adds any missing columns after a model update.
+        _safe_add_columns(db)
 
         if not Role.query.first():
             admin_role = Role(name='Super Administrator', description='Full platform access')
