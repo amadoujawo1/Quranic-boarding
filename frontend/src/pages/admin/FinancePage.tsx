@@ -187,9 +187,17 @@ export const FinancePage: React.FC = () => {
   const [tab, setTab] = useState<'monthly_payments' | 'student_ledger' | 'collection_report' | 'donations' | 'expenses'>('monthly_payments');
 
   // State data initialized with demo defaults so it's always responsive
+  // Always start with DEFAULT_PAYMENTS — clear any stale empty-array from older versions
   const [studentPayments, setStudentPayments] = useState<StudentPayment[]>(() => {
-    const saved = localStorage.getItem('local_student_payments');
-    return saved ? JSON.parse(saved) : DEFAULT_PAYMENTS;
+    try {
+      const saved = localStorage.getItem('local_student_payments');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (_) {}
+    localStorage.removeItem('local_student_payments'); // wipe corrupt/empty cache
+    return DEFAULT_PAYMENTS;
   });
   const [paymentStats, setPaymentStats] = useState<StudentPaymentStatsData | null>(null);
   const [donations, setDonations] = useState<any[]>([
