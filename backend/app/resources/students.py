@@ -6,7 +6,13 @@ from flask_restx import Namespace, Resource
 from flask_jwt_extended import jwt_required
 from .. import db
 from ..models.student import Student, Parent, MedicalRecord, StudentDocument, Alumni
-from ..models.user import User, Role
+from ..models.user import User, Role, UserRole, ActivityLog
+from ..models.attendance import SchoolAttendance, HostelAttendance, PrayerAttendance, MealAttendance
+from ..models.quran import HifzProgress, TajweedEvaluation
+from ..models.health import ClinicVisit, Vaccination
+from ..models.finance import FeeInvoice, FeePayment
+from ..models.boarding import HostelAllocation, VisitorLog
+from ..models.academic import Grade
 
 students_ns = Namespace('students', description='Student Admission and Profile Management')
 
@@ -206,10 +212,51 @@ class StudentDetail(Resource):
     @jwt_required()
     def delete(self, id):
         student = Student.query.get_or_404(id)
+        sid = student.id
+
+        # ── Delete all FK-constrained child records in dependency order ──────
+        # Attendance records
+        SchoolAttendance.query.filter_by(student_id=sid).delete()
+        HostelAttendance.query.filter_by(student_id=sid).delete()
+        PrayerAttendance.query.filter_by(student_id=sid).delete()
+        MealAttendance.query.filter_by(student_id=sid).delete()
+
+        # Quran / Hifz records
+        HifzProgress.query.filter_by(student_id=sid).delete()
+        TajweedEvaluation.query.filter_by(student_id=sid).delete()
+
+        # Health records
+        ClinicVisit.query.filter_by(student_id=sid).delete()
+        Vaccination.query.filter_by(student_id=sid).delete()
+
+        # Finance — payments must go before invoices
+        invoice_ids = [i.id for i in FeeInvoice.query.filter_by(student_id=sid).all()]
+        if invoice_ids:
+            FeePayment.query.filter(FeePayment.invoice_id.in_(invoice_ids)).delete(synchronize_session=False)
+        FeeInvoice.query.filter_by(student_id=sid).delete()
+
+        # Boarding
+        HostelAllocation.query.filter_by(student_id=sid).delete()
+        VisitorLog.query.filter_by(student_id=sid).delete()
+
+        # Academic grades
+        Grade.query.filter_by(student_id=sid).delete()
+
+        # Student-level records
+        MedicalRecord.query.filter_by(student_id=sid).delete()
+        StudentDocument.query.filter_by(student_id=sid).delete()
+        Alumni.query.filter_by(student_id=sid).delete()
+
+        # ── Now delete the student row itself ────────────────────────────────
         user = student.user
         db.session.delete(student)
+        db.session.flush()  # release the student FK before deleting user
+
         if user:
+            UserRole.query.filter_by(user_id=user.id).delete()
+            ActivityLog.query.filter_by(user_id=user.id).delete()
             db.session.delete(user)
+
         db.session.commit()
         return {'message': 'Student deleted successfully'}, 200
 
