@@ -117,6 +117,25 @@ class Register(Resource):
 
         return user.to_dict(), 201
 
+@auth_ns.route('/users/<int:user_id>')
+class UserResource(Resource):
+    @jwt_required()
+    def delete(self, user_id):
+        identity = get_jwt_identity()
+        current_user = User.query.filter_by(username=identity).first()
+        if current_user and current_user.id == user_id:
+            return {'message': 'You cannot delete your own account'}, 400
+
+        user = User.query.get_or_404(user_id)
+
+        # Remove FK-constrained child records first
+        UserRole.query.filter_by(user_id=user.id).delete()
+        ActivityLog.query.filter_by(user_id=user.id).delete()
+
+        db.session.delete(user)
+        db.session.commit()
+        return {'message': 'User deleted successfully'}, 200
+
 @auth_ns.route('/users/<int:user_id>/roles')
 class UserRolesResource(Resource):
     @auth_ns.expect(role_update_model)

@@ -112,6 +112,25 @@ export const UserManagement: React.FC = () => {
     }
   };
 
+  const handleDeleteUser = async (user: any) => {
+    if (!window.confirm(`Delete user "${user.full_name}"? This action cannot be undone.`)) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/auth/users/${user.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        fetchUsers();
+      } else {
+        const err = await res.json();
+        alert(err.message || 'Failed to delete user.');
+      }
+    } catch (e) {
+      alert('Network error: Could not reach the server.');
+    }
+  };
+
   const handleUpdateRoles = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!showRoleModal) return;
@@ -212,10 +231,16 @@ export const UserManagement: React.FC = () => {
                   </span>
                 </td>
                 <td className="p-4 text-right">
-                  <button onClick={() => { setShowRoleModal(u); setSelectedRoles(u.roles); }}
-                    className="px-2.5 py-1.5 text-[10px] font-bold rounded-lg bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200 transition flex items-center gap-1 ml-auto">
-                    <ShieldCheck className="w-3.5 h-3.5 text-purple-500" /> Manage Roles
-                  </button>
+                  <div className="flex items-center justify-end gap-2">
+                    <button onClick={() => { setShowRoleModal(u); setSelectedRoles(u.roles); }}
+                      className="px-2.5 py-1.5 text-[10px] font-bold rounded-lg bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200 transition flex items-center gap-1">
+                      <ShieldCheck className="w-3.5 h-3.5 text-purple-500" /> Manage Roles
+                    </button>
+                    <button onClick={() => handleDeleteUser(u)}
+                      className="px-2.5 py-1.5 text-[10px] font-bold rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950 transition flex items-center gap-1">
+                      <Trash2 className="w-3.5 h-3.5" /> Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
