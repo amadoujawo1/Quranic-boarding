@@ -97,3 +97,60 @@ export interface AdminStats {
   };
   hifz_progress_chart: Array<{ month: string; juz_completed: number }>;
 }
+
+export interface StudentPayment {
+  id: number;
+  student_id: number;
+  student_id_number: string;
+  student_name: string;
+  class_level: string;
+  academic_year: string;
+  payment_month: string;
+  fee_type: string;
+  amount_due: number;
+  amount_paid: number;
+  balance: number;
+  payment_date: string;
+  payment_method: string;
+  receipt_number: string;
+  status: 'Paid' | 'Partial' | 'Unpaid';
+  remarks?: string;
+  recorded_by?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface MonthlyCollectionReport {
+  month: string;
+  total_due: number;
+  total_collected: number;
+  outstanding: number;
+  paid_count: number;
+  partial_count: number;
+  unpaid_count: number;
+  total_records: number;
+  collection_rate: number;
+}
+
+export interface StudentPaymentStatsData {
+  total_due: number;
+  total_collected: number;
+  outstanding_balance: number;
+  paid_count: number;
+  partial_count: number;
+  unpaid_count: number;
+  total_records: number;
+  monthly_reports: MonthlyCollectionReport[];
+}
+
+export interface StudentMonthlyOverviewData {
+  student_id: number;
+  student_id_number: string;
+  student_name: string;
+  parent_name?: string;
+  total_due: number;
+  total_paid: number;
+  total_balance: number;
+  records: StudentPayment[];
+}
+

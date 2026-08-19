@@ -123,5 +123,69 @@ class Expense(db.Model):
     last_edited_by = db.Column(db.String(150))
     last_edited_at = db.Column(db.DateTime)
 
+class StudentPayment(db.Model):
+    __tablename__ = 'student_payments'
+
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('students.id', ondelete='CASCADE'), nullable=False)
+    academic_year = db.Column(db.String(20), default='2026/2027')
+    payment_month = db.Column(db.String(30), nullable=False) # e.g. 'August 2026', 'September 2026'
+    class_level = db.Column(db.String(50), default='Hifz Level 2')
+    fee_type = db.Column(db.String(50), default='Boarding / Tuition / Meals')
+    amount_due = db.Column(db.Float, nullable=False, default=2500.0)
+    amount_paid = db.Column(db.Float, nullable=False, default=0.0)
+    balance = db.Column(db.Float, default=2500.0)
+    payment_date = db.Column(db.Date, default=datetime.utcnow)
+    payment_method = db.Column(db.String(50), default='Cash') # Cash, Bank Transfer, Mobile Money / Wave, QMoney, Afrimoney
+    receipt_number = db.Column(db.String(50), unique=True, nullable=False) # e.g. REC-000123
+    status = db.Column(db.String(20), default='Unpaid') # Paid, Partial, Unpaid
+    remarks = db.Column(db.Text)
+    recorded_by = db.Column(db.String(150))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    student = db.relationship('Student', backref=db.backref('student_payments', lazy='dynamic', cascade='all, delete-orphan'))
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.compute_status()
+
+    def compute_status(self):
+        due = float(self.amount_due or 0.0)
+        paid = float(self.amount_paid or 0.0)
+        if paid > due:
+            paid = due
+            self.amount_paid = paid
+        self.balance = max(0.0, due - paid)
+        if self.balance <= 0.0 and due > 0:
+            self.status = 'Paid'
+        elif paid > 0.0:
+            self.status = 'Partial'
+        else:
+            self.status = 'Unpaid'
+
+    def to_dict(self):
+        self.compute_status()
+        s = self.student
+        return {
+            'id': self.id,
+            'student_id': self.student_id,
+            'student_id_number': s.student_id_number if s else 'N/A',
+            'student_name': s.user.full_name if s and s.user else (s.student_id_number if s else 'Unknown Student'),
+            'class_level': self.class_level,
+            'academic_year': self.academic_year,
+            'payment_month': self.payment_month,
+            'fee_type': self.fee_type,
+            'amount_due': float(self.amount_due or 0.0),
+            'amount_paid': float(self.amount_paid or 0.0),
+            'balance': float(self.balance if self.balance is not None else (self.amount_due - self.amount_paid)),
+            'payment_date': self.payment_date.isoformat() if self.payment_date else None,
+            'payment_method': self.payment_method,
+            'receipt_number': self.receipt_number,
+            'status': self.status,
+            'remarks': self.remarks or '',
+            'recorded_by': self.recorded_by,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+

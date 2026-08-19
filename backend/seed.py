@@ -5,7 +5,7 @@ from app.models.student import Student, Parent, MedicalRecord, Alumni
 from app.models.academic import ClassGroup, Subject
 from app.models.boarding import Building, Dormitory, Room, Bed
 from app.models.quran import HifzProgress
-from app.models.finance import FeeInvoice, Donation
+from app.models.finance import FeeInvoice, Donation, StudentPayment
 
 app = create_app()
 
@@ -197,9 +197,154 @@ def seed_database():
                     )
                     db.session.add(alm)
 
+        # Seed Demo Student: Abdul Rahman Jallow (INCM-2026-001)
+        abdul = Student.query.filter_by(student_id_number='INCM-2026-001').first()
+        if not abdul:
+            abdul_user = User.query.filter_by(username='std_abdul_rahman').first()
+            if not abdul_user:
+                abdul_user = User(
+                    username='std_abdul_rahman',
+                    email='abdul.jallow@qbsms.edu',
+                    full_name='Abdul Rahman Jallow',
+                    phone='+2203011223'
+                )
+                abdul_user.set_password('StudentPass123!')
+                if 'Student' in roles_dict:
+                    abdul_user.roles.append(roles_dict['Student'])
+                db.session.add(abdul_user)
+                db.session.flush()
+
+            abdul_parent_user = User.query.filter_by(username='parent_ebrima').first()
+            if not abdul_parent_user:
+                abdul_parent_user = User(
+                    username='parent_ebrima',
+                    email='ebrima.jallow@qbsms.edu',
+                    full_name='Ebrima Jallow',
+                    phone='+2207788990'
+                )
+                abdul_parent_user.set_password('ParentPass123!')
+                if 'Parent' in roles_dict:
+                    abdul_parent_user.roles.append(roles_dict['Parent'])
+                db.session.add(abdul_parent_user)
+                db.session.flush()
+
+                abdul_parent = Parent(user_id=abdul_parent_user.id, relationship='Father', occupation='Accountant', address='Banjul / Brusubi')
+                db.session.add(abdul_parent)
+                db.session.flush()
+            else:
+                abdul_parent = Parent.query.filter_by(user_id=abdul_parent_user.id).first()
+
+            abdul = Student(
+                user_id=abdul_user.id,
+                student_id_number='INCM-2026-001',
+                date_of_birth=date(2013, 8, 14),
+                gender='Male',
+                blood_group='A+',
+                parent_id=abdul_parent.id if abdul_parent else None,
+                status='Active'
+            )
+            db.session.add(abdul)
+            db.session.flush()
+
+        # Seed Monthly Payments for Abdul Rahman Jallow (as specified in prompt)
+        if abdul and StudentPayment.query.filter_by(student_id=abdul.id).count() == 0:
+            payments_data = [
+                {
+                    'month': 'August 2026', 'fee_type': 'Boarding / Tuition / Meals',
+                    'due': 2500.0, 'paid': 2500.0, 'date': date(2026, 8, 19),
+                    'method': 'Cash', 'receipt': 'REC-000123', 'status': 'Paid', 'remarks': 'Fully paid for August semester commencement'
+                },
+                {
+                    'month': 'September 2026', 'fee_type': 'Boarding / Tuition / Meals',
+                    'due': 2500.0, 'paid': 2500.0, 'date': date(2026, 9, 5),
+                    'method': 'Bank Transfer', 'receipt': 'REC-000124', 'status': 'Paid', 'remarks': 'Transferred via Trust Bank'
+                },
+                {
+                    'month': 'October 2026', 'fee_type': 'Boarding / Tuition / Meals',
+                    'due': 2500.0, 'paid': 2000.0, 'date': date(2026, 10, 10),
+                    'method': 'Wave / Mobile Money', 'receipt': 'REC-000125', 'status': 'Partial', 'remarks': 'GMD 500 balance remaining'
+                },
+                {
+                    'month': 'November 2026', 'fee_type': 'Boarding / Tuition / Meals',
+                    'due': 2500.0, 'paid': 0.0, 'date': date(2026, 11, 1),
+                    'method': 'Cash', 'receipt': 'REC-000126', 'status': 'Unpaid', 'remarks': 'Pending monthly payment reminder sent to parent'
+                },
+                {
+                    'month': 'December 2026', 'fee_type': 'Boarding / Tuition / Meals',
+                    'due': 2500.0, 'paid': 2500.0, 'date': date(2026, 12, 15),
+                    'method': 'QMoney', 'receipt': 'REC-000127', 'status': 'Paid', 'remarks': 'End of term full payment'
+                }
+            ]
+
+            for p in payments_data:
+                sp = StudentPayment(
+                    student_id=abdul.id,
+                    academic_year='2026/2027',
+                    payment_month=p['month'],
+                    class_level='Hifz Level 2',
+                    fee_type=p['fee_type'],
+                    amount_due=p['due'],
+                    amount_paid=p['paid'],
+                    payment_date=p['date'],
+                    payment_method=p['method'],
+                    receipt_number=p['receipt'],
+                    status=p['status'],
+                    remarks=p['remarks'],
+                    recorded_by='Super Administrator'
+                )
+                sp.compute_status()
+                db.session.add(sp)
+
+        # Seed additional active student with payments: Fatimah Ceesay (INCM-2026-002)
+        fatimah = Student.query.filter_by(student_id_number='INCM-2026-002').first()
+        if not fatimah:
+            fatimah_user = User.query.filter_by(username='std_fatimah_ceesay').first()
+            if not fatimah_user:
+                fatimah_user = User(
+                    username='std_fatimah_ceesay',
+                    email='fatimah.ceesay@qbsms.edu',
+                    full_name='Fatimah Ceesay',
+                    phone='+2203344556'
+                )
+                fatimah_user.set_password('StudentPass123!')
+                if 'Student' in roles_dict:
+                    fatimah_user.roles.append(roles_dict['Student'])
+                db.session.add(fatimah_user)
+                db.session.flush()
+
+            fatimah = Student(
+                user_id=fatimah_user.id,
+                student_id_number='INCM-2026-002',
+                date_of_birth=date(2014, 3, 20),
+                gender='Female',
+                blood_group='B+',
+                status='Active'
+            )
+            db.session.add(fatimah)
+            db.session.flush()
+
+            if StudentPayment.query.filter_by(student_id=fatimah.id).count() == 0:
+                sp1 = StudentPayment(
+                    student_id=fatimah.id,
+                    academic_year='2026/2027',
+                    payment_month='August 2026',
+                    class_level='Tajweed Foundation',
+                    fee_type='Tuition & Meals',
+                    amount_due=2500.0,
+                    amount_paid=2500.0,
+                    payment_date=date(2026, 8, 18),
+                    payment_method='Wave / Mobile Money',
+                    receipt_number='REC-000128',
+                    remarks='Paid in full via Wave',
+                    recorded_by='Super Administrator'
+                )
+                sp1.compute_status()
+                db.session.add(sp1)
+
         db.session.commit()
-        print("Database successfully seeded with demo QBSMS data and 15 Hifz Huffaz Graduates!")
+        print("Database successfully seeded with demo QBSMS data, student payments, and 15 Hifz Huffaz Graduates!")
 
 if __name__ == '__main__':
     seed_database()
+
 

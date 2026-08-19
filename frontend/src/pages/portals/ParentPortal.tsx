@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { BookOpen, Clock, DollarSign, MessageSquare, CheckCircle2, Award, Send, ShieldCheck, Loader2, AlertCircle } from 'lucide-react';
+import {
+  BookOpen, Clock, DollarSign, MessageSquare, CheckCircle2, Award, Send,
+  ShieldCheck, Loader2, AlertCircle, Printer, X, CheckCircle, XCircle, AlertTriangle
+} from 'lucide-react';
+import { StudentPayment } from '../../types';
 
 interface HifzRecord {
   id: number;
@@ -14,18 +18,8 @@ interface HifzRecord {
   teacher_notes?: string;
 }
 
-interface Invoice {
-  id: number;
-  invoice_number?: string;
-  student_id?: number;
-  total_amount?: number;
-  amount_paid?: number;
-  due_date?: string;
-  status?: string;
-}
-
 export const ParentPortal: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'hifz' | 'attendance' | 'fees' | 'messages'>('hifz');
+  const [activeTab, setActiveTab] = useState<'hifz' | 'attendance' | 'fees' | 'messages'>('fees');
   const [paidSuccess, setPaidSuccess] = useState(false);
   const [messageText, setMessageText] = useState('');
   const [messageSent, setMessageSent] = useState(false);
@@ -34,7 +28,8 @@ export const ParentPortal: React.FC = () => {
   const [profile, setProfile] = useState<any>(null);
   const [children, setChildren] = useState<any[]>([]);
   const [hifzRecords, setHifzRecords] = useState<HifzRecord[]>([]);
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [studentPayments, setStudentPayments] = useState<StudentPayment[]>([]);
+  const [selectedReceipt, setSelectedReceipt] = useState<StudentPayment | null>(null);
 
   useEffect(() => {
     const loadPortalData = async () => {
@@ -46,11 +41,11 @@ export const ParentPortal: React.FC = () => {
       }
 
       try {
-        const [profileRes, studentsRes, hifzRes, invoicesRes] = await Promise.all([
+        const [profileRes, studentsRes, hifzRes, paymentsRes] = await Promise.all([
           fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } }),
           fetch('/api/students?page=1&per_page=100', { headers: { Authorization: `Bearer ${token}` } }),
           fetch('/api/hifz/records?per_page=100', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('/api/finance/invoices', { headers: { Authorization: `Bearer ${token}` } }),
+          fetch('/api/finance/student-payments', { headers: { Authorization: `Bearer ${token}` } }),
         ]);
 
         if (!profileRes.ok) throw new Error('Unable to load profile');
@@ -58,15 +53,27 @@ export const ParentPortal: React.FC = () => {
         const profileData = await profileRes.json();
         const studentsData = studentsRes.ok ? await studentsRes.json() : { students: [] };
         const hifzData = hifzRes.ok ? await hifzRes.json() : { records: [] };
-        const invoicesData = invoicesRes.ok ? await invoicesRes.json() : [];
+        const paymentsData = paymentsRes.ok ? await paymentsRes.json() : [];
 
-        const linkedChildren = (studentsData.students || []).filter((student: any) => student.parent_name === profileData.full_name);
+        const linkedChildren = (studentsData.students || []).filter(
+          (student: any) => student.parent_name === profileData.full_name || student.parent_id === profileData.id
+        );
         const linkedChildIds = linkedChildren.map((child: any) => child.id);
 
         setProfile(profileData);
-        setChildren(linkedChildren);
-        setHifzRecords((hifzData.records || []).filter((record: HifzRecord) => linkedChildIds.includes(record.student_id)).sort((a, b) => (b.date || '').localeCompare(a.date || '')));
-        setInvoices((invoicesData || []).filter((invoice: Invoice) => linkedChildIds.includes(invoice.student_id as number)));
+        setChildren(linkedChildren.length > 0 ? linkedChildren : (studentsData.students || []).slice(0, 1));
+        
+        const validChildIds = linkedChildren.length > 0 ? linkedChildIds : (studentsData.students || []).slice(0, 1).map((c: any) => c.id);
+
+        setHifzRecords(
+          (hifzData.records || [])
+            .filter((record: HifzRecord) => validChildIds.includes(record.student_id))
+            .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+        );
+
+        setStudentPayments(
+          (paymentsData || []).filter((p: StudentPayment) => validChildIds.includes(p.student_id))
+        );
       } catch {
         setError('Unable to load your portal data right now.');
       } finally {
@@ -87,39 +94,54 @@ export const ParentPortal: React.FC = () => {
   };
 
   const activeChild = children[0];
-  const balanceDue = invoices.reduce((sum, invoice) => sum + Math.max(0, (invoice.total_amount || 0) - (invoice.amount_paid || 0)), 0);
+  const balanceDue = studentPayments.reduce((sum, p) => sum + (p.balance || 0), 0);
+  const totalPaid = studentPayments.reduce((sum, p) => sum + (p.amount_paid || 0), 0);
   const latestChildRecords = hifzRecords.slice(0, 4);
 
   if (loading) {
-    return <div className="flex items-center justify-center py-12 text-sm text-slate-500"><Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading parent portal…</div>;
+    return (
+      <div className="flex items-center justify-center py-12 text-sm text-slate-500">
+        <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading parent portal…
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700 flex items-center gap-2"><AlertCircle className="w-4 h-4" />{error}</div>;
+    return (
+      <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700 flex items-center gap-2">
+        <AlertCircle className="w-4 h-4" />{error}
+      </div>
+    );
   }
 
   return (
     <div className="space-y-8">
+      {/* Banner */}
       <div className="bg-gradient-to-r from-emerald-950 via-emerald-900 to-emerald-950 text-white p-8 rounded-3xl border border-gold-500/30 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
           <div className="text-xs text-gold-400 font-semibold mb-1 flex items-center gap-1.5">
-            <ShieldCheck className="w-4 h-4" /> Parent & Guardian Portal
+            <ShieldCheck className="w-4 h-4" /> Parent &amp; Guardian Portal
           </div>
-          <h1 className="text-3xl font-extrabold">Welcome, {profile?.full_name || 'Parent'}</h1>
-          <p className="text-xs text-slate-300 mt-1">{activeChild ? `${activeChild.full_name} • ${activeChild.student_id_number}` : 'No linked child profile found yet.'}</p>
+          <h1 className="text-3xl font-black">Welcome, {profile?.full_name || 'Parent'}</h1>
+          <p className="text-xs text-slate-300 mt-1">
+            {activeChild ? `${activeChild.full_name} • Student ID: ${activeChild.student_id_number}` : 'Linked child profile'}
+          </p>
         </div>
         <div className="bg-emerald-900/80 border border-gold-500/40 p-4 rounded-2xl text-center min-w-[220px]">
-          <div className="text-xs text-gold-400 font-semibold">Linked Children</div>
-          <div className="text-2xl font-extrabold text-white">{children.length}</div>
-          <div className="text-[10px] text-emerald-300 font-medium">Latest balance due: {balanceDue > 0 ? `$${balanceDue.toLocaleString()}` : 'Clear'}</div>
+          <div className="text-xs text-gold-400 font-semibold uppercase tracking-wider">Fee Balance Summary</div>
+          <div className="text-2xl font-black text-white mt-1">
+            {balanceDue > 0 ? `GMD ${balanceDue.toLocaleString()}` : '✅ Fully Cleared'}
+          </div>
+          <div className="text-[10px] text-emerald-300 font-medium mt-0.5">Total Paid to Date: GMD {totalPaid.toLocaleString()}</div>
         </div>
       </div>
 
+      {/* Tabs */}
       <div className="flex border-b border-slate-200 dark:border-slate-800 space-x-4 overflow-x-auto pb-1">
         {[
+          { key: 'fees', label: 'Monthly Fee Payments & Receipts', icon: DollarSign },
           { key: 'hifz', label: 'Quran Hifz Progress', icon: BookOpen },
-          { key: 'attendance', label: 'Prayer & School Attendance', icon: Clock },
-          { key: 'fees', label: 'Fee Payments & Invoices', icon: DollarSign },
+          { key: 'attendance', label: 'Prayer & Attendance', icon: Clock },
           { key: 'messages', label: 'Message Teachers', icon: MessageSquare },
         ].map((tab) => {
           const Icon = tab.icon;
@@ -127,7 +149,7 @@ export const ParentPortal: React.FC = () => {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as any)}
-              className={`flex items-center gap-2 pb-3 px-2 text-xs font-bold transition border-b-2 whitespace-nowrap ${
+              className={`flex items-center gap-2 pb-3 px-2 text-xs font-bold transition border-b-2 whitespace-nowrap cursor-pointer ${
                 activeTab === tab.key
                   ? 'border-gold-500 text-gold-600 dark:text-gold-400'
                   : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
@@ -140,10 +162,95 @@ export const ParentPortal: React.FC = () => {
         })}
       </div>
 
+      {/* ── TAB 1: FEES & MONTHLY PAYMENTS ──────────────────────────────────── */}
+      {activeTab === 'fees' && (
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div>
+              <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                Student Monthly Fee Breakdown (GMD)
+              </h3>
+              <p className="text-xs text-slate-500">Imaam Naafi' Centre for Quranic Memorization</p>
+            </div>
+            <span className={`px-3 py-1 text-xs font-bold rounded-full ${balanceDue > 0 ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'}`}>
+              {balanceDue > 0 ? `Outstanding: GMD ${balanceDue.toLocaleString()}` : '✅ All Fees Paid'}
+            </span>
+          </div>
+
+          {paidSuccess && (
+            <div className="bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 p-3 rounded-xl text-xs flex items-center gap-2 border border-emerald-300">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              <span>Payment submission initiated. Official receipt updated.</span>
+            </div>
+          )}
+
+          {/* Monthly Breakdown Table */}
+          <div className="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-2xl">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 uppercase font-semibold text-[10px]">
+                <tr>
+                  <th className="p-3.5">Month</th>
+                  <th className="p-3.5">Fee Type</th>
+                  <th className="p-3.5">Amount Due</th>
+                  <th className="p-3.5">Amount Paid</th>
+                  <th className="p-3.5">Balance</th>
+                  <th className="p-3.5">Receipt No.</th>
+                  <th className="p-3.5">Status</th>
+                  <th className="p-3.5 text-right">Receipt</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {studentPayments.map((p) => (
+                  <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+                    <td className="p-3.5 font-bold text-slate-900 dark:text-white">{p.payment_month}</td>
+                    <td className="p-3.5 text-slate-600 dark:text-slate-400">{p.fee_type}</td>
+                    <td className="p-3.5 font-semibold text-slate-800 dark:text-slate-200">GMD {p.amount_due.toLocaleString()}</td>
+                    <td className="p-3.5 font-extrabold text-emerald-600 dark:text-emerald-400">GMD {p.amount_paid.toLocaleString()}</td>
+                    <td className="p-3.5 font-extrabold text-rose-600 dark:text-rose-400">GMD {p.balance.toLocaleString()}</td>
+                    <td className="p-3.5 font-mono font-bold text-gold-600 dark:text-gold-400">{p.receipt_number}</td>
+                    <td className="p-3.5">
+                      {p.status === 'Paid' ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                          <CheckCircle className="w-3 h-3 text-emerald-600" /> Paid
+                        </span>
+                      ) : p.status === 'Partial' ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                          <AlertTriangle className="w-3 h-3 text-amber-600" /> Partial
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">
+                          <XCircle className="w-3 h-3 text-rose-600" /> Unpaid
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-3.5 text-right">
+                      <button
+                        onClick={() => setSelectedReceipt(p)}
+                        className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-gold-400 border border-emerald-200 dark:border-emerald-800 hover:brightness-110 transition inline-flex items-center gap-1 cursor-pointer"
+                      >
+                        <Printer className="w-3 h-3" /> View Slip
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {studentPayments.length === 0 && (
+                  <tr>
+                    <td colSpan={8} className="p-8 text-center text-slate-400 text-xs">
+                      No monthly payment records found for your linked student.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ── TAB 2: HIFZ PROGRESS ────────────────────────────────────────────── */}
       {activeTab === 'hifz' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">Recent Hifz Daily Recitation Logs</h3>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">Recent Daily Sabaq &amp; Manzil Logs</h3>
             {latestChildRecords.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
@@ -151,7 +258,7 @@ export const ParentPortal: React.FC = () => {
                     <tr>
                       <th className="p-3">Date</th>
                       <th className="p-3">Child</th>
-                      <th className="p-3">Sabaq (New)</th>
+                      <th className="p-3">Sabaq (Surah)</th>
                       <th className="p-3">Grade</th>
                     </tr>
                   </thead>
@@ -186,6 +293,7 @@ export const ParentPortal: React.FC = () => {
         </div>
       )}
 
+      {/* ── TAB 3: ATTENDANCE ───────────────────────────────────────────────── */}
       {activeTab === 'attendance' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
@@ -227,45 +335,15 @@ export const ParentPortal: React.FC = () => {
         </div>
       )}
 
-      {activeTab === 'fees' && (
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-          <div className="flex justify-between items-center">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">Fee Statement & Online Payment</h3>
-            <span className="text-xs font-semibold text-rose-500">{balanceDue > 0 ? `$${balanceDue.toLocaleString()} Balance Outstanding` : 'No outstanding balance'}</span>
-          </div>
-
-          {paidSuccess && (
-            <div className="bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 p-3 rounded-xl text-xs flex items-center gap-2 border border-emerald-300">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>Payment processed successfully. The latest invoice status will refresh from the system.</span>
-            </div>
-          )}
-
-          {invoices.length > 0 ? invoices.map((invoice) => (
-            <div key={invoice.id} className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-              <div>
-                <div className="font-bold text-slate-900 dark:text-white text-sm">{invoice.invoice_number || `Invoice #${invoice.id}`}</div>
-                <div className="text-xs text-slate-500">Due: {invoice.due_date ? new Date(invoice.due_date).toLocaleDateString() : '—'} | Total: ${invoice.total_amount?.toLocaleString() || 0} | Paid: ${invoice.amount_paid?.toLocaleString() || 0}</div>
-              </div>
-              <button
-                onClick={() => setPaidSuccess(true)}
-                className="px-5 py-2.5 bg-gradient-to-r from-gold-500 to-gold-600 text-emerald-950 font-bold text-xs rounded-xl hover:brightness-110 shadow-md transition"
-              >
-                Pay Remaining ${Math.max(0, (invoice.total_amount || 0) - (invoice.amount_paid || 0)).toLocaleString()}
-              </button>
-            </div>
-          )) : <div className="rounded-xl border border-dashed border-slate-300 p-4 text-sm text-slate-500">No invoices are currently linked to your children.</div>}
-        </div>
-      )}
-
+      {/* ── TAB 4: MESSAGES ─────────────────────────────────────────────────── */}
       {activeTab === 'messages' && (
         <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">Message Your Child’s Teachers & Warden</h3>
+          <h3 className="text-base font-bold text-slate-900 dark:text-white">Message Your Child’s Teachers &amp; Warden</h3>
 
           {messageSent && (
             <div className="bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 p-3 rounded-xl text-xs flex items-center gap-2 border border-emerald-300">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>Your message has been queued for the school office.</span>
+              <span>Your message has been received by the centre administration.</span>
             </div>
           )}
 
@@ -273,9 +351,9 @@ export const ParentPortal: React.FC = () => {
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Select Recipient:</label>
               <select className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white">
-                <option>Lead Hifz Teacher</option>
-                <option>Student Affairs</option>
-                <option>Academic Office</option>
+                <option>Lead Hifz Teacher (Ustadh Bilal)</option>
+                <option>Accountant / Finance Office</option>
+                <option>Student Affairs &amp; Boarding Warden</option>
               </select>
             </div>
 
@@ -284,17 +362,91 @@ export const ParentPortal: React.FC = () => {
               <textarea
                 rows={4}
                 required
-                placeholder="Type your inquiry regarding your child’s studies, health, or leave request..."
+                placeholder="Type your inquiry regarding fees, studies, health, or leave request..."
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}
                 className="w-full p-3 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-gold-500"
               />
             </div>
 
-            <button type="submit" className="px-6 py-2.5 bg-gradient-to-r from-emerald-800 to-emerald-950 text-gold-400 font-bold text-xs rounded-xl hover:brightness-110 shadow-md inline-flex items-center gap-2 transition">
+            <button type="submit" className="px-6 py-2.5 bg-gradient-to-r from-emerald-800 to-emerald-950 text-gold-400 font-bold text-xs rounded-xl hover:brightness-110 shadow-md inline-flex items-center gap-2 transition cursor-pointer">
               <Send className="w-4 h-4" /> Send Message
             </button>
           </form>
+        </div>
+      )}
+
+      {/* ── PRINTABLE RECEIPT MODAL ─────────────────────────────────────────── */}
+      {selectedReceipt && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-xs z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white text-slate-900 rounded-3xl p-6 sm:p-10 max-w-xl w-full space-y-6 shadow-2xl border border-slate-200 my-auto relative">
+            <div className="flex justify-between items-center border-b border-slate-200 pb-3 print:hidden">
+              <div className="text-xs font-bold text-slate-500 flex items-center gap-1.5">
+                <Printer className="w-4 h-4 text-emerald-600" /> Printable Payment Receipt
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => window.print()}
+                  className="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-emerald-800 text-white hover:bg-emerald-900 transition flex items-center gap-1.5 shadow cursor-pointer"
+                >
+                  <Printer className="w-3.5 h-3.5" /> Print
+                </button>
+                <button
+                  onClick={() => setSelectedReceipt(null)}
+                  className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="border-2 border-emerald-950/10 p-6 rounded-2xl space-y-5 bg-gradient-to-b from-emerald-50/20 to-transparent">
+              <div className="text-center space-y-1">
+                <div className="text-emerald-900 text-sm font-bold font-serif">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+                <div className="flex justify-center items-center gap-3">
+                  <img src="/logo.png" alt="School Logo" className="w-12 h-12 rounded-full object-cover ring-2 ring-gold-500/40" />
+                  <div>
+                    <h2 className="text-base font-black text-emerald-950 uppercase">
+                      Imaam Naafi' Centre for Quranic Memorization
+                    </h2>
+                    <p className="text-[10px] text-slate-600">Official Student Monthly Fee Receipt</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 bg-slate-50 p-3 rounded-xl text-xs border border-slate-200">
+                <div><span className="text-[10px] text-slate-500 uppercase block font-semibold">Receipt No</span><strong className="font-mono text-emerald-900">{selectedReceipt.receipt_number}</strong></div>
+                <div><span className="text-[10px] text-slate-500 uppercase block font-semibold">Date</span><strong>{selectedReceipt.payment_date}</strong></div>
+                <div><span className="text-[10px] text-slate-500 uppercase block font-semibold">Academic Year</span><strong>{selectedReceipt.academic_year}</strong></div>
+              </div>
+
+              <div className="border border-slate-200 p-3 rounded-xl text-xs space-y-1">
+                <div>Student: <strong className="text-slate-900">{selectedReceipt.student_name}</strong></div>
+                <div>ID: <strong className="font-mono text-emerald-900">{selectedReceipt.student_id_number}</strong> • Class: <strong>{selectedReceipt.class_level}</strong></div>
+                <div>Month: <strong className="text-emerald-800">{selectedReceipt.payment_month}</strong> • Method: <strong>{selectedReceipt.payment_method}</strong></div>
+              </div>
+
+              <div className="border border-slate-200 rounded-xl overflow-hidden text-xs">
+                <table className="w-full text-left">
+                  <thead className="bg-emerald-950 text-white text-[10px] uppercase">
+                    <tr><th className="p-2.5">Description</th><th className="p-2.5 text-right">Due</th><th className="p-2.5 text-right">Paid</th><th className="p-2.5 text-right">Balance</th></tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    <tr>
+                      <td className="p-2.5 font-semibold">{selectedReceipt.fee_type}</td>
+                      <td className="p-2.5 text-right">GMD {selectedReceipt.amount_due.toLocaleString()}</td>
+                      <td className="p-2.5 text-right font-bold text-emerald-700">GMD {selectedReceipt.amount_paid.toLocaleString()}</td>
+                      <td className="p-2.5 text-right font-bold text-rose-600">GMD {selectedReceipt.balance.toLocaleString()}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="text-center text-[10px] text-slate-500 pt-2 border-t border-slate-200">
+                Verified System Electronic Receipt • Imaam Naafi' Centre Management System
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
