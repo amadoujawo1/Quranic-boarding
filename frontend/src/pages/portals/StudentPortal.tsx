@@ -20,34 +20,40 @@ export const StudentPortal: React.FC = () => {
       }
 
       try {
-        const [profileRes, studentsRes, hifzRes, invoicesRes] = await Promise.all([
-          fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('/api/students?page=1&per_page=100', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('/api/hifz/records?per_page=20', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('/api/finance/invoices', { headers: { Authorization: `Bearer ${token}` } }),
-        ]);
-
+        // Step 1: load profile first — this is the critical call
+        const profileRes = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
         if (!profileRes.ok) throw new Error('Unable to load profile');
         const profileData = await profileRes.json();
-        const studentsData = studentsRes.ok ? await studentsRes.json() : { students: [] };
-        const hifzData = hifzRes.ok ? await hifzRes.json() : { records: [] };
-        const invoicesData = invoicesRes.ok ? await invoicesRes.json() : [];
-
-        const matchingStudent = (studentsData.students || []).find((item: any) => item.user_id === profileData.id);
-        if (!matchingStudent) {
-          setStudent(null);
-        } else {
-          const summaryRes = await fetch(`/api/hifz/student/${matchingStudent.id}/summary`, { headers: { Authorization: `Bearer ${token}` } });
-          const summaryData = summaryRes.ok ? await summaryRes.json() : null;
-          setStudent(matchingStudent);
-          setSummary(summaryData);
-        }
-
         setProfile(profileData);
-        setRecords((hifzData.records || []).filter((record: any) => record.student_id === (matchingStudent?.id || -1)).slice(0, 5));
-        setInvoices((invoicesData || []).filter((invoice: any) => invoice.student_id === (matchingStudent?.id || -1)));
-      } catch {
-        setError('Unable to load your student portal data right now.');
+
+        // Step 2: find the student record linked to this user
+        const studentsRes = await fetch('/api/students?page=1&per_page=200', { headers: { Authorization: `Bearer ${token}` } });
+        const studentsData = studentsRes.ok ? await studentsRes.json() : { students: [] };
+        const matchingStudent = (studentsData.students || []).find((s: any) => s.user_id === profileData.id) || null;
+        setStudent(matchingStudent);
+
+        if (matchingStudent) {
+          // Step 3: load student-specific data in parallel — failures are isolated
+          const [summaryRes, hifzRes, invoicesRes] = await Promise.allSettled([
+            fetch(`/api/hifz/student/${matchingStudent.id}/summary`, { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(`/api/hifz/records?student_id=${matchingStudent.id}&per_page=5`, { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(`/api/finance/invoices`, { headers: { Authorization: `Bearer ${token}` } }),
+          ]);
+
+          if (summaryRes.status === 'fulfilled' && summaryRes.value.ok) {
+            setSummary(await summaryRes.value.json());
+          }
+          if (hifzRes.status === 'fulfilled' && hifzRes.value.ok) {
+            const hifzData = await hifzRes.value.json();
+            setRecords(hifzData.records || []);
+          }
+          if (invoicesRes.status === 'fulfilled' && invoicesRes.value.ok) {
+            const allInvoices = await invoicesRes.value.json();
+            setInvoices((allInvoices || []).filter((inv: any) => inv.student_id === matchingStudent.id));
+          }
+        }
+      } catch (err: any) {
+        setError('Unable to load your portal data right now. Please try refreshing the page.');
       } finally {
         setLoading(false);
       }
