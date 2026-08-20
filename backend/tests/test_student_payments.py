@@ -158,3 +158,126 @@ def test_batch_generate_dues(client, admin_token):
     assert res.status_code == 201
     data = res.get_json()
     assert data['created_count'] >= 1
+
+
+def test_multi_month_payment_full(client, admin_token):
+    headers = {'Authorization': f'Bearer {admin_token}'}
+
+    res = client.post('/api/finance/student-payments/multi-month', headers=headers, json={
+        'student_id_number': 'INCM-2026-001',
+        'months': ['August 2026', 'September 2026', 'October 2026'],
+        'academic_year': '2026/2027',
+        'fee_type': 'Boarding / Tuition / Meals',
+        'fee_per_month': 2500,
+        'total_paid': 7500,
+        'payment_method': 'Bank Transfer',
+        'payment_date': '2026-08-19',
+        'remarks': 'Quarterly payment in advance'
+    })
+    assert res.status_code == 201
+    data = res.get_json()
+    assert data['months_covered'] == ['August 2026', 'September 2026', 'October 2026']
+    assert data['total_paid_applied'] == 7500.0
+    assert data['remaining_unallocated'] == 0.0
+    assert len(data['records']) == 3
+    for rec in data['records']:
+        assert rec['amount_due'] == 2500.0
+        assert rec['amount_paid'] == 2500.0
+        assert rec['balance'] == 0.0
+        assert rec['status'] == 'Paid'
+    assert 'M01' in data['records'][0]['receipt_number']
+    assert 'M02' in data['records'][1]['receipt_number']
+    assert 'M03' in data['records'][2]['receipt_number']
+
+
+def test_multi_month_payment_partial(client, admin_token):
+    headers = {'Authorization': f'Bearer {admin_token}'}
+
+    res = client.post('/api/finance/student-payments/multi-month', headers=headers, json={
+        'student_id_number': 'INCM-2026-001',
+        'months': ['August 2026', 'September 2026'],
+        'fee_per_month': 2500,
+        'total_paid': 4000,
+        'payment_method': 'Cash'
+    })
+    assert res.status_code == 201
+    data = res.get_json()
+    assert len(data['records']) == 2
+    assert data['records'][0]['payment_month'] == 'August 2026'
+    assert data['records'][0]['amount_paid'] == 2500.0
+    assert data['records'][0]['status'] == 'Paid'
+    assert data['records'][1]['payment_month'] == 'September 2026'
+    assert data['records'][1]['amount_paid'] == 1500.0
+    assert data['records'][1]['status'] == 'Partial'
+    assert data['records'][1]['balance'] == 1000.0
+
+
+def test_multi_month_payment_with_existing(client, admin_token):
+    headers = {'Authorization': f'Bearer {admin_token}'}
+
+    client.post('/api/finance/student-payments', headers=headers, json={
+        'student_id_number': 'INCM-2026-001',
+        'payment_month': 'August 2026',
+        'amount_due': 2500,
+        'amount_paid': 1000,
+        'payment_method': 'Cash',
+        'receipt_number': 'REC-EXISTING-001'
+    })
+
+    res = client.post('/api/finance/student-payments/multi-month', headers=headers, json={
+        'student_id_number': 'INCM-2026-001',
+        'months': ['August 2026', 'September 2026'],
+        'fee_per_month': 2500,
+        'total_paid': 4000,
+        'payment_method': 'Wave / Mobile Money'
+    })
+    assert res.status_code == 201
+    data = res.get_json()
+    aug_rec = data['records'][0]
+    assert aug_rec['payment_month'] == 'August 2026'
+    assert aug_rec['amount_paid'] == 2500.0
+    assert aug_rec['status'] == 'Paid'
+    sep_rec = data['records'][1]
+    assert sep_rec['payment_month'] == 'September 2026'
+    assert sep_rec['amount_paid'] == 2500.0
+    assert sep_rec['status'] == 'Paid'
+    assert data['remaining_unallocated'] == 0.0
+
+
+def test_multi_month_payment_overpayment(client, admin_token):
+    headers = {'Authorization': f'Bearer {admin_token}'}
+
+    res = client.post('/api/finance/student-payments/multi-month', headers=headers, json={
+        'student_id_number': 'INCM-2026-001',
+        'months': ['August 2026', 'September 2026'],
+        'fee_per_month': 2500,
+        'total_paid': 6000,
+        'payment_method': 'QMoney'
+    })
+    assert res.status_code == 201
+    data = res.get_json()
+    assert data['total_paid_applied'] == 5000.0
+    assert data['remaining_unallocated'] == 1000.0
+    for rec in data['records']:
+        assert rec['status'] == 'Paid'
+        assert rec['balance'] == 0.0
+
+
+def test_multi_month_payment_validation(client, admin_token):
+    headers = {'Authorization': f'Bearer {admin_token}'}
+
+    res_no_months = client.post('/api/finance/student-payments/multi-month', headers=headers, json={
+        'student_id_number': 'INCM-2026-001',
+        'months': [],
+        'fee_per_month': 2500,
+        'total_paid': 5000
+    })
+    assert res_no_months.status_code == 400
+
+    res_no_student = client.post('/api/finance/student-payments/multi-month', headers=headers, json={
+        'student_id_number': 'INVALID-999',
+        'months': ['August 2026'],
+        'fee_per_month': 2500,
+        'total_paid': 2500
+    })
+    assert res_no_student.status_code == 404

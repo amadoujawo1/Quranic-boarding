@@ -227,6 +227,21 @@ export const FinancePage: React.FC = () => {
   const [showReceiptModal, setShowReceiptModal] = useState<StudentPayment | null>(null);
   const [showDonationModal, setShowDonationModal] = useState(false);
   const [showExpenseModal, setShowExpenseModal] = useState(false);
+  const [showMultiMonthModal, setShowMultiMonthModal] = useState(false);
+
+  // Multi-month payment form state
+  const [multiStudentId, setMultiStudentId] = useState<number>(1);
+  const [multiSelectedMonths, setMultiSelectedMonths] = useState<string[]>([]);
+  const [multiFeePerMonth, setMultiFeePerMonth] = useState<number>(2500);
+  const [multiTotalPaid, setMultiTotalPaid] = useState<string>('');
+  const [multiMethod, setMultiMethod] = useState('Cash');
+  const [multiPaymentDate, setMultiPaymentDate] = useState(new Date().toISOString().split('T')[0]);
+  const [multiFeeType, setMultiFeeType] = useState('Boarding / Tuition / Meals');
+  const [multiAcademicYear, setMultiAcademicYear] = useState('2026/2027');
+  const [multiRemarks, setMultiRemarks] = useState('');
+  const [multiStudentSearch, setMultiStudentSearch] = useState('');
+  const [multiReceiptGroup, setMultiReceiptGroup] = useState('');
+  const [multiMonthSuccess, setMultiMonthSuccess] = useState<StudentPayment[]>([]);
 
   // Edit states
   const [editPaymentId, setEditPaymentId] = useState<number | null>(null);
@@ -530,6 +545,150 @@ export const FinancePage: React.FC = () => {
     }
   };
 
+  // ── Multi-Month Payment Handler ──────────────────────────────────────────
+  const handleMultiMonthPayment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (multiSelectedMonths.length === 0) {
+      alert('Please select at least one payment month.');
+      return;
+    }
+    const totalPaid = parseFloat(multiTotalPaid);
+    if (isNaN(totalPaid) || totalPaid <= 0) {
+      alert('Please enter a valid total amount paid.');
+      return;
+    }
+
+    const selectedStudent = students.find(s => s.id === multiStudentId) || students[0];
+    const sortedMonths = [...multiSelectedMonths].sort((a, b) => {
+      const monthOrder = availableMonths.filter(m => m !== 'All');
+      return monthOrder.indexOf(a) - monthOrder.indexOf(b);
+    });
+
+    const token = localStorage.getItem('token');
+    const payload = {
+      student_id: multiStudentId,
+      student_name: selectedStudent?.full_name,
+      student_id_number: selectedStudent?.student_id_number,
+      months: sortedMonths,
+      academic_year: multiAcademicYear,
+      fee_type: multiFeeType,
+      class_level: selectedStudent?.class_level || multiFeeType,
+      fee_per_month: multiFeePerMonth,
+      total_paid: totalPaid,
+      payment_method: multiMethod,
+      payment_date: multiPaymentDate,
+      receipt_group: multiReceiptGroup,
+      remarks: multiRemarks
+    };
+
+    let backendRecords: StudentPayment[] = [];
+    let backendSuccess = false;
+
+    if (token) {
+      try {
+        const res = await fetch('/api/finance/student-payments/multi-month', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          const data = await res.json();
+          backendRecords = data.records || [];
+          backendSuccess = true;
+          if (data.remaining_unallocated > 0) {
+            alert(`Note: GMD ${data.remaining_unallocated.toLocaleString()} was not allocated (paid more than total dues for selected months).`);
+          }
+        }
+      } catch (err) {
+        console.warn('Backend multi-month sync failed, falling back to local logic:', err);
+      }
+    }
+
+    if (!backendSuccess) {
+      let remaining = totalPaid;
+      const baseReceiptGroup = multiReceiptGroup || `REC-BULK-${new Date().getFullYear()}-${String(studentPayments.length + 1).padStart(3, '0')}`;
+      const newRecords: StudentPayment[] = [];
+
+      sortedMonths.forEach((month, idx) => {
+        const due = multiFeePerMonth;
+        const existing = studentPayments.find(
+          p => (p.student_id === multiStudentId || p.student_name === selectedStudent?.full_name) && p.payment_month === month
+        );
+
+        const alreadyPaid = existing ? (existing.amount_paid || 0) : 0;
+        const monthDue = existing ? (existing.amount_due || due) : due;
+        const monthBalance = Math.max(0, monthDue - alreadyPaid);
+
+        const addPaid = Math.min(remaining, monthBalance);
+        remaining = Math.max(0, remaining - addPaid);
+
+        const newPaid = alreadyPaid + addPaid;
+        const newBalance = Math.max(0, monthDue - newPaid);
+        const newStatus: 'Paid' | 'Partial' | 'Unpaid' = newBalance <= 0 ? 'Paid' : newPaid > 0 ? 'Partial' : 'Unpaid';
+
+        const rec: StudentPayment = {
+          id: existing ? existing.id : Date.now() + idx,
+          student_id: selectedStudent?.id || multiStudentId,
+          student_id_number: selectedStudent?.student_id_number || 'INCM-2026-001',
+          student_name: selectedStudent?.full_name || 'Abdul Rahman Jallow',
+          class_level: selectedStudent?.class_level || 'Hifz Level 2',
+          academic_year: multiAcademicYear,
+          payment_month: month,
+          fee_type: multiFeeType,
+          amount_due: monthDue,
+          amount_paid: newPaid,
+          balance: newBalance,
+          payment_date: multiPaymentDate,
+          payment_method: multiMethod,
+          receipt_number: `${baseReceiptGroup}-M${String(idx + 1).padStart(2, '0')}`,
+          status: newStatus,
+          remarks: multiRemarks
+            ? `Multi-month payment (${sortedMonths.length} months). ${multiRemarks}`
+            : `Multi-month payment covering ${sortedMonths.join(', ')}`,
+          recorded_by: user?.full_name || 'Super Administrator'
+        };
+        newRecords.push(rec);
+      });
+
+      const updatedPayments = [...studentPayments];
+      newRecords.forEach(rec => {
+        const existingIdx = updatedPayments.findIndex(
+          p => (p.student_id === multiStudentId || p.student_name === rec.student_name) && p.payment_month === rec.payment_month
+        );
+        if (existingIdx >= 0) {
+          updatedPayments[existingIdx] = rec;
+        } else {
+          updatedPayments.unshift(rec);
+        }
+      });
+      setStudentPayments(updatedPayments);
+      setMultiMonthSuccess(newRecords);
+    } else {
+      const updatedPayments = [...studentPayments];
+      backendRecords.forEach(rec => {
+        const existingIdx = updatedPayments.findIndex(
+          p => (p.student_id === rec.student_id || p.student_name === rec.student_name) && p.payment_month === rec.payment_month
+        );
+        if (existingIdx >= 0) {
+          updatedPayments[existingIdx] = rec;
+        } else {
+          updatedPayments.unshift(rec);
+        }
+      });
+      setStudentPayments(updatedPayments);
+      setMultiMonthSuccess(backendRecords);
+    }
+
+    setMultiSelectedMonths([]);
+    setMultiTotalPaid('');
+    setMultiReceiptGroup('');
+    setMultiRemarks('');
+
+    if (backendSuccess) {
+      setTimeout(() => loadData(), 500);
+    }
+  };
+
   const handleDeletePayment = async (id: number) => {
     if (!window.confirm('Are you sure you want to delete this payment record?')) return;
     setStudentPayments(studentPayments.filter(p => p.id !== id));
@@ -626,6 +785,17 @@ export const FinancePage: React.FC = () => {
             className="px-4 py-2.5 text-xs font-extrabold rounded-xl bg-gradient-to-r from-gold-500 to-gold-600 text-emerald-950 hover:brightness-110 transition flex items-center gap-2 shadow-md cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" /> Record Payment
+          </button>
+          <button
+            onClick={() => {
+              setMultiMonthSuccess([]);
+              setMultiSelectedMonths([]);
+              setMultiTotalPaid('');
+              setShowMultiMonthModal(true);
+            }}
+            className="px-4 py-2.5 text-xs font-extrabold rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition flex items-center gap-2 shadow-md cursor-pointer"
+          >
+            <Calendar className="w-4 h-4" /> Multi-Month Payment
           </button>
           <button
             onClick={() => setShowGenerateDuesModal(true)}
@@ -1964,6 +2134,363 @@ export const FinancePage: React.FC = () => {
               <button type="button" onClick={() => setShowExpenseModal(false)} className="w-1/2 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl cursor-pointer">Cancel</button>
               <button type="submit" className="w-1/2 py-2 bg-amber-500 text-white font-bold text-xs rounded-xl hover:bg-amber-600 transition cursor-pointer">Log Expense</button>
             </div>
+          </form>
+        </div>
+      )}
+
+      {/* 7. MULTI-MONTH PAYMENT MODAL */}
+      {showMultiMonthModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <form
+            onSubmit={handleMultiMonthPayment}
+            className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 max-w-2xl w-full space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800 my-auto max-h-[90vh] overflow-y-auto"
+          >
+            <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-blue-500" /> Multi-Month Payment (2+ Months)
+              </h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowMultiMonthModal(false);
+                  setMultiMonthSuccess([]);
+                }}
+                className="text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {multiMonthSuccess.length > 0 && (
+              <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 rounded-2xl p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span className="text-sm font-bold text-emerald-800 dark:text-emerald-300">
+                    Multi-Month Payment Successful! {multiMonthSuccess.length} month(s) processed.
+                  </span>
+                </div>
+                <div className="overflow-x-auto max-h-52">
+                  <table className="w-full text-xs">
+                    <thead className="text-[10px] uppercase text-emerald-700 dark:text-emerald-400">
+                      <tr>
+                        <th className="p-2 text-left">Month</th>
+                        <th className="p-2 text-right">Due</th>
+                        <th className="p-2 text-right">Paid</th>
+                        <th className="p-2 text-right">Balance</th>
+                        <th className="p-2">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-emerald-200/50 dark:divide-emerald-900/50">
+                      {multiMonthSuccess.map((rec) => (
+                        <tr key={rec.id}>
+                          <td className="p-2 font-semibold">{rec.payment_month}</td>
+                          <td className="p-2 text-right">GMD {rec.amount_due.toLocaleString()}</td>
+                          <td className="p-2 text-right text-emerald-600 font-bold">GMD {rec.amount_paid.toLocaleString()}</td>
+                          <td className="p-2 text-right text-rose-600 font-bold">GMD {rec.balance.toLocaleString()}</td>
+                          <td className="p-2"><PaymentStatusBadge status={rec.status} /></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowMultiMonthModal(false);
+                      setMultiMonthSuccess([]);
+                      loadData();
+                    }}
+                    className="flex-1 py-2.5 bg-emerald-700 text-white font-bold text-xs rounded-xl hover:bg-emerald-800 transition cursor-pointer"
+                  >
+                    Done &amp; Refresh
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMultiMonthSuccess([]);
+                      setMultiSelectedMonths([]);
+                      setMultiTotalPaid('');
+                    }}
+                    className="flex-1 py-2.5 bg-blue-600 text-white font-bold text-xs rounded-xl hover:bg-blue-700 transition cursor-pointer"
+                  >
+                    New Multi-Month Payment
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {multiMonthSuccess.length === 0 && (
+              <>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Select a student and choose 2 or more months to record a lump-sum payment. The total amount paid will be allocated starting from the earliest month.
+                </p>
+
+                {/* Student Picker */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Select Student <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="relative mb-1.5">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                    <input
+                      type="text"
+                      placeholder="Filter by student name or ID..."
+                      value={multiStudentSearch}
+                      onChange={e => setMultiStudentSearch(e.target.value)}
+                      className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-gold-500"
+                    />
+                  </div>
+                  <select
+                    required
+                    value={multiStudentId}
+                    onChange={e => setMultiStudentId(Number(e.target.value))}
+                    className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:border-gold-500 font-medium cursor-pointer"
+                  >
+                    <option value="">— Select a student —</option>
+                    {students
+                      .filter(s => {
+                        const q = multiStudentSearch.toLowerCase().trim();
+                        if (!q) return true;
+                        return (s.full_name || '').toLowerCase().includes(q) ||
+                          (s.student_id_number || '').toLowerCase().includes(q);
+                      })
+                      .map(s => (
+                        <option key={s.id} value={s.id}>
+                          {s.full_name} ({s.student_id_number}) — {s.class_level || 'Hifz Level 2'}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                {/* Academic Year, Fee Type, Fee Per Month */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Academic Year</label>
+                    <select
+                      value={multiAcademicYear}
+                      onChange={e => setMultiAcademicYear(e.target.value)}
+                      className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none cursor-pointer"
+                    >
+                      <option>2026/2027</option>
+                      <option>2025/2026</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Fee Type</label>
+                    <select
+                      value={multiFeeType}
+                      onChange={e => setMultiFeeType(e.target.value)}
+                      className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none cursor-pointer"
+                    >
+                      <option>Boarding / Tuition / Meals</option>
+                      <option>Tuition &amp; Meals</option>
+                      <option>Tuition Only</option>
+                      <option>Boarding Only</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Fee / Month (GMD) <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      required
+                      value={multiFeePerMonth}
+                      onChange={e => setMultiFeePerMonth(parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl font-bold focus:outline-none focus:border-gold-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Month Selection */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    Select Months to Pay <span className="text-rose-500">*</span>
+                    <span className="ml-2 text-blue-600 dark:text-blue-400 font-bold">
+                      ({multiSelectedMonths.length} selected)
+                    </span>
+                  </label>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700">
+                    {availableMonths.filter(m => m !== 'All').map(month => {
+                      const checked = multiSelectedMonths.includes(month);
+                      return (
+                        <label
+                          key={month}
+                          className={`flex items-center gap-1.5 p-2 rounded-xl cursor-pointer text-xs font-semibold transition border ${
+                            checked
+                              ? 'bg-blue-600 text-white border-blue-500 shadow-inner'
+                              : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-400'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={e => {
+                              if (e.target.checked) {
+                                setMultiSelectedMonths([...multiSelectedMonths, month]);
+                              } else {
+                                setMultiSelectedMonths(multiSelectedMonths.filter(m => m !== month));
+                              }
+                            }}
+                            className="w-3.5 h-3.5 accent-blue-600 shrink-0"
+                          />
+                          <span className="truncate">{month.split(' ')[0]}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      type="button"
+                      onClick={() => setMultiSelectedMonths(availableMonths.filter(m => m !== 'All'))}
+                      className="text-[10px] px-3 py-1 bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 rounded-lg font-bold hover:brightness-110 transition cursor-pointer"
+                    >
+                      Select All
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMultiSelectedMonths([])}
+                      className="text-[10px] px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg font-bold hover:brightness-110 transition cursor-pointer"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+
+                {/* Summary Box */}
+                <div className="bg-gradient-to-r from-blue-50 to-slate-50 dark:from-blue-950/30 dark:to-slate-800/60 border border-blue-200 dark:border-blue-900 rounded-2xl p-4 space-y-2 text-xs">
+                  <div className="flex justify-between text-slate-600 dark:text-slate-300">
+                    <span>Fee per month:</span>
+                    <span className="font-bold">GMD {multiFeePerMonth.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-slate-600 dark:text-slate-300">
+                    <span>Number of months:</span>
+                    <span className="font-bold">{multiSelectedMonths.length}</span>
+                  </div>
+                  <div className="flex justify-between border-t border-blue-200/60 dark:border-blue-900 pt-2 mt-2">
+                    <span className="text-sm font-bold text-slate-800 dark:text-white">Total Expected:</span>
+                    <span className="text-lg font-black text-blue-700 dark:text-blue-400">
+                      GMD {(multiFeePerMonth * multiSelectedMonths.length).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Amount Paid & Method */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Total Amount Paid (GMD) <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      required
+                      placeholder="e.g. 5000 for 2 months at 2500"
+                      value={multiTotalPaid}
+                      onChange={e => setMultiTotalPaid(e.target.value)}
+                      className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl font-extrabold text-emerald-600 focus:outline-none focus:border-gold-500"
+                    />
+                    {parseFloat(multiTotalPaid) > 0 && multiSelectedMonths.length > 0 && (
+                      <div className="mt-1.5 text-[10px] text-slate-500">
+                        {parseFloat(multiTotalPaid) < multiFeePerMonth * multiSelectedMonths.length ? (
+                          <span className="text-amber-600 font-semibold">
+                            ⚠️ Partial: GMD {((multiFeePerMonth * multiSelectedMonths.length) - parseFloat(multiTotalPaid)).toLocaleString()} will remain as balance
+                          </span>
+                        ) : parseFloat(multiTotalPaid) > multiFeePerMonth * multiSelectedMonths.length ? (
+                          <span className="text-emerald-600 font-semibold">
+                            ✅ Overpayment covers {multiSelectedMonths.length} month(s) fully
+                          </span>
+                        ) : (
+                          <span className="text-emerald-600 font-semibold">
+                            ✅ Exact full payment for {multiSelectedMonths.length} month(s)
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Payment Method</label>
+                    <select
+                      value={multiMethod}
+                      onChange={e => setMultiMethod(e.target.value)}
+                      className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none cursor-pointer"
+                    >
+                      <option>Cash</option>
+                      <option>Bank Transfer</option>
+                      <option>Wave / Mobile Money</option>
+                      <option>QMoney</option>
+                      <option>Afrimoney</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Payment Date & Receipt Group */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Payment Date</label>
+                    <input
+                      type="date"
+                      value={multiPaymentDate}
+                      onChange={e => setMultiPaymentDate(e.target.value)}
+                      className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Receipt Group <span className="text-slate-400 font-normal">(auto if blank)</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. REC-BULK-001"
+                      value={multiReceiptGroup}
+                      onChange={e => setMultiReceiptGroup(e.target.value)}
+                      className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl font-mono focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Remarks */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Remarks</label>
+                  <input
+                    type="text"
+                    placeholder="Optional: e.g. Term 1 advance payment, parent paid via bank..."
+                    value={multiRemarks}
+                    onChange={e => setMultiRemarks(e.target.value)}
+                    className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none"
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowMultiMonthModal(false);
+                      setMultiMonthSuccess([]);
+                    }}
+                    className="w-1/2 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={multiSelectedMonths.length === 0}
+                    className={`w-1/2 py-2.5 font-bold text-xs rounded-xl transition shadow-md cursor-pointer ${
+                      multiSelectedMonths.length === 0
+                        ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:brightness-110'
+                    }`}
+                  >
+                    Process {multiSelectedMonths.length} Month{multiSelectedMonths.length !== 1 ? 's' : ''}
+                  </button>
+                </div>
+              </>
+            )}
           </form>
         </div>
       )}

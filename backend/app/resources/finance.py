@@ -610,6 +610,150 @@ class StudentPaymentStats(Resource):
         }, 200
 
 
+@finance_ns.route('/student-payments/multi-month')
+class StudentPaymentMultiMonth(Resource):
+    @jwt_required()
+    def post(self):
+        data = request.get_json() or {}
+
+        student_id = data.get('student_id')
+        student_name = (data.get('student_name') or '').strip()
+        student_id_num = (data.get('student_id_number') or '').strip()
+
+        student = None
+        if student_id:
+            student = Student.query.get(student_id)
+        elif student_id_num:
+            student = Student.query.filter_by(student_id_number=student_id_num).first()
+        elif student_name:
+            student = (Student.query
+                       .join(UserModel, Student.user_id == UserModel.id)
+                       .filter(UserModel.full_name.ilike(student_name))
+                       .first())
+
+        if not student:
+            return {'message': 'Valid student is required. Could not match student.'}, 404
+
+        months = data.get('months') or []
+        if not months or len(months) == 0:
+            return {'message': 'At least one payment month is required.'}, 400
+
+        academic_year = (data.get('academic_year') or '2026/2027').strip()
+        fee_type = (data.get('fee_type') or 'Boarding / Tuition / Meals').strip()
+        class_level = (data.get('class_level') or (student.class_level if hasattr(student, 'class_level') else 'Hifz Level 2')).strip()
+        fee_per_month = float(data.get('fee_per_month', 2500.0) or 2500.0)
+        total_paid = float(data.get('total_paid', 0.0) or 0.0)
+        payment_method = (data.get('payment_method') or 'Cash').strip()
+        payment_date_str = data.get('payment_date')
+        remarks = (data.get('remarks') or '').strip()
+        receipt_group = (data.get('receipt_group') or '').strip()
+
+        if total_paid < 0:
+            return {'message': 'Total paid cannot be negative.'}, 400
+
+        try:
+            payment_date_val = datetime.strptime(payment_date_str, '%Y-%m-%d').date() if payment_date_str else datetime.utcnow().date()
+        except Exception:
+            payment_date_val = datetime.utcnow().date()
+
+        current_user = get_jwt().get('full_name', 'Administrator')
+
+        available_months_order = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ]
+
+        def month_sort_key(m):
+            parts = m.strip().split()
+            if len(parts) >= 2:
+                month_name = parts[0]
+                year = parts[-1]
+                idx = available_months_order.index(month_name) if month_name in available_months_order else 0
+                return (int(year) if year.isdigit() else 0, idx)
+            return (0, 0)
+
+        sorted_months = sorted(months, key=month_sort_key)
+
+        if not receipt_group:
+            count = StudentPayment.query.count() + 1
+            receipt_group = f"REC-BULK-{datetime.utcnow().year}-{count:04d}"
+
+        remaining = total_paid
+        result_records = []
+
+        for idx, month in enumerate(sorted_months):
+            existing = StudentPayment.query.filter_by(
+                student_id=student.id,
+                payment_month=month,
+                academic_year=academic_year
+            ).first()
+
+            if existing:
+                already_paid = float(existing.amount_paid or 0.0)
+                month_due = float(existing.amount_due or fee_per_month)
+                month_balance = max(0.0, month_due - already_paid)
+            else:
+                already_paid = 0.0
+                month_due = fee_per_month
+                month_balance = fee_per_month
+
+            add_paid = min(remaining, month_balance)
+            remaining = max(0.0, remaining - add_paid)
+            new_paid = already_paid + add_paid
+
+            multi_remark = remarks or f'Multi-month payment covering {len(sorted_months)} months ({", ".join(sorted_months)})'
+
+            if existing:
+                existing.amount_paid = new_paid
+                existing.amount_due = month_due
+                if payment_method:
+                    existing.payment_method = payment_method
+                existing.payment_date = payment_date_val
+                if idx == 0 or not existing.remarks:
+                    existing.remarks = multi_remark
+                else:
+                    existing.remarks = f"{existing.remarks or ''} | {multi_remark}".strip(' | ')
+                existing.recorded_by = current_user
+                existing.compute_status()
+                result_records.append(existing)
+            else:
+                receipt_no = f"{receipt_group}-M{str(idx + 1).zfill(2)}"
+                while StudentPayment.query.filter_by(receipt_number=receipt_no).first():
+                    count += 1
+                    receipt_group = f"REC-BULK-{datetime.utcnow().year}-{count:04d}"
+                    receipt_no = f"{receipt_group}-M{str(idx + 1).zfill(2)}"
+
+                rec = StudentPayment(
+                    student_id=student.id,
+                    academic_year=academic_year,
+                    payment_month=month,
+                    class_level=class_level,
+                    fee_type=fee_type,
+                    amount_due=month_due,
+                    amount_paid=new_paid,
+                    payment_date=payment_date_val,
+                    payment_method=payment_method,
+                    receipt_number=receipt_no,
+                    remarks=multi_remark,
+                    recorded_by=current_user
+                )
+                rec.compute_status()
+                db.session.add(rec)
+                result_records.append(rec)
+
+            db.session.flush()
+
+        db.session.commit()
+        return {
+            'message': f'Successfully processed multi-month payment for {len(sorted_months)} month(s).',
+            'receipt_group': receipt_group,
+            'months_covered': sorted_months,
+            'total_paid_applied': total_paid - remaining,
+            'remaining_unallocated': remaining,
+            'records': [r.to_dict() for r in result_records]
+        }, 201
+
+
 @finance_ns.route('/student-payments/generate-month')
 class StudentPaymentBatchGenerate(Resource):
     @jwt_required()
