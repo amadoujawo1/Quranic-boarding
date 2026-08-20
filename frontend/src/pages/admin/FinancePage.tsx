@@ -73,7 +73,7 @@ export const FinancePage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [monthFilter, setMonthFilter] = useState('All');
-  const [academicYearFilter, setAcademicYearFilter] = useState('All');
+  const [academicYearFilter, setAcademicYearFilter] = useState('2026/2027');
 
   // Student Ledger interactive view
   const [selectedLedgerStudentId, setSelectedLedgerStudentId] = useState<number>(1);
@@ -205,18 +205,22 @@ export const FinancePage: React.FC = () => {
   const partialCount = paymentStats?.partial_count ?? studentPayments.filter(p => p.status === 'Partial').length;
   const unpaidCount = paymentStats?.unpaid_count ?? studentPayments.filter(p => p.status === 'Unpaid').length;
 
-  // Month list - built dynamically from real payment data, plus static defaults
-  const paymentMonthsInData = Array.from(new Set(studentPayments.map(p => p.payment_month).filter(Boolean)));
-  const staticMonths = [
-    'August 2026', 'September 2026', 'October 2026', 'November 2026', 'December 2026',
-    'January 2027', 'February 2027', 'March 2027', 'April 2027', 'May 2027', 'June 2027', 'July 2027'
+  // Month list available in payments
+  const availableMonths = [
+    'All',
+    'August 2026',
+    'September 2026',
+    'October 2026',
+    'November 2026',
+    'December 2026',
+    'January 2027',
+    'February 2027',
+    'March 2027',
+    'April 2027',
+    'May 2027',
+    'June 2027',
+    'July 2027'
   ];
-  // Merge: show all months from actual records first, then fill in the rest from the static list
-  const availableMonths = ['All', ...Array.from(new Set([...paymentMonthsInData, ...staticMonths]))];
-
-  // Academic years from real data
-  const paymentYearsInData = Array.from(new Set(studentPayments.map(p => p.academic_year).filter(Boolean)));
-  const availableYears = ['All', ...Array.from(new Set([...paymentYearsInData, '2026/2027', '2025/2026']))];
 
   // Filtered Payments
   const filteredPayments = studentPayments.filter(p => {
@@ -230,7 +234,7 @@ export const FinancePage: React.FC = () => {
 
     const matchStatus = statusFilter === 'All' || p.status === statusFilter;
     const matchMonth = monthFilter === 'All' || p.payment_month === monthFilter;
-    const matchYear = academicYearFilter === 'All' || !academicYearFilter || p.academic_year === academicYearFilter;
+    const matchYear = !academicYearFilter || p.academic_year === academicYearFilter;
 
     return matchSearch && matchStatus && matchMonth && matchYear;
   });
@@ -911,21 +915,22 @@ export const FinancePage: React.FC = () => {
               />
             </div>
 
-            <div className="flex gap-2 flex-wrap sm:flex-nowrap items-center">
+            <div className="flex gap-2 flex-wrap sm:flex-nowrap">
               <select
                 value={monthFilter}
                 onChange={e => setMonthFilter(e.target.value)}
-                className="px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none font-semibold cursor-pointer"
+                className="px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none font-semibold"
               >
-                {availableMonths.map(m => (
-                  <option key={m} value={m === 'All' ? 'All' : m}>{m === 'All' ? 'All Months' : m}</option>
+                <option value="All">All Months</option>
+                {availableMonths.filter(m => m !== 'All').map(m => (
+                  <option key={m} value={m}>{m}</option>
                 ))}
               </select>
 
               <select
                 value={statusFilter}
                 onChange={e => setStatusFilter(e.target.value)}
-                className="px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none font-semibold cursor-pointer"
+                className="px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none font-semibold"
               >
                 <option value="All">All Statuses</option>
                 <option value="Paid">✅ Paid</option>
@@ -936,25 +941,11 @@ export const FinancePage: React.FC = () => {
               <select
                 value={academicYearFilter}
                 onChange={e => setAcademicYearFilter(e.target.value)}
-                className="px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none cursor-pointer"
+                className="px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none"
               >
-                {availableYears.map(y => (
-                  <option key={y} value={y}>{y === 'All' ? 'All Years' : y}</option>
-                ))}
+                <option value="2026/2027">2026/2027</option>
+                <option value="2025/2026">2025/2026</option>
               </select>
-
-              {(search || statusFilter !== 'All' || monthFilter !== 'All' || academicYearFilter !== 'All') && (
-                <button
-                  onClick={() => { setSearch(''); setStatusFilter('All'); setMonthFilter('All'); setAcademicYearFilter('All'); }}
-                  className="px-3 py-2 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 rounded-xl hover:bg-rose-100 transition cursor-pointer whitespace-nowrap"
-                >
-                  ✕ Clear Filters
-                </button>
-              )}
-
-              <span className="text-[11px] text-slate-400 whitespace-nowrap">
-                {filteredPayments.length} of {studentPayments.length} records
-              </span>
             </div>
           </div>
 
