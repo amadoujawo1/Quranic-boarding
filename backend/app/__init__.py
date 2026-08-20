@@ -144,17 +144,30 @@ def create_app():
         }, 200
 
     # Serve the React SPA for all non-API routes
-    frontend_dist = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'dist')
-
     @app.route('/', defaults={'path': ''})
     @app.route('/<path:path>')
     def serve_spa(path):
-        if os.path.isdir(frontend_dist):
-            file_path = os.path.join(frontend_dist, path)
+        possible_dist_dirs = [
+            os.getenv('FRONTEND_DIST', ''),
+            os.path.join(os.path.dirname(os.path.dirname(__file__)), 'dist'),
+            os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), '..', 'frontend', 'dist')),
+            '/app/frontend/dist',
+            '/app/backend/dist',
+            os.path.join(os.getcwd(), 'dist'),
+            os.path.join(os.getcwd(), '..', 'frontend', 'dist'),
+        ]
+        target_dir = next(
+            (d for d in possible_dist_dirs if d and os.path.isdir(d) and os.path.isfile(os.path.join(d, 'index.html'))),
+            None
+        )
+
+        if target_dir:
+            file_path = os.path.join(target_dir, path)
             if path and os.path.isfile(file_path):
-                return send_from_directory(frontend_dist, path)
-            return send_from_directory(frontend_dist, 'index.html')
-        # No frontend build present — return API info
+                return send_from_directory(target_dir, path)
+            return send_from_directory(target_dir, 'index.html')
+
+        # Fallback if no build is found
         return {
             'status': 'ok',
             'service': "Imaam Naafi' Centre for Quranic Memorization API",
