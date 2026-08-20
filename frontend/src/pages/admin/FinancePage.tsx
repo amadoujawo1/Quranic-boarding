@@ -112,8 +112,8 @@ export const FinancePage: React.FC = () => {
     academic_year: '2026/2027',
     payment_month: 'August 2026',
     fee_type: 'Boarding / Tuition',
-    amount_due: 2500,
-    amount_paid: 2500,
+    amount_due: '',
+    amount_paid: '',
     payment_date: new Date().toISOString().split('T')[0],
     payment_method: 'Cash',
     receipt_number: '',
@@ -251,7 +251,7 @@ export const FinancePage: React.FC = () => {
     e.preventDefault();
     const token = localStorage.getItem('token');
 
-    const due = Number(paymentForm.amount_due || 2500);
+    const due = Number(paymentForm.amount_due || 0);
     const paid = Number(paymentForm.amount_paid || 0);
     const balance = Math.max(0, due - paid);
     const status = balance <= 0 ? 'Paid' : paid > 0 ? 'Partial' : 'Unpaid';
@@ -1573,7 +1573,8 @@ export const FinancePage: React.FC = () => {
                   min="0"
                   required
                   value={paymentForm.amount_due}
-                  onChange={e => setPaymentForm({ ...paymentForm, amount_due: parseFloat(e.target.value) || 0 })}
+                  onChange={e => setPaymentForm({ ...paymentForm, amount_due: e.target.value === '' ? '' : (parseFloat(e.target.value) || 0) })}
+                  placeholder="Enter amount due"
                   className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none font-bold"
                 />
               </div>
@@ -1587,7 +1588,8 @@ export const FinancePage: React.FC = () => {
                   min="0"
                   required
                   value={paymentForm.amount_paid}
-                  onChange={e => setPaymentForm({ ...paymentForm, amount_paid: parseFloat(e.target.value) || 0 })}
+                  onChange={e => setPaymentForm({ ...paymentForm, amount_paid: e.target.value === '' ? '' : (parseFloat(e.target.value) || 0) })}
+                  placeholder="Enter amount paid"
                   className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none font-bold text-emerald-600"
                 />
               </div>
