@@ -54,131 +54,6 @@ const PaymentStatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-// Default Demo Students
-const DEFAULT_STUDENTS = [
-  { id: 1, full_name: 'Abdul Rahman Jallow', student_id_number: 'INCM-2026-001', class_level: 'Hifz Level 2', parent_name: 'Ebrima Jallow' },
-  { id: 2, full_name: 'Fatimah Ceesay', student_id_number: 'INCM-2026-002', class_level: 'Tajweed Foundation', parent_name: 'Ousman Ceesay' },
-  { id: 3, full_name: 'Youssef Al-Faruq', student_id_number: 'INCM-2026-003', class_level: 'Hifz Level 1', parent_name: 'Ibrahim Al-Faruq' }
-];
-
-// Default Demo Payments
-const DEFAULT_PAYMENTS: StudentPayment[] = [
-  {
-    id: 1,
-    student_id: 1,
-    student_id_number: 'INCM-2026-001',
-    student_name: 'Abdul Rahman Jallow',
-    class_level: 'Hifz Level 2',
-    academic_year: '2026/2027',
-    payment_month: 'August 2026',
-    fee_type: 'Boarding / Tuition',
-    amount_due: 2500,
-    amount_paid: 2500,
-    balance: 0,
-    payment_date: '2026-08-19',
-    payment_method: 'Cash',
-    receipt_number: 'REC-000123',
-    status: 'Paid',
-    remarks: 'Full settlement for August semester start',
-    recorded_by: 'Super Administrator'
-  },
-  {
-    id: 2,
-    student_id: 1,
-    student_id_number: 'INCM-2026-001',
-    student_name: 'Abdul Rahman Jallow',
-    class_level: 'Hifz Level 2',
-    academic_year: '2026/2027',
-    payment_month: 'September 2026',
-    fee_type: 'Boarding / Tuition',
-    amount_due: 2500,
-    amount_paid: 2500,
-    balance: 0,
-    payment_date: '2026-09-05',
-    payment_method: 'Bank Transfer',
-    receipt_number: 'REC-000124',
-    status: 'Paid',
-    remarks: 'Transferred via Trust Bank',
-    recorded_by: 'Super Administrator'
-  },
-  {
-    id: 3,
-    student_id: 1,
-    student_id_number: 'INCM-2026-001',
-    student_name: 'Abdul Rahman Jallow',
-    class_level: 'Hifz Level 2',
-    academic_year: '2026/2027',
-    payment_month: 'October 2026',
-    fee_type: 'Boarding / Tuition',
-    amount_due: 2500,
-    amount_paid: 2000,
-    balance: 500,
-    payment_date: '2026-10-10',
-    payment_method: 'Wave / Mobile Money',
-    receipt_number: 'REC-000125',
-    status: 'Partial',
-    remarks: 'GMD 500 balance remaining',
-    recorded_by: 'Super Administrator'
-  },
-  {
-    id: 4,
-    student_id: 1,
-    student_id_number: 'INCM-2026-001',
-    student_name: 'Abdul Rahman Jallow',
-    class_level: 'Hifz Level 2',
-    academic_year: '2026/2027',
-    payment_month: 'November 2026',
-    fee_type: 'Boarding / Tuition',
-    amount_due: 2500,
-    amount_paid: 0,
-    balance: 2500,
-    payment_date: '2026-11-01',
-    payment_method: 'Cash',
-    receipt_number: 'REC-000126',
-    status: 'Unpaid',
-    remarks: 'Payment reminder sent to guardian',
-    recorded_by: 'Super Administrator'
-  },
-  {
-    id: 5,
-    student_id: 1,
-    student_id_number: 'INCM-2026-001',
-    student_name: 'Abdul Rahman Jallow',
-    class_level: 'Hifz Level 2',
-    academic_year: '2026/2027',
-    payment_month: 'December 2026',
-    fee_type: 'Boarding / Tuition',
-    amount_due: 2500,
-    amount_paid: 2500,
-    balance: 0,
-    payment_date: '2026-12-15',
-    payment_method: 'QMoney',
-    receipt_number: 'REC-000127',
-    status: 'Paid',
-    remarks: 'End of term fee clearance',
-    recorded_by: 'Super Administrator'
-  },
-  {
-    id: 6,
-    student_id: 2,
-    student_id_number: 'INCM-2026-002',
-    student_name: 'Fatimah Ceesay',
-    class_level: 'Tajweed Foundation',
-    academic_year: '2026/2027',
-    payment_month: 'August 2026',
-    fee_type: 'Tuition',
-    amount_due: 2500,
-    amount_paid: 2500,
-    balance: 0,
-    payment_date: '2026-08-18',
-    payment_method: 'Wave / Mobile Money',
-    receipt_number: 'REC-000128',
-    status: 'Paid',
-    remarks: 'Paid via Wave',
-    recorded_by: 'Super Administrator'
-  }
-];
-
 export const FinancePage: React.FC = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isAdmin = user?.roles?.includes('Admin') || user?.roles?.includes('Super Admin') || user?.roles?.includes('Super Administrator') || user?.roles?.includes('Accountant') || true;
@@ -186,29 +61,12 @@ export const FinancePage: React.FC = () => {
   // Main navigation tab
   const [tab, setTab] = useState<'monthly_payments' | 'student_ledger' | 'collection_report' | 'donations' | 'expenses'>('monthly_payments');
 
-  // State data initialized with demo defaults so it's always responsive
-  // Always start with DEFAULT_PAYMENTS — clear any stale empty-array from older versions
-  const [studentPayments, setStudentPayments] = useState<StudentPayment[]>(() => {
-    try {
-      const saved = localStorage.getItem('local_student_payments');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (_) {}
-    localStorage.removeItem('local_student_payments'); // wipe corrupt/empty cache
-    return DEFAULT_PAYMENTS;
-  });
+  // Real live state from database (no hardcoded fallback defaults)
+  const [studentPayments, setStudentPayments] = useState<StudentPayment[]>([]);
   const [paymentStats, setPaymentStats] = useState<StudentPaymentStatsData | null>(null);
-  const [donations, setDonations] = useState<any[]>([
-    { id: 1, donor_name: 'Alhaji Momodou Touray', amount: 50000, purpose: 'Hifz Scholarship Fund', created_at: '2026-08-10' },
-    { id: 2, donor_name: 'Anonymous', amount: 15000, purpose: 'Mosque & Madrasa Waqf', created_at: '2026-08-14' }
-  ]);
-  const [expenses, setExpenses] = useState<any[]>([
-    { id: 1, category: 'Kitchen & Nutrition', description: 'Monthly Rice & Meat Supplies', amount: 35000, expense_date: '2026-08-15' },
-    { id: 2, category: 'Utilities & Fuel', description: 'Generator Fuel & Electricity Dues', amount: 12000, expense_date: '2026-08-12' }
-  ]);
-  const [students, setStudents] = useState<any[]>(DEFAULT_STUDENTS);
+  const [donations, setDonations] = useState<any[]>([]);
+  const [expenses, setExpenses] = useState<any[]>([]);
+  const [students, setStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Filters for monthly payments
@@ -276,10 +134,10 @@ export const FinancePage: React.FC = () => {
   const [newDonation, setNewDonation] = useState({ donor_name: '', amount: '', purpose: 'General Sadaqah' });
   const [newExpense, setNewExpense] = useState({ category: 'Kitchen & Nutrition', description: '', amount: '' });
 
-  // Save payments to local storage so edits persist
+  // Clean up any stale localStorage demo cache
   useEffect(() => {
-    localStorage.setItem('local_student_payments', JSON.stringify(studentPayments));
-  }, [studentPayments]);
+    localStorage.removeItem('local_student_payments');
+  }, []);
 
   // ── Fetch data from backend API ───────────────────────────────────────────
   const loadData = async () => {
@@ -298,7 +156,7 @@ export const FinancePage: React.FC = () => {
 
       if (paymentsRes.status === 'fulfilled' && paymentsRes.value.ok) {
         const pData = await paymentsRes.value.json();
-        if (pData && pData.length > 0) setStudentPayments(pData);
+        setStudentPayments(Array.isArray(pData) ? pData : []);
       }
       if (statsRes.status === 'fulfilled' && statsRes.value.ok) {
         const sData = await statsRes.value.json();
@@ -306,20 +164,22 @@ export const FinancePage: React.FC = () => {
       }
       if (donationsRes.status === 'fulfilled' && donationsRes.value.ok) {
         const dData = await donationsRes.value.json();
-        if (dData && dData.length > 0) setDonations(dData);
+        setDonations(Array.isArray(dData) ? dData : []);
       }
       if (expensesRes.status === 'fulfilled' && expensesRes.value.ok) {
         const eData = await expensesRes.value.json();
-        if (eData && eData.length > 0) setExpenses(eData);
+        setExpenses(Array.isArray(eData) ? eData : []);
       }
       if (studentsRes.status === 'fulfilled' && studentsRes.value.ok) {
         const stData = await studentsRes.value.json();
-        if (stData && stData.students && stData.students.length > 0) {
-          setStudents(stData.students);
+        const studentList = Array.isArray(stData?.students) ? stData.students : Array.isArray(stData) ? stData : [];
+        setStudents(studentList);
+        if (studentList.length > 0 && !selectedLedgerStudentId) {
+          setSelectedLedgerStudentId(studentList[0].id);
         }
       }
     } catch (e) {
-      console.warn('API sync completed with fallback data active.', e);
+      console.warn('API sync notice:', e);
     } finally {
       setLoading(false);
     }
@@ -330,8 +190,8 @@ export const FinancePage: React.FC = () => {
   }, []);
 
   // Compute selected student ledger data locally
-  const currentLedgerStudent = students.find(s => s.id === selectedLedgerStudentId) || students[0] || DEFAULT_STUDENTS[0];
-  const currentStudentRecords = studentPayments.filter(p => p.student_id === currentLedgerStudent?.id || p.student_name === currentLedgerStudent?.full_name);
+  const currentLedgerStudent = students.find(s => s.id === selectedLedgerStudentId) || students[0] || null;
+  const currentStudentRecords = currentLedgerStudent ? studentPayments.filter(p => p.student_id === currentLedgerStudent?.id || p.student_name === currentLedgerStudent?.full_name) : [];
   const currentStudentTotalDue = currentStudentRecords.reduce((s, p) => s + (p.amount_due || 0), 0);
   const currentStudentTotalPaid = currentStudentRecords.reduce((s, p) => s + (p.amount_paid || 0), 0);
   const currentStudentBalance = Math.max(0, currentStudentTotalDue - currentStudentTotalPaid);
@@ -691,7 +551,7 @@ export const FinancePage: React.FC = () => {
 
   const handleDeletePayment = async (id: number) => {
     if (!window.confirm('Are you sure you want to delete this payment record?')) return;
-    setStudentPayments(studentPayments.filter(p => p.id !== id));
+    setStudentPayments(prev => prev.filter(p => p.id !== id));
 
     const token = localStorage.getItem('token');
     if (token) {
@@ -700,9 +560,100 @@ export const FinancePage: React.FC = () => {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` }
         });
+        loadData();
       } catch (err) {
         console.warn('Delete payment API error:', err);
       }
+    }
+  };
+
+  const handleSaveDonation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const amt = Number(newDonation.amount);
+    if (!amt || amt <= 0) return;
+    const token = localStorage.getItem('token');
+    const newRecord = {
+      id: Date.now(),
+      donor_name: newDonation.donor_name || 'Anonymous',
+      amount: amt,
+      purpose: newDonation.purpose,
+      created_at: new Date().toISOString().split('T')[0]
+    };
+    setDonations(prev => [newRecord, ...prev]);
+    setShowDonationModal(false);
+    setNewDonation({ donor_name: '', amount: '', purpose: 'General Sadaqah' });
+
+    if (token) {
+      try {
+        await fetch('/api/finance/donations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ donor_name: newRecord.donor_name, amount: amt, purpose: newRecord.purpose })
+        });
+        loadData();
+      } catch (err) {
+        console.warn('Donation sync error:', err);
+      }
+    }
+  };
+
+  const handleDeleteDonation = async (id: number) => {
+    if (!window.confirm('Delete this donation record?')) return;
+    setDonations(prev => prev.filter(d => d.id !== id));
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        await fetch(`/api/finance/donations/${id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        loadData();
+      } catch (_) {}
+    }
+  };
+
+  const handleSaveExpense = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const amt = Number(newExpense.amount);
+    if (!amt || amt <= 0) return;
+    const token = localStorage.getItem('token');
+    const newRecord = {
+      id: Date.now(),
+      category: newExpense.category,
+      description: newExpense.description,
+      amount: amt,
+      expense_date: new Date().toISOString().split('T')[0]
+    };
+    setExpenses(prev => [newRecord, ...prev]);
+    setShowExpenseModal(false);
+    setNewExpense({ category: 'Kitchen & Nutrition', description: '', amount: '' });
+
+    if (token) {
+      try {
+        await fetch('/api/finance/expenses', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify(newRecord)
+        });
+        loadData();
+      } catch (err) {
+        console.warn('Expense sync error:', err);
+      }
+    }
+  };
+
+  const handleDeleteExpense = async (id: number) => {
+    if (!window.confirm('Delete this expense record?')) return;
+    setExpenses(prev => prev.filter(exp => exp.id !== id));
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        await fetch(`/api/finance/expenses/${id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        loadData();
+      } catch (_) {}
     }
   };
 
@@ -1154,12 +1105,12 @@ export const FinancePage: React.FC = () => {
                 Student Monthly Statement
               </div>
               <h3 className="text-xl font-black text-white mt-1">
-                Student: {currentLedgerStudent.full_name}
+                Student: {currentLedgerStudent ? currentLedgerStudent.full_name : 'No Student Selected'}
               </h3>
               <div className="text-xs text-slate-300 mt-1 flex items-center gap-4">
-                <span>Student ID: <strong className="font-mono text-gold-400">{currentLedgerStudent.student_id_number}</strong></span>
-                <span>Class: <strong>{currentLedgerStudent.class_level || 'Hifz Level 2'}</strong></span>
-                {currentLedgerStudent.parent_name && (
+                <span>Student ID: <strong className="font-mono text-gold-400">{currentLedgerStudent ? currentLedgerStudent.student_id_number : '—'}</strong></span>
+                <span>Class: <strong>{currentLedgerStudent ? (currentLedgerStudent.class_level || 'Hifz Level 2') : '—'}</strong></span>
+                {currentLedgerStudent?.parent_name && (
                   <span>Guardian: <strong>{currentLedgerStudent.parent_name}</strong></span>
                 )}
               </div>
@@ -1185,7 +1136,7 @@ export const FinancePage: React.FC = () => {
           <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
             <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
               <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                Monthly Breakdown — {currentLedgerStudent.full_name}
+                Monthly Breakdown — {currentLedgerStudent ? currentLedgerStudent.full_name : 'No Student'}
               </h4>
               <span className="text-xs text-slate-500">
                 {currentStudentRecords.length} Months Recorded
@@ -1380,19 +1331,42 @@ export const FinancePage: React.FC = () => {
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 font-semibold uppercase border-b border-slate-200 dark:border-slate-700">
-                <tr><th className="p-4">Donor</th><th className="p-4">Amount</th><th className="p-4">Purpose</th><th className="p-4">Date</th></tr>
+                <tr>
+                  <th className="p-4">Donor</th>
+                  <th className="p-4">Amount</th>
+                  <th className="p-4">Purpose</th>
+                  <th className="p-4">Date</th>
+                  <th className="p-4 text-right">Actions</th>
+                </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {donations.map(d => (
-                  <tr key={d.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
-                    <td className="p-4 font-semibold text-slate-900 dark:text-white">
-                      <div className="flex items-center gap-2"><UserCheck className="w-4 h-4 text-purple-500 shrink-0" />{d.donor_name}</div>
+                {donations.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="p-8 text-center text-slate-400">
+                      No donation records found. Click "Record Donation" to add one.
                     </td>
-                    <td className="p-4 font-extrabold text-purple-600 dark:text-purple-400">GMD {d.amount?.toLocaleString()}</td>
-                    <td className="p-4 text-slate-600 dark:text-slate-400">{d.purpose}</td>
-                    <td className="p-4 text-slate-500">{typeof d.created_at === 'string' ? d.created_at.split('T')[0] : d.created_at}</td>
                   </tr>
-                ))}
+                ) : (
+                  donations.map(d => (
+                    <tr key={d.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+                      <td className="p-4 font-semibold text-slate-900 dark:text-white">
+                        <div className="flex items-center gap-2"><UserCheck className="w-4 h-4 text-purple-500 shrink-0" />{d.donor_name}</div>
+                      </td>
+                      <td className="p-4 font-extrabold text-purple-600 dark:text-purple-400">GMD {d.amount?.toLocaleString()}</td>
+                      <td className="p-4 text-slate-600 dark:text-slate-400">{d.purpose}</td>
+                      <td className="p-4 text-slate-500">{typeof d.created_at === 'string' ? d.created_at.split('T')[0] : d.created_at}</td>
+                      <td className="p-4 text-right">
+                        <button
+                          onClick={() => handleDeleteDonation(d.id)}
+                          className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition cursor-pointer"
+                          title="Delete Donation"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -1414,19 +1388,42 @@ export const FinancePage: React.FC = () => {
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 font-semibold uppercase border-b border-slate-200 dark:border-slate-700">
-                <tr><th className="p-4">Category</th><th className="p-4">Description</th><th className="p-4">Amount</th><th className="p-4">Date</th></tr>
+                <tr>
+                  <th className="p-4">Category</th>
+                  <th className="p-4">Description</th>
+                  <th className="p-4">Amount</th>
+                  <th className="p-4">Date</th>
+                  <th className="p-4 text-right">Actions</th>
+                </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {expenses.map(exp => (
-                  <tr key={exp.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
-                    <td className="p-4">
-                      <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 font-bold text-[10px]">{exp.category}</span>
+                {expenses.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="p-8 text-center text-slate-400">
+                      No expense records found. Click "Log Expense" to add one.
                     </td>
-                    <td className="p-4 text-slate-700 dark:text-slate-300">{exp.description}</td>
-                    <td className="p-4 font-extrabold text-rose-600 dark:text-rose-400">GMD {exp.amount?.toLocaleString()}</td>
-                    <td className="p-4 text-slate-500">{exp.expense_date}</td>
                   </tr>
-                ))}
+                ) : (
+                  expenses.map(exp => (
+                    <tr key={exp.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+                      <td className="p-4">
+                        <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 font-bold text-[10px]">{exp.category}</span>
+                      </td>
+                      <td className="p-4 text-slate-700 dark:text-slate-300">{exp.description}</td>
+                      <td className="p-4 font-extrabold text-rose-600 dark:text-rose-400">GMD {exp.amount?.toLocaleString()}</td>
+                      <td className="p-4 text-slate-500">{exp.expense_date}</td>
+                      <td className="p-4 text-right">
+                        <button
+                          onClick={() => handleDeleteExpense(exp.id)}
+                          className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition cursor-pointer"
+                          title="Delete Expense"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -2015,13 +2012,7 @@ export const FinancePage: React.FC = () => {
       {showDonationModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const d = { id: Date.now(), donor_name: newDonation.donor_name || 'Anonymous', amount: Number(newDonation.amount), purpose: newDonation.purpose, created_at: new Date().toISOString() };
-              setDonations([d, ...donations]);
-              setShowDonationModal(false);
-              setNewDonation({ donor_name: '', amount: '', purpose: 'General Sadaqah' });
-            }}
+            onSubmit={handleSaveDonation}
             className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800"
           >
             <div className="flex justify-between items-center">
@@ -2077,13 +2068,7 @@ export const FinancePage: React.FC = () => {
       {showExpenseModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const exp = { id: Date.now(), category: newExpense.category, description: newExpense.description, amount: Number(newExpense.amount), expense_date: new Date().toISOString().split('T')[0] };
-              setExpenses([exp, ...expenses]);
-              setShowExpenseModal(false);
-              setNewExpense({ category: 'Kitchen & Nutrition', description: '', amount: '' });
-            }}
+            onSubmit={handleSaveExpense}
             className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800"
           >
             <div className="flex justify-between items-center">
