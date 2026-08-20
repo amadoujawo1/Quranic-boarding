@@ -72,14 +72,22 @@ class Login(Resource):
 class UsersList(Resource):
     @jwt_required()
     def get(self):
-        # Exclude users whose roles are exclusively Student or Parent —
-        # those are managed via Student Management, not Users & Roles.
+        # Exclude users who are Students or Parents — these are managed via
+        # Student Management, not Users & Roles.
+        # We check BOTH:
+        #   1. Profile relationships (student_profile / parent_profile) —
+        #      this is the ground truth regardless of role assignment.
+        #   2. Roles exclusively in {Student, Parent} — safety net.
         excluded_roles = {'Student', 'Parent'}
         all_users = User.query.order_by(User.created_at.desc()).all()
-        users = [
-            u for u in all_users
-            if not u.roles or not set(r.name for r in u.roles).issubset(excluded_roles)
-        ]
+        users = []
+        for u in all_users:
+            has_student_profile = u.student_profile is not None
+            has_parent_profile = u.parent_profile is not None
+            has_only_excluded_roles = bool(u.roles) and set(r.name for r in u.roles).issubset(excluded_roles)
+            if has_student_profile or has_parent_profile or has_only_excluded_roles:
+                continue
+            users.append(u)
         return [u.to_dict() for u in users], 200
 
 @auth_ns.route('/register')

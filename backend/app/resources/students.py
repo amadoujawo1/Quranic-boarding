@@ -16,6 +16,16 @@ from ..models.academic import Grade
 
 students_ns = Namespace('students', description='Student Admission and Profile Management')
 
+def _get_or_create_role(name: str, description: str = ''):
+    """Get a role by name, creating it if it doesn't exist."""
+    role = Role.query.filter_by(name=name).first()
+    if not role:
+        role = Role(name=name, description=description or f'{name} privileges')
+        db.session.add(role)
+        db.session.flush()
+    return role
+
+
 def _create_student_from_row(data: dict) -> dict:
     """Shared helper: create one student from a flat data dict. Returns result dict."""
     full_name    = (data.get('full_name') or '').strip()
@@ -45,9 +55,8 @@ def _create_student_from_row(data: dict) -> dict:
 
     user = User(username=username, email=email, full_name=full_name, phone=phone)
     user.set_password('Student123!')
-    role = Role.query.filter_by(name='Student').first()
-    if role:
-        user.roles.append(role)
+    role = _get_or_create_role('Student', 'Registered student portal access')
+    user.roles.append(role)
     db.session.add(user)
     db.session.flush()
 
@@ -62,9 +71,8 @@ def _create_student_from_row(data: dict) -> dict:
             p_email    = f"{p_username}@qbsms.edu"
             p_user = User(username=p_username, email=p_email, full_name=parent_name, phone=parent_phone)
             p_user.set_password('ParentPass123!')
-            p_role = Role.query.filter_by(name='Parent').first()
-            if p_role:
-                p_user.roles.append(p_role)
+            p_role = _get_or_create_role('Parent', 'Parent/guardian portal access')
+            p_user.roles.append(p_role)
             db.session.add(p_user)
             db.session.flush()
             p_profile = Parent(user_id=p_user.id, relationship=parent_rel, emergency_contact=parent_phone)
@@ -119,70 +127,110 @@ class StudentList(Resource):
     @jwt_required()
     def post(self):
         data = request.get_json() or {}
-        username = data.get('username') or f"std_{data.get('student_id_number')}"
-        email = data.get('email')
-        full_name = data.get('full_name')
-        password = data.get('password', 'Student123!')
+        try:
+            full_name = (data.get('full_name') or '').strip()
+            if not full_name:
+                return {'message': 'full_name is required'}, 400
 
-        if User.query.filter((User.username == username) | (User.email == email)).first():
-            return {'message': 'User with this email or username already exists'}, 400
+            # Auto-generate student ID if missing
+            existing_count = Student.query.count()
+            student_id_number = (data.get('student_id_number') or '').strip()
+            if not student_id_number:
+                student_id_number = f"QBS-{datetime.utcnow().year}-{existing_count + 1:03d}"
 
-        user = User(username=username, email=email, full_name=full_name, phone=data.get('phone'))
-        user.set_password(password)
-        
-        role = Role.query.filter_by(name='Student').first()
-        if role:
-            user.roles.append(role)
-        db.session.add(user)
-        db.session.flush()
+            # Auto-generate email if missing
+            email = (data.get('email') or '').strip()
+            if not email:
+                email = f"std_{student_id_number.replace(' ', '_')}@qbsms.edu"
 
-        # Resolve or create Parent profile
-        parent_id = data.get('parent_id')
-        parent_name = data.get('parent_name')
+            # Auto-generate username if missing
+            username = (data.get('username') or '').strip()
+            if not username:
+                username = f"std_{student_id_number.replace(' ', '_')}"
 
-        if not parent_id and parent_name:
-            # Search for existing parent by user full_name
-            existing_user = User.query.filter(User.full_name.ilike(parent_name.strip())).first()
-            if existing_user and existing_user.parent_profile:
-                parent_id = existing_user.parent_profile.id
-            else:
-                # Create Parent User and Parent Profile
-                p_username = f"parent_{int(datetime.utcnow().timestamp())}_{user.id}"
-                p_email = f"{p_username}@qbsms.edu"
-                p_user = User(
-                    username=p_username,
-                    email=p_email,
-                    full_name=parent_name.strip(),
-                    phone=data.get('parent_phone', '')
-                )
-                p_user.set_password('ParentPass123!')
-                p_role = Role.query.filter_by(name='Parent').first()
-                if p_role:
+            password = data.get('password', 'Student123!')
+            phone = (data.get('phone') or '').strip()
+
+            # Check for duplicates
+            if User.query.filter((User.username == username) | (User.email == email)).first():
+                return {'message': 'User with this email or username already exists'}, 400
+
+            # Check unique student_id_number
+            if Student.query.filter_by(student_id_number=student_id_number).first():
+                return {'message': f'Student ID {student_id_number} already exists'}, 400
+
+            # Create student user
+            user = User(username=username, email=email, full_name=full_name, phone=phone or None)
+            user.set_password(password)
+            student_role = _get_or_create_role('Student', 'Registered student portal access')
+            user.roles.append(student_role)
+            db.session.add(user)
+            db.session.flush()
+
+            # Resolve or create Parent profile
+            parent_id = data.get('parent_id')
+            parent_name = (data.get('parent_name') or '').strip()
+
+            if not parent_id and parent_name:
+                existing_puser = User.query.filter(User.full_name.ilike(parent_name)).first()
+                if existing_puser and existing_puser.parent_profile:
+                    parent_id = existing_puser.parent_profile.id
+                else:
+                    p_username = f"parent_{int(datetime.utcnow().timestamp())}_{user.id}"
+                    p_email = f"{p_username}@qbsms.edu"
+                    parent_phone = (data.get('parent_phone') or '').strip()
+                    p_user = User(
+                        username=p_username,
+                        email=p_email,
+                        full_name=parent_name,
+                        phone=parent_phone or None
+                    )
+                    p_user.set_password('ParentPass123!')
+                    p_role = _get_or_create_role('Parent', 'Parent/guardian portal access')
                     p_user.roles.append(p_role)
-                db.session.add(p_user)
-                db.session.flush()
+                    db.session.add(p_user)
+                    db.session.flush()
 
-                p_profile = Parent(
-                    user_id=p_user.id,
-                    relationship=data.get('parent_relationship', 'Guardian'),
-                    emergency_contact=data.get('parent_phone', '')
-                )
-                db.session.add(p_profile)
-                db.session.flush()
-                parent_id = p_profile.id
+                    p_profile = Parent(
+                        user_id=p_user.id,
+                        relationship=data.get('parent_relationship', 'Guardian'),
+                        emergency_contact=parent_phone
+                    )
+                    db.session.add(p_profile)
+                    db.session.flush()
+                    parent_id = p_profile.id
 
-        student = Student(
-            user_id=user.id,
-            student_id_number=data.get('student_id_number'),
-            date_of_birth=datetime.strptime(data.get('date_of_birth'), '%Y-%m-%d').date() if data.get('date_of_birth') else datetime.now().date(),
-            gender=data.get('gender', 'Male'),
-            blood_group=data.get('blood_group'),
-            parent_id=parent_id
-        )
-        db.session.add(student)
-        db.session.commit()
+            # Parse date of birth with multiple format fallbacks
+            dob_str = (data.get('date_of_birth') or '').strip()
+            dob_date = None
+            if dob_str:
+                for fmt in ('%Y-%m-%d', '%d/%m/%Y', '%d-%m-%Y', '%m/%d/%Y'):
+                    try:
+                        dob_date = datetime.strptime(dob_str, fmt).date()
+                        break
+                    except ValueError:
+                        continue
+            if not dob_date:
+                dob_date = datetime.now().date()
 
-        return student.to_dict(), 201
+            gender = (data.get('gender') or 'Male').strip()
+
+            student = Student(
+                user_id=user.id,
+                student_id_number=student_id_number,
+                date_of_birth=dob_date,
+                gender=gender,
+                blood_group=data.get('blood_group'),
+                parent_id=parent_id
+            )
+            db.session.add(student)
+            db.session.commit()
+
+            return student.to_dict(), 201
+
+        except Exception as e:
+            db.session.rollback()
+            return {'message': f'Failed to register student: {str(e)}'}, 500
 
 @students_ns.route('/<int:id>')
 class StudentDetail(Resource):
@@ -195,19 +243,31 @@ class StudentDetail(Resource):
     def put(self, id):
         student = Student.query.get_or_404(id)
         data = request.get_json() or {}
-        if 'status' in data:
-            student.status = data['status']
-        if 'blood_group' in data:
-            student.blood_group = data['blood_group']
-        if 'gender' in data:
-            student.gender = data['gender']
-        if 'date_of_birth' in data and data['date_of_birth']:
-            student.date_of_birth = datetime.strptime(data['date_of_birth'], '%Y-%m-%d').date()
-        # Update the linked user's full name
-        if 'full_name' in data and student.user:
-            student.user.full_name = data['full_name']
-        db.session.commit()
-        return student.to_dict(), 200
+        try:
+            if 'status' in data:
+                student.status = data['status']
+            if 'blood_group' in data:
+                student.blood_group = data['blood_group']
+            if 'gender' in data:
+                student.gender = data['gender']
+            if 'date_of_birth' in data and data['date_of_birth']:
+                dob_str = str(data['date_of_birth']).strip()
+                dob_date = None
+                for fmt in ('%Y-%m-%d', '%d/%m/%Y', '%d-%m-%Y', '%m/%d/%Y'):
+                    try:
+                        dob_date = datetime.strptime(dob_str, fmt).date()
+                        break
+                    except ValueError:
+                        continue
+                if dob_date:
+                    student.date_of_birth = dob_date
+            if 'full_name' in data and student.user:
+                student.user.full_name = data['full_name']
+            db.session.commit()
+            return student.to_dict(), 200
+        except Exception as e:
+            db.session.rollback()
+            return {'message': f'Failed to update student: {str(e)}'}, 500
 
     @jwt_required()
     def delete(self, id):
@@ -382,9 +442,8 @@ class AlumniList(Resource):
 
                 user = User(username=username, email=email, full_name=full_name.strip(), phone=data.get('phone'))
                 user.set_password('HafizPass123!')
-                role = Role.query.filter_by(name='Student').first()
-                if role:
-                    user.roles.append(role)
+                role = _get_or_create_role('Student', 'Registered student portal access')
+                user.roles.append(role)
                 db.session.add(user)
                 db.session.flush()
 

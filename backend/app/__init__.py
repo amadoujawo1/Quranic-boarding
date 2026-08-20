@@ -107,14 +107,25 @@ def create_app():
         # This block safely adds any missing columns after a model update.
         _safe_add_columns(db)
 
-        # Bootstrap admin role & default user if missing
+        # Bootstrap all standard roles & default admin user if missing
         from .models.user import Role, User, UserRole
-        if not Role.query.first():
-            admin_role = Role(name='Super Administrator', description='Full platform access')
-            db.session.add(admin_role)
-            db.session.flush()
-        else:
-            admin_role = Role.query.filter_by(name='Super Administrator').first()
+        default_roles = [
+            ('Super Administrator', 'Full platform access'),
+            ('Admin', 'System administration privileges'),
+            ('Teacher', 'Teaching and class management'),
+            ('Hifz Coordinator', 'Hifz program management'),
+            ('Accountant', 'Finance and fee management'),
+            ('Student', 'Registered student portal access'),
+            ('Parent', 'Parent/guardian portal access'),
+        ]
+        existing_roles = {r.name: r for r in Role.query.all()}
+        for name, desc in default_roles:
+            if name not in existing_roles:
+                role = Role(name=name, description=desc)
+                db.session.add(role)
+                existing_roles[name] = role
+        db.session.flush()
+        admin_role = existing_roles.get('Super Administrator')
 
         if not User.query.first():
             admin_user = User(
