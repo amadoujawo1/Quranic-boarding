@@ -131,7 +131,7 @@ class StudentPayment(db.Model):
     academic_year = db.Column(db.String(20), default='2026/2027')
     payment_month = db.Column(db.String(30), nullable=False) # e.g. 'August 2026', 'September 2026'
     class_level = db.Column(db.String(50), default='Hifz Level 2')
-    fee_type = db.Column(db.String(50), default='Boarding / Tuition / Meals')
+    fee_type = db.Column(db.String(50), default='Boarding / Tuition')
     amount_due = db.Column(db.Float, nullable=False, default=2500.0)
     amount_paid = db.Column(db.Float, nullable=False, default=0.0)
     balance = db.Column(db.Float, default=2500.0)

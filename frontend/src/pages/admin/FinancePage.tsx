@@ -71,7 +71,7 @@ const DEFAULT_PAYMENTS: StudentPayment[] = [
     class_level: 'Hifz Level 2',
     academic_year: '2026/2027',
     payment_month: 'August 2026',
-    fee_type: 'Boarding / Tuition / Meals',
+    fee_type: 'Boarding / Tuition',
     amount_due: 2500,
     amount_paid: 2500,
     balance: 0,
@@ -90,7 +90,7 @@ const DEFAULT_PAYMENTS: StudentPayment[] = [
     class_level: 'Hifz Level 2',
     academic_year: '2026/2027',
     payment_month: 'September 2026',
-    fee_type: 'Boarding / Tuition / Meals',
+    fee_type: 'Boarding / Tuition',
     amount_due: 2500,
     amount_paid: 2500,
     balance: 0,
@@ -109,7 +109,7 @@ const DEFAULT_PAYMENTS: StudentPayment[] = [
     class_level: 'Hifz Level 2',
     academic_year: '2026/2027',
     payment_month: 'October 2026',
-    fee_type: 'Boarding / Tuition / Meals',
+    fee_type: 'Boarding / Tuition',
     amount_due: 2500,
     amount_paid: 2000,
     balance: 500,
@@ -128,7 +128,7 @@ const DEFAULT_PAYMENTS: StudentPayment[] = [
     class_level: 'Hifz Level 2',
     academic_year: '2026/2027',
     payment_month: 'November 2026',
-    fee_type: 'Boarding / Tuition / Meals',
+    fee_type: 'Boarding / Tuition',
     amount_due: 2500,
     amount_paid: 0,
     balance: 2500,
@@ -147,7 +147,7 @@ const DEFAULT_PAYMENTS: StudentPayment[] = [
     class_level: 'Hifz Level 2',
     academic_year: '2026/2027',
     payment_month: 'December 2026',
-    fee_type: 'Boarding / Tuition / Meals',
+    fee_type: 'Boarding / Tuition',
     amount_due: 2500,
     amount_paid: 2500,
     balance: 0,
@@ -166,7 +166,7 @@ const DEFAULT_PAYMENTS: StudentPayment[] = [
     class_level: 'Tajweed Foundation',
     academic_year: '2026/2027',
     payment_month: 'August 2026',
-    fee_type: 'Tuition & Meals',
+    fee_type: 'Tuition',
     amount_due: 2500,
     amount_paid: 2500,
     balance: 0,
@@ -253,7 +253,7 @@ export const FinancePage: React.FC = () => {
     class_level: 'Hifz Level 2',
     academic_year: '2026/2027',
     payment_month: 'August 2026',
-    fee_type: 'Boarding / Tuition / Meals',
+    fee_type: 'Boarding / Tuition',
     amount_due: 2500,
     amount_paid: 2500,
     payment_date: new Date().toISOString().split('T')[0],
@@ -406,7 +406,7 @@ export const FinancePage: React.FC = () => {
       class_level: paymentForm.class_level || 'Hifz Level 2',
       academic_year: paymentForm.academic_year || '2026/2027',
       payment_month: paymentForm.payment_month || 'August 2026',
-      fee_type: paymentForm.fee_type || 'Boarding / Tuition / Meals',
+      fee_type: paymentForm.fee_type || 'Boarding / Tuition',
       amount_due: due,
       amount_paid: paid,
       balance: balance,
@@ -2283,8 +2283,8 @@ export const FinancePage: React.FC = () => {
                       onChange={e => setMultiFeeType(e.target.value)}
                       className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none cursor-pointer"
                     >
-                      <option>Boarding / Tuition / Meals</option>
-                      <option>Tuition &amp; Meals</option>
+                      <option>Boarding / Tuition</option>
+                      <option>Tuition</option>
                       <option>Tuition Only</option>
                       <option>Boarding Only</option>
                     </select>

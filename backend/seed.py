@@ -329,7 +329,7 @@ def seed_database():
                     academic_year='2026/2027',
                     payment_month='August 2026',
                     class_level='Tajweed Foundation',
-                    fee_type='Tuition & Meals',
+                    fee_type='Tuition',
                     amount_due=2500.0,
                     amount_paid=2500.0,
                     payment_date=date(2026, 8, 18),

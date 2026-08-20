@@ -94,7 +94,7 @@ def test_create_and_get_student_payment(client, admin_token):
         'payment_month': 'August 2026',
         'academic_year': '2026/2027',
         'class_level': 'Hifz Level 2',
-        'fee_type': 'Boarding / Tuition / Meals',
+        'fee_type': 'Boarding / Tuition',
         'amount_due': 2500,
         'amount_paid': 2500,
         'payment_method': 'Cash',
@@ -152,7 +152,7 @@ def test_batch_generate_dues(client, admin_token):
         'payment_month': 'September 2026',
         'academic_year': '2026/2027',
         'amount_due': 2500,
-        'fee_type': 'Boarding / Tuition / Meals',
+        'fee_type': 'Boarding / Tuition',
         'class_level': 'Hifz Level 2'
     })
     assert res.status_code == 201
@@ -167,7 +167,7 @@ def test_multi_month_payment_full(client, admin_token):
         'student_id_number': 'INCM-2026-001',
         'months': ['August 2026', 'September 2026', 'October 2026'],
         'academic_year': '2026/2027',
-        'fee_type': 'Boarding / Tuition / Meals',
+        'fee_type': 'Boarding / Tuition',
         'fee_per_month': 2500,
         'total_paid': 7500,
         'payment_method': 'Bank Transfer',

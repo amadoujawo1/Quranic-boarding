@@ -399,7 +399,7 @@ class StudentPaymentList(Resource):
         payment_month = (data.get('payment_month') or 'August 2026').strip()
         academic_year = (data.get('academic_year') or '2026/2027').strip()
         class_level = (data.get('class_level') or 'Hifz Level 2').strip()
-        fee_type = (data.get('fee_type') or 'Boarding / Tuition / Meals').strip()
+        fee_type = (data.get('fee_type') or 'Boarding / Tuition').strip()
 
         amount_due = float(data.get('amount_due', 2500.0) or 2500.0)
         amount_paid = float(data.get('amount_paid', 0.0) or 0.0)
@@ -639,7 +639,7 @@ class StudentPaymentMultiMonth(Resource):
             return {'message': 'At least one payment month is required.'}, 400
 
         academic_year = (data.get('academic_year') or '2026/2027').strip()
-        fee_type = (data.get('fee_type') or 'Boarding / Tuition / Meals').strip()
+        fee_type = (data.get('fee_type') or 'Boarding / Tuition').strip()
         class_level = (data.get('class_level') or (student.class_level if hasattr(student, 'class_level') else 'Hifz Level 2')).strip()
         fee_per_month = float(data.get('fee_per_month', 2500.0) or 2500.0)
         total_paid = float(data.get('total_paid', 0.0) or 0.0)
@@ -765,7 +765,7 @@ class StudentPaymentBatchGenerate(Resource):
         payment_month = (data.get('payment_month') or '').strip()
         academic_year = (data.get('academic_year') or '2026/2027').strip()
         amount_due = float(data.get('amount_due', 2500.0) or 2500.0)
-        fee_type = (data.get('fee_type') or 'Boarding / Tuition / Meals').strip()
+        fee_type = (data.get('fee_type') or 'Boarding / Tuition').strip()
         class_level = (data.get('class_level') or 'All Levels').strip()
 
         if not payment_month:
