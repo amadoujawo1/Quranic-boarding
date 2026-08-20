@@ -1,6 +1,7 @@
 from datetime import datetime
 import csv
 import io
+import re
 from flask import request
 from flask_restx import Namespace, Resource
 from flask_jwt_extended import jwt_required
@@ -26,6 +27,46 @@ def _get_or_create_role(name: str, description: str = ''):
     return role
 
 
+def _generate_student_id(year: int | None = None) -> str:
+    """Generate a unique student ID like QBS-2026-001, guaranteed to not collide.
+
+    Strategy:
+    1. Find the highest existing suffix for the target year (regex scan of student_id_number).
+    2. Start from (highest + 1).
+    3. If that suffix somehow still collides (manual entries, races), keep incrementing
+       until a free slot is found (guaranteed termination).
+    """
+    if year is None:
+        year = datetime.utcnow().year
+    prefix = f"QBS-{year}-"
+
+    # Query all student IDs starting with this year's prefix
+    existing = (
+        Student.query
+        .filter(Student.student_id_number.like(f"{prefix}%"))
+        .with_entities(Student.student_id_number)
+        .all()
+    )
+
+    max_suffix = 0
+    pat = re.compile(rf"^{re.escape(prefix)}(\d+)$")
+    for (sid,) in existing:
+        m = pat.match(sid or "")
+        if m:
+            try:
+                max_suffix = max(max_suffix, int(m.group(1)))
+            except ValueError:
+                pass
+
+    # Start from (highest existing + 1); if collision, increment until free
+    candidate = max_suffix + 1
+    while True:
+        sid = f"{prefix}{candidate:03d}"
+        if not Student.query.filter_by(student_id_number=sid).first():
+            return sid
+        candidate += 1
+
+
 def _create_student_from_row(data: dict) -> dict:
     """Shared helper: create one student from a flat data dict. Returns result dict."""
     full_name    = (data.get('full_name') or '').strip()
@@ -41,10 +82,9 @@ def _create_student_from_row(data: dict) -> dict:
     if not full_name:
         return {'ok': False, 'error': 'full_name is required'}
 
-    # Auto-generate ID/email if missing
-    existing_count = Student.query.count()
-    if not student_id:
-        student_id = f"QBS-{datetime.utcnow().year}-{existing_count + 1:03d}"
+    # Auto-generate ID using collision-safe helper if missing OR if provided ID already exists
+    if not student_id or Student.query.filter_by(student_id_number=student_id).first():
+        student_id = _generate_student_id()
     if not email:
         email = f"std_{student_id.replace(' ', '_')}@qbsms.edu"
 
@@ -132,18 +172,20 @@ class StudentList(Resource):
             if not full_name:
                 return {'message': 'full_name is required'}, 400
 
-            # Auto-generate student ID if missing
-            existing_count = Student.query.count()
+            # Generate student ID: use collision-safe helper if missing OR if
+            # the frontend-provided ID already exists. This handles the case
+            # where the frontend pre-generates QBS-2026-001 based on count,
+            # but that ID was already taken.
             student_id_number = (data.get('student_id_number') or '').strip()
-            if not student_id_number:
-                student_id_number = f"QBS-{datetime.utcnow().year}-{existing_count + 1:03d}"
+            if not student_id_number or Student.query.filter_by(student_id_number=student_id_number).first():
+                student_id_number = _generate_student_id()
 
-            # Auto-generate email if missing
+            # Auto-generate email if missing (based on final student_id_number)
             email = (data.get('email') or '').strip()
             if not email:
                 email = f"std_{student_id_number.replace(' ', '_')}@qbsms.edu"
 
-            # Auto-generate username if missing
+            # Auto-generate username if missing (based on final student_id_number)
             username = (data.get('username') or '').strip()
             if not username:
                 username = f"std_{student_id_number.replace(' ', '_')}"
@@ -151,13 +193,16 @@ class StudentList(Resource):
             password = data.get('password', 'Student123!')
             phone = (data.get('phone') or '').strip()
 
-            # Check for duplicates
+            # Check for duplicate username/email
             if User.query.filter((User.username == username) | (User.email == email)).first():
                 return {'message': 'User with this email or username already exists'}, 400
 
-            # Check unique student_id_number
+            # Double-check student_id_number uniqueness right before insert
             if Student.query.filter_by(student_id_number=student_id_number).first():
-                return {'message': f'Student ID {student_id_number} already exists'}, 400
+                student_id_number = _generate_student_id()
+                # Re-derive email/username with the newly regenerated ID
+                email = f"std_{student_id_number.replace(' ', '_')}@qbsms.edu"
+                username = f"std_{student_id_number.replace(' ', '_')}"
 
             # Create student user
             user = User(username=username, email=email, full_name=full_name, phone=phone or None)

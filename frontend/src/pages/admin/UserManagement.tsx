@@ -81,11 +81,7 @@ export const UserManagement: React.FC = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const payload = {
-        ...newStudent,
-        student_id_number: newStudent.student_id_number || `QBS-2026-${String(studentCount + 1).padStart(3, '0')}`,
-        email: newStudent.email || `std_QBS-2026-${String(studentCount + 1).padStart(3, '0')}@qbsms.edu`
-      };
+      const payload = { ...newStudent };
       const res = await fetch('/api/students', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },

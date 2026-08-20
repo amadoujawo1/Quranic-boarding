@@ -55,11 +55,7 @@ export const StudentManagement: React.FC = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const payload = {
-        ...newStudent,
-        student_id_number: newStudent.student_id_number || `QBS-2026-00${students.length + 1}`,
-        email: newStudent.email || `std_QBS-2026-00${students.length + 1}@qbsms.edu`
-      };
+      const payload = { ...newStudent };
       
       const response = await fetch('/api/students', {
         method: 'POST',
