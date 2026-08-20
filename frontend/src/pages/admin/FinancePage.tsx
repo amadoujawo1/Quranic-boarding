@@ -205,9 +205,16 @@ export const FinancePage: React.FC = () => {
   const partialCount = paymentStats?.partial_count ?? studentPayments.filter(p => p.status === 'Partial').length;
   const unpaidCount = paymentStats?.unpaid_count ?? studentPayments.filter(p => p.status === 'Unpaid').length;
 
-  // Month list available in payments
+  // Month list available in payments — academic year order starting January
   const availableMonths = [
     'All',
+    'January 2026',
+    'February 2026',
+    'March 2026',
+    'April 2026',
+    'May 2026',
+    'June 2026',
+    'July 2026',
     'August 2026',
     'September 2026',
     'October 2026',
