@@ -96,8 +96,7 @@ def create_app():
 
     # Initialize database schema and bootstrap default data on first run
     with app.app_context():
-        from .models.user import Role, User, UserRole
-
+        from . import models  # Register all models with SQLAlchemy metadata
         db.create_all()
 
         # ── Schema migration shim ──────────────────────────────────────────────
@@ -105,6 +104,8 @@ def create_app():
         # This block safely adds any missing columns after a model update.
         _safe_add_columns(db)
 
+        # Bootstrap admin role & default user if missing
+        from .models.user import Role, User, UserRole
         if not Role.query.first():
             admin_role = Role(name='Super Administrator', description='Full platform access')
             db.session.add(admin_role)
@@ -122,9 +123,11 @@ def create_app():
             admin_user.set_password(os.getenv('DEFAULT_ADMIN_PASSWORD', 'AdminPass123!'))
             db.session.add(admin_user)
             db.session.flush()
-            db.session.add(UserRole(user_id=admin_user.id, role_id=admin_role.id))
-
+            if admin_role:
+                db.session.add(UserRole(user_id=admin_user.id, role_id=admin_role.id))
         db.session.commit()
+
+
 
     # Register blueprints
     from .resources import api_bp

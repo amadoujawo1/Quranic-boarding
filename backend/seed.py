@@ -7,10 +7,8 @@ from app.models.boarding import Building, Dormitory, Room, Bed
 from app.models.quran import HifzProgress
 from app.models.finance import FeeInvoice, Donation, StudentPayment
 
-app = create_app()
-
-def seed_database():
-    with app.app_context():
+def seed_database(app_instance=None):
+    def _do_seed():
         db.create_all()
 
         # Roles list
@@ -344,7 +342,14 @@ def seed_database():
         db.session.commit()
         print("Database successfully seeded with demo QBSMS data, student payments, and 15 Hifz Huffaz Graduates!")
 
+    if app_instance:
+        with app_instance.app_context():
+            _do_seed()
+    else:
+        _do_seed()
+
 if __name__ == '__main__':
-    seed_database()
+    app = create_app()
+    seed_database(app)
 
 

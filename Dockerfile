@@ -25,7 +25,8 @@ RUN pip install --no-cache-dir -r ./backend/requirements.txt
 COPY backend/ ./backend/
 
 # Copy React build into backend/dist so Flask can serve it
-RUN cp -r frontend/dist backend/dist
+RUN rm -rf backend/dist && cp -r frontend/dist backend/dist
+
 
 WORKDIR /app/backend
 
