@@ -94,7 +94,7 @@ export const FinancePage: React.FC = () => {
   const [multiTotalPaid, setMultiTotalPaid] = useState<string>('');
   const [multiMethod, setMultiMethod] = useState('Cash');
   const [multiPaymentDate, setMultiPaymentDate] = useState(new Date().toISOString().split('T')[0]);
-  const [multiFeeType, setMultiFeeType] = useState('Boarding / Tuition / Meals');
+  const [multiFeeType, setMultiFeeType] = useState('Boarding / Tuition');
   const [multiAcademicYear, setMultiAcademicYear] = useState('2026/2027');
   const [multiRemarks, setMultiRemarks] = useState('');
   const [multiStudentSearch, setMultiStudentSearch] = useState('');
@@ -127,7 +127,7 @@ export const FinancePage: React.FC = () => {
   const [batchMonth, setBatchMonth] = useState('August 2026');
   const [batchYear, setBatchYear] = useState('2026/2027');
   const [batchAmountDue, setBatchAmountDue] = useState(2500);
-  const [batchFeeType, setBatchFeeType] = useState('Boarding / Tuition / Meals');
+  const [batchFeeType, setBatchFeeType] = useState('Boarding / Tuition');
   const [batchLevel, setBatchLevel] = useState('All Levels');
 
   const [modalStudentSearch, setModalStudentSearch] = useState('');
@@ -1147,6 +1147,7 @@ export const FinancePage: React.FC = () => {
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 font-semibold uppercase border-b border-slate-200 dark:border-slate-700 text-[10px]">
                   <tr>
+                    <th className="p-4">Student Name</th>
                     <th className="p-4">Month</th>
                     <th className="p-4">Amount Due</th>
                     <th className="p-4">Paid</th>
@@ -1161,6 +1162,12 @@ export const FinancePage: React.FC = () => {
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {currentStudentRecords.map((rec) => (
                     <tr key={rec.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+                      <td className="p-4">
+                        <div className="font-bold text-slate-900 dark:text-white">{rec.student_name || (currentLedgerStudent ? currentLedgerStudent.full_name : '—')}</div>
+                        <div className="text-[11px] font-mono text-gold-600 dark:text-gold-400 font-semibold">
+                          {rec.student_id_number || (currentLedgerStudent ? currentLedgerStudent.student_id_number : '')}
+                        </div>
+                      </td>
                       <td className="p-4 font-bold text-slate-900 dark:text-white">
                         {rec.payment_month}
                       </td>
@@ -1210,7 +1217,7 @@ export const FinancePage: React.FC = () => {
                   ))}
                   {currentStudentRecords.length === 0 && (
                     <tr>
-                      <td colSpan={9} className="p-8 text-center text-slate-400 text-xs">
+                      <td colSpan={10} className="p-8 text-center text-slate-400 text-xs">
                         No monthly records found for this student. Click "Record Payment" or "Generate Monthly Dues" to create one.
                       </td>
                     </tr>
@@ -1548,8 +1555,7 @@ export const FinancePage: React.FC = () => {
                   onChange={e => setPaymentForm({ ...paymentForm, fee_type: e.target.value })}
                   className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none cursor-pointer"
                 >
-                  <option>Boarding / Tuition / Meals</option>
-                  <option>Tuition &amp; Meals</option>
+                  <option>Boarding / Tuition</option>
                   <option>Tuition Only</option>
                   <option>Boarding Only</option>
                 </select>
