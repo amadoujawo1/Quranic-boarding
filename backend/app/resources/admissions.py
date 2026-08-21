@@ -3,13 +3,18 @@ from datetime import datetime
 from flask import request
 # pyrefly: ignore [missing-import]
 from flask_restx import Namespace, Resource
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt
 from .. import db
 from ..models.admission import AdmissionApplication
 from ..models.student import Student, Parent
 from ..models.user import User, Role
 
 admissions_ns = Namespace('admissions', description='Admission Applications & Enrolment Management')
+
+def is_admin():
+    claims = get_jwt()
+    roles = claims.get('roles', [])
+    return 'Admin' in roles or 'Super Admin' in roles or 'Super Administrator' in roles
 
 def _gen_app_number():
     """Generate a unique application reference like APP-2026-00042."""
@@ -118,11 +123,17 @@ class AdmissionDetail(Resource):
         if data.get('status') in ('Accepted', 'Rejected'):
             app_obj.decision_date = datetime.utcnow()
 
+        # Track who edited the admission record
+        claims = get_jwt()
+        editor_name = claims.get('full_name', 'Unknown')
+
         db.session.commit()
-        return app_obj.to_dict(), 200
+        return {**app_obj.to_dict(), 'last_edited_by': editor_name, 'last_edited_at': datetime.utcnow().isoformat()}, 200
 
     @jwt_required()
     def delete(self, id):
+        if not is_admin():
+            return {'message': 'Admin privileges required'}, 403
         app_obj = AdmissionApplication.query.get_or_404(id)
         db.session.delete(app_obj)
         db.session.commit()

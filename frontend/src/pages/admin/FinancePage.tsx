@@ -552,7 +552,8 @@ export const FinancePage: React.FC = () => {
     setMultiRemarks('');
 
     if (backendSuccess) {
-      setTimeout(() => loadData(), 500);
+      // Force immediate data refresh to ensure multi-month payments are included in totals
+      await loadData();
     }
   };
 

@@ -129,6 +129,11 @@ class Register(Resource):
 class UserResource(Resource):
     @jwt_required()
     def delete(self, user_id):
+        claims = get_jwt()
+        roles = claims.get('roles', [])
+        is_admin_role = 'Admin' in roles or 'Super Admin' in roles or 'Super Administrator' in roles
+        if not is_admin_role:
+            return {'message': 'Admin privileges required'}, 403
         identity = get_jwt_identity()
         current_user = User.query.filter_by(username=identity).first()
         if current_user and current_user.id == user_id:

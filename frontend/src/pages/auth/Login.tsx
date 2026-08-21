@@ -8,8 +8,8 @@ interface LoginProps {
 
 export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const navigate = useNavigate();
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('AdminPass123!');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [totpCode, setTotpCode] = useState('');
   const [requires2FA, setRequires2FA] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');

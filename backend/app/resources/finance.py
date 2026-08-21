@@ -168,7 +168,10 @@ class InvoiceResource(Resource):
         invoice.last_edited_at = datetime.utcnow()
             
         db.session.commit()
-        return invoice.to_dict(), 200
+        result = invoice.to_dict()
+        result['last_edited_by'] = invoice.last_edited_by
+        result['last_edited_at'] = invoice.last_edited_at.isoformat() if invoice.last_edited_at else None
+        return result, 200
 
     @jwt_required()
     def delete(self, id):
@@ -252,7 +255,7 @@ class DonationResource(Resource):
         d.last_edited_by = get_jwt().get('full_name', 'Unknown Admin')
         d.last_edited_at = datetime.utcnow()
         db.session.commit()
-        return {'message': 'Donation updated successfully'}, 200
+        return {'message': 'Donation updated successfully', 'last_edited_by': d.last_edited_by, 'last_edited_at': d.last_edited_at.isoformat() if d.last_edited_at else None}, 200
 
     @jwt_required()
     def delete(self, id):
@@ -306,7 +309,7 @@ class ExpenseResource(Resource):
         expense.last_edited_by = get_jwt().get('full_name', 'Unknown Admin')
         expense.last_edited_at = datetime.utcnow()
         db.session.commit()
-        return {'message': 'Expense updated successfully'}, 200
+        return {'message': 'Expense updated successfully', 'last_edited_by': expense.last_edited_by, 'last_edited_at': expense.last_edited_at.isoformat() if expense.last_edited_at else None}, 200
 
     @jwt_required()
     def delete(self, id):
@@ -481,7 +484,10 @@ class StudentPaymentItem(Resource):
         payment.recorded_by = get_jwt().get('full_name', payment.recorded_by or 'Administrator')
         payment.compute_status()
         db.session.commit()
-        return payment.to_dict(), 200
+        result = payment.to_dict()
+        result['last_edited_by'] = payment.recorded_by
+        result['last_edited_at'] = payment.updated_at.isoformat() if payment.updated_at else None
+        return result, 200
 
     @jwt_required()
     def delete(self, id):

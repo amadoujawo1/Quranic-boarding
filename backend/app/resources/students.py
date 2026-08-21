@@ -4,7 +4,7 @@ import io
 import re
 from flask import request
 from flask_restx import Namespace, Resource
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt
 from .. import db
 from ..models.student import Student, Parent, MedicalRecord, StudentDocument, Alumni
 from ..models.user import User, Role, UserRole, ActivityLog
@@ -16,6 +16,11 @@ from ..models.boarding import HostelAllocation, VisitorLog
 from ..models.academic import Grade
 
 students_ns = Namespace('students', description='Student Admission and Profile Management')
+
+def is_admin():
+    claims = get_jwt()
+    roles = claims.get('roles', [])
+    return 'Admin' in roles or 'Super Admin' in roles or 'Super Administrator' in roles
 
 def _get_or_create_role(name: str, description: str = ''):
     """Get a role by name, creating it if it doesn't exist."""
@@ -308,14 +313,21 @@ class StudentDetail(Resource):
                     student.date_of_birth = dob_date
             if 'full_name' in data and student.user:
                 student.user.full_name = data['full_name']
+            
+            # Track who edited the student record
+            claims = get_jwt()
+            editor_name = claims.get('full_name', 'Unknown')
+            
             db.session.commit()
-            return student.to_dict(), 200
+            return {**student.to_dict(), 'last_edited_by': editor_name, 'last_edited_at': datetime.utcnow().isoformat()}, 200
         except Exception as e:
             db.session.rollback()
             return {'message': f'Failed to update student: {str(e)}'}, 500
 
     @jwt_required()
     def delete(self, id):
+        if not is_admin():
+            return {'message': 'Admin privileges required'}, 403
         student = Student.query.get_or_404(id)
         sid = student.id
 
@@ -563,11 +575,17 @@ class AlumniDetail(Resource):
         if 'full_name' in data and alumni.student and alumni.student.user:
             alumni.student.user.full_name = data['full_name']
 
+        # Track who edited the alumni record
+        claims = get_jwt()
+        editor_name = claims.get('full_name', 'Unknown')
+
         db.session.commit()
-        return alumni.to_dict(), 200
+        return {**alumni.to_dict(), 'last_edited_by': editor_name, 'last_edited_at': datetime.utcnow().isoformat()}, 200
 
     @jwt_required()
     def delete(self, id):
+        if not is_admin():
+            return {'message': 'Admin privileges required'}, 403
         alumni = Alumni.query.get_or_404(id)
         db.session.delete(alumni)
         db.session.commit()
