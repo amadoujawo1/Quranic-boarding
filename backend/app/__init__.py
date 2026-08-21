@@ -27,6 +27,7 @@ def _safe_add_columns(db):
     migrations = [
         "ALTER TABLE fee_invoices ADD COLUMN period_type VARCHAR(20) DEFAULT 'Term'",
         "ALTER TABLE fee_invoices ADD COLUMN period_value VARCHAR(50) DEFAULT 'Term 1'",
+        "ALTER TABLE expenses ADD COLUMN expense_month VARCHAR(30) NOT NULL DEFAULT ''",
     ]
     with db.engine.connect() as conn:
         for sql in migrations:
