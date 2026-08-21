@@ -2183,6 +2183,11 @@ export const FinancePage: React.FC = () => {
                 <option>May 2027</option>
                 <option>June 2027</option>
                 <option>July 2027</option>
+                <option>August 2027</option>
+                <option>September 2027</option>
+                <option>October 2027</option>
+                <option>November 2027</option>
+                <option>December 2027</option>
               </select>
             </div>
             <div>
@@ -2268,6 +2273,11 @@ export const FinancePage: React.FC = () => {
                 <option>May 2027</option>
                 <option>June 2027</option>
                 <option>July 2027</option>
+                <option>August 2027</option>
+                <option>September 2027</option>
+                <option>October 2027</option>
+                <option>November 2027</option>
+                <option>December 2027</option>
               </select>
             </div>
             <div>
