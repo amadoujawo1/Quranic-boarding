@@ -277,17 +277,26 @@ class ExpenseList(Resource):
             'amount': e.amount,
             'category': e.category,
             'expense_date': e.expense_date.isoformat() if e.expense_date else None,
+            'expense_month': e.expense_month,
             'last_edited_by': e.last_edited_by,
             'last_edited_at': e.last_edited_at.isoformat() if e.last_edited_at else None
         } for e in expenses], 200
 
     def post(self):
         data = request.get_json() or {}
+        expense_date = datetime.strptime(data.get('expense_date'), '%Y-%m-%d').date() if data.get('expense_date') else datetime.utcnow().date()
+        
+        # Generate expense_month from expense_date if not provided
+        expense_month = data.get('expense_month')
+        if not expense_month:
+            expense_month = expense_date.strftime('%B %Y')
+        
         expense = Expense(
             description=data.get('description') or data.get('title') or '',
             amount=float(data.get('amount', 0.0)),
             category=data.get('category', 'General'),
-            expense_date=datetime.strptime(data.get('expense_date'), '%Y-%m-%d').date() if data.get('expense_date') else datetime.utcnow().date()
+            expense_date=expense_date,
+            expense_month=expense_month
         )
         db.session.add(expense)
         db.session.commit()
@@ -306,6 +315,11 @@ class ExpenseResource(Resource):
         if 'category' in data: expense.category = data['category']
         if 'expense_date' in data and data['expense_date']:
             expense.expense_date = datetime.strptime(data['expense_date'], '%Y-%m-%d').date()
+        if 'expense_month' in data:
+            expense.expense_month = data['expense_month']
+        elif 'expense_date' in data and data['expense_date']:
+            # Update expense_month if expense_date changed
+            expense.expense_month = expense.expense_date.strftime('%B %Y')
         expense.last_edited_by = get_jwt().get('full_name', 'Unknown Admin')
         expense.last_edited_at = datetime.utcnow()
         db.session.commit()

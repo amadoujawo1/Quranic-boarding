@@ -132,7 +132,7 @@ export const FinancePage: React.FC = () => {
 
   const [modalStudentSearch, setModalStudentSearch] = useState('');
   const [newDonation, setNewDonation] = useState({ donor_name: '', amount: '', purpose: 'General Sadaqah' });
-  const [newExpense, setNewExpense] = useState({ category: 'Kitchen & Nutrition', description: '', amount: '' });
+  const [newExpense, setNewExpense] = useState({ category: 'Kitchen & Nutrition', description: '', amount: '', expense_month: '' });
 
   // Clean up any stale localStorage demo cache
   useEffect(() => {
@@ -625,16 +625,19 @@ export const FinancePage: React.FC = () => {
     const amt = Number(newExpense.amount);
     if (!amt || amt <= 0) return;
     const token = localStorage.getItem('token');
+    const expenseDate = new Date().toISOString().split('T')[0];
+    const expenseMonth = newExpense.expense_month || new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
     const newRecord = {
       id: Date.now(),
       category: newExpense.category,
       description: newExpense.description,
       amount: amt,
-      expense_date: new Date().toISOString().split('T')[0]
+      expense_date: expenseDate,
+      expense_month: expenseMonth
     };
     setExpenses(prev => [newRecord, ...prev]);
     setShowExpenseModal(false);
-    setNewExpense({ category: 'Kitchen & Nutrition', description: '', amount: '' });
+    setNewExpense({ category: 'Kitchen & Nutrition', description: '', amount: '', expense_month: '' });
 
     if (token) {
       try {
@@ -1407,6 +1410,7 @@ export const FinancePage: React.FC = () => {
                   <th className="p-4">Category</th>
                   <th className="p-4">Description</th>
                   <th className="p-4">Amount</th>
+                  <th className="p-4">Month</th>
                   <th className="p-4">Date</th>
                   <th className="p-4 text-right">Actions</th>
                 </tr>
@@ -1414,7 +1418,7 @@ export const FinancePage: React.FC = () => {
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {expenses.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="p-8 text-center text-slate-400">
+                    <td colSpan={6} className="p-8 text-center text-slate-400">
                       No expense records found. Click "Log Expense" to add one.
                     </td>
                   </tr>
@@ -1426,6 +1430,7 @@ export const FinancePage: React.FC = () => {
                       </td>
                       <td className="p-4 text-slate-700 dark:text-slate-300">{exp.description}</td>
                       <td className="p-4 font-extrabold text-rose-600 dark:text-rose-400">GMD {exp.amount?.toLocaleString()}</td>
+                      <td className="p-4 text-slate-500">{exp.expense_month || 'N/A'}</td>
                       <td className="p-4 text-slate-500">{exp.expense_date}</td>
                       <td className="p-4 text-right">
                         <button
@@ -2108,6 +2113,35 @@ export const FinancePage: React.FC = () => {
                 <option>Salaries &amp; Honoraria</option>
                 <option>Library &amp; Books</option>
                 <option>Medical &amp; Clinic</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Month</label>
+              <select
+                value={newExpense.expense_month}
+                onChange={e => setNewExpense({ ...newExpense, expense_month: e.target.value })}
+                className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl cursor-pointer"
+              >
+                <option value="">Select Month (optional)</option>
+                <option>January 2026</option>
+                <option>February 2026</option>
+                <option>March 2026</option>
+                <option>April 2026</option>
+                <option>May 2026</option>
+                <option>June 2026</option>
+                <option>July 2026</option>
+                <option>August 2026</option>
+                <option>September 2026</option>
+                <option>October 2026</option>
+                <option>November 2026</option>
+                <option>December 2026</option>
+                <option>January 2027</option>
+                <option>February 2027</option>
+                <option>March 2027</option>
+                <option>April 2027</option>
+                <option>May 2027</option>
+                <option>June 2027</option>
+                <option>July 2027</option>
               </select>
             </div>
             <div>

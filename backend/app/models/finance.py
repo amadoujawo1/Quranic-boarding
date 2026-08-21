@@ -119,6 +119,7 @@ class Expense(db.Model):
     description = db.Column(db.Text, nullable=False)
     amount = db.Column(db.Float, nullable=False)
     expense_date = db.Column(db.Date, default=datetime.utcnow)
+    expense_month = db.Column(db.String(30), nullable=False) # e.g. 'August 2026', 'September 2026'
     recorded_by_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'))
     last_edited_by = db.Column(db.String(150))
     last_edited_at = db.Column(db.DateTime)
