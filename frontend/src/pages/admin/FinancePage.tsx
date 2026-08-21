@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  Edit, Trash2,
+  Edit, Trash2, Pencil,
   DollarSign, FileText, PlusCircle, CheckCircle2, AlertTriangle,
   Clock, TrendingUp, Wallet, CreditCard, Gift, Search,
   ChevronDown, X, ReceiptText, Building2, UserCheck, Printer,
@@ -133,6 +133,7 @@ export const FinancePage: React.FC = () => {
   const [modalStudentSearch, setModalStudentSearch] = useState('');
   const [newDonation, setNewDonation] = useState({ donor_name: '', amount: '', purpose: 'General Sadaqah' });
   const [newExpense, setNewExpense] = useState({ category: 'Kitchen & Nutrition', description: '', amount: '', expense_month: '' });
+  const [editExpense, setEditExpense] = useState<any>(null);
 
   // Clean up any stale localStorage demo cache
   useEffect(() => {
@@ -665,6 +666,39 @@ export const FinancePage: React.FC = () => {
         });
         loadData();
       } catch (_) {}
+    }
+  };
+
+  const handleEditExpense = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editExpense) return;
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`/api/finance/expenses/${editExpense.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          description: editExpense.description,
+          amount: editExpense.amount,
+          category: editExpense.category,
+          expense_date: editExpense.expense_date,
+          expense_month: editExpense.expense_month
+        })
+      });
+      if (response.ok) {
+        const updated = await response.json();
+        setExpenses(expenses.map(exp => exp.id === editExpense.id ? { ...exp, ...updated } : exp));
+        setEditExpense(null);
+      } else {
+        const err = await response.json();
+        alert(err.message || 'Failed to update expense');
+      }
+    } catch (err) {
+      console.warn('Expense edit error:', err);
+      alert('Failed to update expense');
     }
   };
 
@@ -1432,7 +1466,14 @@ export const FinancePage: React.FC = () => {
                       <td className="p-4 font-extrabold text-rose-600 dark:text-rose-400">GMD {exp.amount?.toLocaleString()}</td>
                       <td className="p-4 text-slate-500">{exp.expense_month || 'N/A'}</td>
                       <td className="p-4 text-slate-500">{exp.expense_date}</td>
-                      <td className="p-4 text-right">
+                      <td className="p-4 text-right flex gap-2 justify-end">
+                        <button
+                          onClick={() => setEditExpense(exp)}
+                          className="p-1.5 rounded-lg text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/50 transition cursor-pointer"
+                          title="Edit Expense"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
                         <button
                           onClick={() => handleDeleteExpense(exp.id)}
                           className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition cursor-pointer"
@@ -2168,6 +2209,100 @@ export const FinancePage: React.FC = () => {
             <div className="flex gap-3 pt-2">
               <button type="button" onClick={() => setShowExpenseModal(false)} className="w-1/2 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl cursor-pointer">Cancel</button>
               <button type="submit" className="w-1/2 py-2 bg-amber-500 text-white font-bold text-xs rounded-xl hover:bg-amber-600 transition cursor-pointer">Log Expense</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Edit Expense Modal */}
+      {editExpense && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <form onSubmit={handleEditExpense} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                <Pencil className="w-5 h-5 text-blue-500" /> Edit Expense
+              </h3>
+              <button type="button" onClick={() => setEditExpense(null)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Category</label>
+              <select
+                value={editExpense.category}
+                onChange={e => setEditExpense({ ...editExpense, category: e.target.value })}
+                className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl cursor-pointer"
+              >
+                <option>Kitchen &amp; Nutrition</option>
+                <option>Utilities &amp; Fuel</option>
+                <option>Maintenance &amp; Repairs</option>
+                <option>Salaries &amp; Honoraria</option>
+                <option>Library &amp; Books</option>
+                <option>Medical &amp; Clinic</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Month</label>
+              <select
+                value={editExpense.expense_month || ''}
+                onChange={e => setEditExpense({ ...editExpense, expense_month: e.target.value })}
+                className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl cursor-pointer"
+              >
+                <option value="">Select Month</option>
+                <option>January 2026</option>
+                <option>February 2026</option>
+                <option>March 2026</option>
+                <option>April 2026</option>
+                <option>May 2026</option>
+                <option>June 2026</option>
+                <option>July 2026</option>
+                <option>August 2026</option>
+                <option>September 2026</option>
+                <option>October 2026</option>
+                <option>November 2026</option>
+                <option>December 2026</option>
+                <option>January 2027</option>
+                <option>February 2027</option>
+                <option>March 2027</option>
+                <option>April 2027</option>
+                <option>May 2027</option>
+                <option>June 2027</option>
+                <option>July 2027</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Description <span className="text-rose-500">*</span></label>
+              <textarea
+                required
+                rows={2}
+                value={editExpense.description}
+                onChange={e => setEditExpense({ ...editExpense, description: e.target.value })}
+                className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl resize-none"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Amount (GMD) <span className="text-rose-500">*</span></label>
+              <input
+                type="number"
+                required
+                min="1"
+                value={editExpense.amount}
+                onChange={e => setEditExpense({ ...editExpense, amount: e.target.value })}
+                className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Date</label>
+              <input
+                type="date"
+                value={editExpense.expense_date}
+                onChange={e => setEditExpense({ ...editExpense, expense_date: e.target.value })}
+                className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl"
+              />
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button type="button" onClick={() => setEditExpense(null)} className="w-1/2 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl cursor-pointer">Cancel</button>
+              <button type="submit" className="w-1/2 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl hover:bg-blue-700 transition cursor-pointer">Save Changes</button>
             </div>
           </form>
         </div>
