@@ -92,7 +92,7 @@ export const FinancePage: React.FC = () => {
   const [multiSelectedMonths, setMultiSelectedMonths] = useState<string[]>([]);
   const [multiStartDate, setMultiStartDate] = useState('');
   const [multiEndDate, setMultiEndDate] = useState('');
-  const [multiFeePerMonth, setMultiFeePerMonth] = useState<number>(2500);
+  const [multiFeePerMonth, setMultiFeePerMonth] = useState<number>(0);
   const [multiTotalPaid, setMultiTotalPaid] = useState<string>('');
   const [multiMethod, setMultiMethod] = useState('Cash');
   const [multiPaymentDate, setMultiPaymentDate] = useState(new Date().toISOString().split('T')[0]);
