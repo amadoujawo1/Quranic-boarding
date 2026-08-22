@@ -56,7 +56,7 @@ const PaymentStatusBadge = ({ status }: { status: string }) => {
 
 export const FinancePage: React.FC = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const isAdmin = user?.roles?.includes('Admin') || user?.roles?.includes('Super Admin') || user?.roles?.includes('Super Administrator') || user?.roles?.includes('Accountant') || true;
+  const isAdmin = user?.roles?.includes('Admin') || user?.roles?.includes('Super Admin') || user?.roles?.includes('Super Administrator');
 
   // Main navigation tab
   const [tab, setTab] = useState<'monthly_payments' | 'student_ledger' | 'collection_report' | 'donations' | 'expenses'>('monthly_payments');
@@ -1430,12 +1430,14 @@ export const FinancePage: React.FC = () => {
         <div className="space-y-4">
           <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">Operational &amp; Maintenance Expenses</h3>
-            <button
-              onClick={() => setShowExpenseModal(true)}
-              className="px-3.5 py-2 text-xs font-bold rounded-xl bg-amber-500 text-white hover:bg-amber-600 transition flex items-center gap-1.5 cursor-pointer"
-            >
-              <Wallet className="w-3.5 h-3.5" /> Log Expense
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => setShowExpenseModal(true)}
+                className="px-3.5 py-2 text-xs font-bold rounded-xl bg-amber-500 text-white hover:bg-amber-600 transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <Wallet className="w-3.5 h-3.5" /> Log Expense
+              </button>
+            )}
           </div>
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
             <table className="w-full text-left text-xs">
@@ -1467,20 +1469,24 @@ export const FinancePage: React.FC = () => {
                       <td className="p-4 text-slate-500">{exp.expense_month || 'N/A'}</td>
                       <td className="p-4 text-slate-500">{exp.expense_date}</td>
                       <td className="p-4 text-right flex gap-2 justify-end">
-                        <button
-                          onClick={() => setEditExpense(exp)}
-                          className="p-1.5 rounded-lg text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/50 transition cursor-pointer"
-                          title="Edit Expense"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteExpense(exp.id)}
-                          className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition cursor-pointer"
-                          title="Delete Expense"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        {isAdmin && (
+                          <button
+                            onClick={() => setEditExpense(exp)}
+                            className="p-1.5 rounded-lg text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/50 transition cursor-pointer"
+                            title="Edit Expense"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                        {isAdmin && (
+                          <button
+                            onClick={() => handleDeleteExpense(exp.id)}
+                            className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition cursor-pointer"
+                            title="Delete Expense"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))
