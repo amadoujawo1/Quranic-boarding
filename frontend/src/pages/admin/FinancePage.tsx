@@ -90,6 +90,8 @@ export const FinancePage: React.FC = () => {
   // Multi-month payment form state
   const [multiStudentId, setMultiStudentId] = useState<number>(1);
   const [multiSelectedMonths, setMultiSelectedMonths] = useState<string[]>([]);
+  const [multiStartDate, setMultiStartDate] = useState('');
+  const [multiEndDate, setMultiEndDate] = useState('');
   const [multiFeePerMonth, setMultiFeePerMonth] = useState<number>(2500);
   const [multiTotalPaid, setMultiTotalPaid] = useState<string>('');
   const [multiMethod, setMultiMethod] = useState('Cash');
@@ -413,6 +415,26 @@ export const FinancePage: React.FC = () => {
     }
   };
 
+  // ── Generate months from date range ──────────────────────────────────────
+  const generateMonthsFromRange = (startDate: string, endDate: string) => {
+    if (!startDate || !endDate) return;
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    if (start > end) return;
+
+    const months: string[] = [];
+    const current = new Date(start);
+    current.setDate(1); // Set to first day of month
+
+    while (current <= end) {
+      const monthName = current.toLocaleString('default', { month: 'long', year: 'numeric' });
+      months.push(monthName);
+      current.setMonth(current.getMonth() + 1);
+    }
+
+    setMultiSelectedMonths(months);
+  };
+
   // ── Multi-Month Payment Handler ──────────────────────────────────────────
   const handleMultiMonthPayment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -548,6 +570,8 @@ export const FinancePage: React.FC = () => {
     }
 
     setMultiSelectedMonths([]);
+    setMultiStartDate('');
+    setMultiEndDate('');
     setMultiTotalPaid('');
     setMultiReceiptGroup('');
     setMultiRemarks('');
@@ -2454,55 +2478,50 @@ export const FinancePage: React.FC = () => {
                 {/* Month Selection */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    Select Months to Pay <span className="text-rose-500">*</span>
+                    Select Date Range <span className="text-rose-500">*</span>
                     <span className="ml-2 text-blue-600 dark:text-blue-400 font-bold">
-                      ({multiSelectedMonths.length} selected)
+                      ({multiSelectedMonths.length} months)
                     </span>
                   </label>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700">
-                    {availableMonths.filter(m => m !== 'All').map(month => {
-                      const checked = multiSelectedMonths.includes(month);
-                      return (
-                        <label
-                          key={month}
-                          className={`flex items-center gap-1.5 p-2 rounded-xl cursor-pointer text-xs font-semibold transition border ${
-                            checked
-                              ? 'bg-blue-600 text-white border-blue-500 shadow-inner'
-                              : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-400'
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            onChange={e => {
-                              if (e.target.checked) {
-                                setMultiSelectedMonths([...multiSelectedMonths, month]);
-                              } else {
-                                setMultiSelectedMonths(multiSelectedMonths.filter(m => m !== month));
-                              }
-                            }}
-                            className="w-3.5 h-3.5 accent-blue-600 shrink-0"
-                          />
-                          <span className="truncate">{month.split(' ')[0]}</span>
-                        </label>
-                      );
-                    })}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] text-slate-600 dark:text-slate-400 mb-1">Start Date</label>
+                      <input
+                        type="date"
+                        value={multiStartDate}
+                        onChange={e => {
+                          setMultiStartDate(e.target.value);
+                          generateMonthsFromRange(e.target.value, multiEndDate);
+                        }}
+                        className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] text-slate-600 dark:text-slate-400 mb-1">End Date</label>
+                      <input
+                        type="date"
+                        value={multiEndDate}
+                        onChange={e => {
+                          setMultiEndDate(e.target.value);
+                          generateMonthsFromRange(multiStartDate, e.target.value);
+                        }}
+                        className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl"
+                      />
+                    </div>
                   </div>
-                  <div className="flex gap-2 mt-2">
-                    <button
-                      type="button"
-                      onClick={() => setMultiSelectedMonths(availableMonths.filter(m => m !== 'All'))}
-                      className="text-[10px] px-3 py-1 bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 rounded-lg font-bold hover:brightness-110 transition cursor-pointer"
-                    >
-                      Select All
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setMultiSelectedMonths([])}
-                      className="text-[10px] px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg font-bold hover:brightness-110 transition cursor-pointer"
-                    >
-                      Clear
-                    </button>
+                  <div className="mt-2 p-2 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <div className="text-[10px] text-slate-600 dark:text-slate-400 mb-1">Selected Months:</div>
+                    <div className="flex flex-wrap gap-1">
+                      {multiSelectedMonths.length > 0 ? (
+                        multiSelectedMonths.map((m, idx) => (
+                          <span key={idx} className="px-2 py-0.5 bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 rounded-lg text-[10px] font-semibold">
+                            {m}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-[10px] text-slate-400 italic">No months selected</span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
