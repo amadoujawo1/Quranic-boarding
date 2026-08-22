@@ -1086,13 +1086,15 @@ export const FinancePage: React.FC = () => {
                           >
                             <Edit className="w-3.5 h-3.5" />
                           </button>
-                          <button
-                            onClick={() => handleDeletePayment(payment.id)}
-                            className="p-1 text-slate-400 hover:text-rose-500 transition cursor-pointer"
-                            title="Delete Record"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          {isAdmin && (
+                            <button
+                              onClick={() => handleDeletePayment(payment.id)}
+                              className="p-1 text-slate-400 hover:text-rose-500 transition cursor-pointer"
+                              title="Delete Record"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -1373,12 +1375,14 @@ export const FinancePage: React.FC = () => {
         <div className="space-y-4">
           <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">Sadaqah &amp; Waqf Contributions</h3>
-            <button
-              onClick={() => setShowDonationModal(true)}
-              className="px-3.5 py-2 text-xs font-bold rounded-xl bg-purple-600 text-white hover:bg-purple-700 transition flex items-center gap-1.5 cursor-pointer"
-            >
-              <Gift className="w-3.5 h-3.5" /> Record Donation
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => setShowDonationModal(true)}
+                className="px-3.5 py-2 text-xs font-bold rounded-xl bg-purple-600 text-white hover:bg-purple-700 transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <Gift className="w-3.5 h-3.5" /> Record Donation
+              </button>
+            )}
           </div>
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
             <table className="w-full text-left text-xs">
@@ -1408,13 +1412,15 @@ export const FinancePage: React.FC = () => {
                       <td className="p-4 text-slate-600 dark:text-slate-400">{d.purpose}</td>
                       <td className="p-4 text-slate-500">{typeof d.created_at === 'string' ? d.created_at.split('T')[0] : d.created_at}</td>
                       <td className="p-4 text-right">
-                        <button
-                          onClick={() => handleDeleteDonation(d.id)}
-                          className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition cursor-pointer"
-                          title="Delete Donation"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        {isAdmin && (
+                          <button
+                            onClick={() => handleDeleteDonation(d.id)}
+                            className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition cursor-pointer"
+                            title="Delete Donation"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))
