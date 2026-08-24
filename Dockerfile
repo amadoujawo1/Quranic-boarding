@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Cache-bust argument — change this value to force Render to rebuild from scratch
-ARG CACHE_BUST=20260824-2
+ARG CACHE_BUST=20260824-3
 
 # --- Build React frontend ---
 COPY frontend/package*.json ./frontend/
