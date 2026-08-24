@@ -3,6 +3,9 @@ services:
   - type: web
     name: qbsms-app
     env: docker
+    repo: https://github.com/amadoujawo1/Quranic-boarding
+    branch: master
+    autoDeploy: true
     dockerfilePath: ./Dockerfile
     disk:
       name: sqlite-data
