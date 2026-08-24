@@ -10,13 +10,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
+# Cache-bust argument — change this value to force Render to rebuild from scratch
+ARG CACHE_BUST=20260824-2
+
 # --- Build React frontend ---
 COPY frontend/package*.json ./frontend/
 RUN cd frontend && npm ci
 
 COPY frontend/ ./frontend/
-# Always compile fresh production build from frontend source
-RUN cd frontend && rm -rf dist && npm run build
+# Always compile fresh production build from source (no cache skip)
+RUN echo "Build: ${CACHE_BUST}" && cd frontend && rm -rf dist && npm run build
 
 
 # --- Install Python backend ---
