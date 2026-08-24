@@ -136,14 +136,35 @@ export const AdminDashboard: React.FC = () => {
         >
           <div>
             <div className="text-xs font-semibold text-slate-500">Total Enrolled Students</div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{overview.total_students ?? 0}</div>
-            <div className="text-[11px] text-emerald-600 font-medium mt-1">{overview.active_students ?? 0} active learners</div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
+              {overview.total_enrolled_students ?? overview.total_students ?? 0}
+            </div>
+            <div className="text-[11px] text-emerald-600 font-medium mt-1">
+              {overview.active_students ?? overview.total_students ?? 0} active learners
+            </div>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-gold-400 flex items-center justify-center group-hover:scale-110 transition-transform">
             <Users className="w-6 h-6" />
           </div>
         </motion.div>
 
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}
+          className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between hover:shadow-md hover:-translate-y-1 transition group"
+        >
+          <div>
+            <div className="text-xs font-semibold text-slate-500">School Attendance Today</div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
+              {schoolAttendanceRate}%
+            </div>
+            <div className="text-[11px] text-emerald-600 font-medium mt-1">
+              {attendanceToday.school_present ?? 0} of {overview.total_enrolled_students ?? overview.total_students ?? 0} present
+            </div>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <Clock className="w-6 h-6" />
+          </div>
+        </motion.div>
 
         <motion.div 
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }}
@@ -174,19 +195,6 @@ export const AdminDashboard: React.FC = () => {
         </motion.div>
       </div>
 
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5 }}
-        className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between hover:shadow-md hover:-translate-y-1 transition group"
-      >
-        <div>
-          <div className="text-xs font-semibold text-slate-500">School Attendance Today</div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{schoolAttendanceRate}%</div>
-          <div className="text-[11px] text-amber-600 font-medium mt-1">{attendanceToday.school_present ?? 0} students present</div>
-        </div>
-        <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-          <Clock className="w-6 h-6" />
-        </div>
-      </motion.div>
 
       {/* Interactive Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

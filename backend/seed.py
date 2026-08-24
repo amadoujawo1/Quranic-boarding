@@ -6,6 +6,8 @@ from app.models.academic import ClassGroup, Subject
 from app.models.boarding import Building, Dormitory, Room, Bed
 from app.models.quran import HifzProgress
 from app.models.finance import FeeInvoice, Donation, StudentPayment
+from app.models.attendance import SchoolAttendance, PrayerAttendance
+
 
 def seed_database(app_instance=None):
     def _do_seed():
@@ -339,8 +341,32 @@ def seed_database(app_instance=None):
                 sp1.compute_status()
                 db.session.add(sp1)
 
+        # Seed Daily School & Prayer Attendance for today for active students
+        today_date = date.today()
+        active_students = Student.query.filter(Student.status.in_(['Active', 'Enrolled'])).all()
+        for active_std in active_students:
+            if not SchoolAttendance.query.filter_by(student_id=active_std.id, date=today_date).first():
+                db.session.add(SchoolAttendance(
+                    student_id=active_std.id,
+                    date=today_date,
+                    status='Present',
+                    remarks='Punctual morning assembly attendance',
+                    method='Manual'
+                ))
+
+            for prayer_name in ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']:
+                if not PrayerAttendance.query.filter_by(student_id=active_std.id, date=today_date, prayer_name=prayer_name).first():
+                    db.session.add(PrayerAttendance(
+                        student_id=active_std.id,
+                        date=today_date,
+                        prayer_name=prayer_name,
+                        status='Jamaat',
+                        remarks='Congregational prayer attended in mosque'
+                    ))
+
         db.session.commit()
         print("Database successfully seeded with demo QBSMS data, student payments, and 15 Hifz Huffaz Graduates!")
+
 
     if app_instance:
         with app_instance.app_context():

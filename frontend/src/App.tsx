@@ -23,6 +23,8 @@ import { ParentPortal } from './pages/portals/ParentPortal';
 import { StudentPortal } from './pages/portals/StudentPortal';
 import { TeacherPortal } from './pages/portals/TeacherPortal';
 import { UserManagement } from './pages/admin/UserManagement';
+import { PrayerAttendancePage } from './pages/admin/PrayerAttendancePage';
+
 
 const LayoutWrapper: React.FC<{
   children: React.ReactNode;
@@ -115,6 +117,8 @@ export const App: React.FC = () => {
 
           {/* Admin & Portals */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/attendance" element={<PrayerAttendancePage />} />
+          <Route path="/admin/prayer-attendance" element={<PrayerAttendancePage />} />
           <Route path="/admin/students" element={<StudentManagement />} />
           <Route path="/admin/finance" element={<FinancePage />} />
           <Route path="/admin/admissions" element={<AdmissionsPage />} />

@@ -124,6 +124,15 @@ class Expense(db.Model):
     last_edited_by = db.Column(db.String(150))
     last_edited_at = db.Column(db.DateTime)
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if not self.expense_month:
+            dt = self.expense_date or datetime.utcnow().date()
+            if isinstance(dt, datetime):
+                dt = dt.date()
+            self.expense_month = dt.strftime('%B %Y')
+
+
 class StudentPayment(db.Model):
     __tablename__ = 'student_payments'
 

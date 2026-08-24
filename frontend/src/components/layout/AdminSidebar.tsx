@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, BookOpen, Home as HomeIcon, 
-  DollarSign, FileText, Settings, ShieldCheck, LogOut, ChevronRight, ClipboardList, X
+  DollarSign, FileText, Settings, ShieldCheck, LogOut, ChevronRight, ClipboardList, X, Clock
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -17,6 +17,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ user, onLogout, isOp
 
   const menuItems = [
     { title: 'Overview Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+    { title: 'Daily Attendance', path: '/admin/attendance', icon: Clock },
     { title: 'Admissions', path: '/admin/admissions', icon: ClipboardList },
     { title: 'Student Management', path: '/admin/students', icon: Users },
     { title: 'Users & Roles', path: '/admin/users', icon: Settings },
@@ -25,6 +26,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ user, onLogout, isOp
     { title: 'Student Portal', path: '/portal/student', icon: ShieldCheck },
     { title: 'Teacher Portal', path: '/portal/teacher', icon: ShieldCheck },
   ];
+
 
   return (
     <>
