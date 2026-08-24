@@ -15,8 +15,9 @@ COPY frontend/package*.json ./frontend/
 RUN cd frontend && npm ci
 
 COPY frontend/ ./frontend/
-# Only build if dist doesn't exist (for faster deploys when dist is pre-built)
-RUN cd frontend && (test -d dist || npm run build)
+# Always compile fresh production build from frontend source
+RUN cd frontend && rm -rf dist && npm run build
+
 
 # --- Install Python backend ---
 COPY backend/requirements.txt ./backend/

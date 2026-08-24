@@ -142,6 +142,16 @@ def create_app():
                 db.session.add(UserRole(user_id=admin_user.id, role_id=admin_role.id))
         db.session.commit()
 
+        # Bootstrap seed data if no students exist
+        from .models.student import Student
+        if Student.query.count() == 0:
+            try:
+                from seed import seed_database
+                seed_database(app)
+            except Exception as e:
+                app.logger.warning(f"Initial seed notice: {e}")
+
+
 
 
     # Register blueprints
