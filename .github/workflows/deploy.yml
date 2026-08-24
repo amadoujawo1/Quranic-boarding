@@ -1,0 +1,17 @@
+name: Deploy to Render
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    name: Trigger Render Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render Deploy Hook
+        run: |
+          curl -s -X GET "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" \
+            -o /dev/null \
+            -w "HTTP Status: %{http_code}\n"
