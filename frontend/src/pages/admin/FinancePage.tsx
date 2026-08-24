@@ -1870,19 +1870,6 @@ export const FinancePage: React.FC = () => {
               </select>
             </div>
 
-            {/* 12-Month Calendar Month Selector */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Payment Month <span className="text-rose-500">*</span>: <span className="font-extrabold text-gold-600 dark:text-gold-400">{paymentForm.payment_month}</span>
-              </label>
-              <YearCalendarMonthPicker
-                mode="single"
-                year={paymentModalYear}
-                onYearChange={setPaymentModalYear}
-                selectedMonth={paymentForm.payment_month}
-                onSelectMonth={(m) => setPaymentForm({ ...paymentForm, payment_month: m })}
-              />
-            </div>
 
 
             {/* Amount Due & Amount Paid */}
