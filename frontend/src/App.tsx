@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { LanguageProvider } from './context/LanguageContext';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { AdminSidebar } from './components/layout/AdminSidebar';
@@ -109,37 +110,40 @@ export const App: React.FC = () => {
   };
 
   return (
-    <Router>
-      <LayoutWrapper user={user} darkMode={darkMode} setDarkMode={setDarkMode} onLogout={handleLogout}>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/programmes" element={<Programmes />} />
-          <Route path="/hifz-programme" element={<HifzProgramme />} />
-          <Route path="/admissions" element={<Admissions />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
+    <LanguageProvider>
+      <Router>
+        <LayoutWrapper user={user} darkMode={darkMode} setDarkMode={setDarkMode} onLogout={handleLogout}>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/programmes" element={<Programmes />} />
+            <Route path="/hifz-programme" element={<HifzProgramme />} />
+            <Route path="/admissions" element={<Admissions />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
 
-          {/* Admin & Portals */}
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/attendance" element={<PrayerAttendancePage />} />
-          <Route path="/admin/prayer-attendance" element={<PrayerAttendancePage />} />
-          <Route path="/admin/students" element={<StudentManagement />} />
-          <Route path="/admin/finance" element={<FinancePage />} />
-          <Route path="/admin/admissions" element={<AdmissionsPage />} />
-          <Route path="/admin/users" element={<UserManagement />} />
+            {/* Admin & Portals */}
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/attendance" element={<PrayerAttendancePage />} />
+            <Route path="/admin/prayer-attendance" element={<PrayerAttendancePage />} />
+            <Route path="/admin/students" element={<StudentManagement />} />
+            <Route path="/admin/finance" element={<FinancePage />} />
+            <Route path="/admin/admissions" element={<AdmissionsPage />} />
+            <Route path="/admin/users" element={<UserManagement />} />
 
-          {/* Portals */}
-          <Route path="/portal/parent" element={<ParentPortal />} />
-          <Route path="/portal/student" element={<StudentPortal />} />
-          <Route path="/portal/teacher" element={<TeacherPortal />} />
+            {/* Portals */}
+            <Route path="/portal/parent" element={<ParentPortal />} />
+            <Route path="/portal/student" element={<StudentPortal />} />
+            <Route path="/portal/teacher" element={<TeacherPortal />} />
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </LayoutWrapper>
-    </Router>
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </LayoutWrapper>
+      </Router>
+    </LanguageProvider>
   );
 };
 export default App;
+
