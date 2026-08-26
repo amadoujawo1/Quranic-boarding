@@ -4,6 +4,9 @@ import {
   Sparkles, CheckCheck, RefreshCw, BookOpen, Search
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Pagination } from '../../components/common/Pagination';
+
+const ITEMS_PER_PAGE = 10;
 
 export const PrayerAttendancePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'school' | 'prayer'>('school');
@@ -13,6 +16,7 @@ export const PrayerAttendancePage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   // School Attendance state
   const [schoolStudents, setSchoolStudents] = useState<any[]>([]);
@@ -205,6 +209,15 @@ export const PrayerAttendancePage: React.FC = () => {
     (s.student_id_number || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Reset to page 1 whenever active list changes
+  const activeFiltered = activeTab === 'school' ? filteredSchool : filteredPrayer;
+  const totalPages = Math.max(1, Math.ceil(activeFiltered.length / ITEMS_PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
+  const pagedRows = activeFiltered.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE);
+
+  // Reset page on tab, prayer, date, or search change
+  useEffect(() => { setCurrentPage(1); }, [activeTab, selectedPrayer, selectedDate, searchTerm]);
+
   return (
     <div className="space-y-8">
       {/* Top Banner */}
@@ -376,7 +389,7 @@ export const PrayerAttendancePage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {(activeTab === 'school' ? filteredSchool : filteredPrayer).map((s) => (
+                {pagedRows.map((s) => (
                   <tr key={s.student_id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
                     <td className="p-3.5 font-bold text-gold-600 dark:text-gold-400">{s.student_id_number}</td>
                     <td className="p-3.5 font-semibold text-slate-900 dark:text-white">{s.full_name}</td>
@@ -420,7 +433,7 @@ export const PrayerAttendancePage: React.FC = () => {
                     </td>
                   </tr>
                 ))}
-                {(activeTab === 'school' ? filteredSchool : filteredPrayer).length === 0 && (
+                {pagedRows.length === 0 && (
                   <tr>
                     <td colSpan={6} className="p-6 text-center text-slate-500">
                       No active enrolled students found matching search criteria.
@@ -430,6 +443,17 @@ export const PrayerAttendancePage: React.FC = () => {
               </tbody>
             </table>
           </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <Pagination
+            currentPage={safePage}
+            totalItems={activeFiltered.length}
+            itemsPerPage={ITEMS_PER_PAGE}
+            onPageChange={setCurrentPage}
+            colorScheme="gold"
+          />
         )}
       </div>
     </div>
