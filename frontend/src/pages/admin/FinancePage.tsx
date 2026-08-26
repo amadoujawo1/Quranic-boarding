@@ -2327,7 +2327,7 @@ export const FinancePage: React.FC = () => {
                       Imaam Naafi' Centre for Quranic Memorization
                     </h2>
                     <p className="text-[11px] text-slate-600 font-medium">
-                      Banjul, The Gambia • P.O. Box 220 • Tel: +220 700 0000 / +220 300 0000
+                      Banjul, The Gambia • P.O. Box 220 • Tel: +220 87 7918643
                     </p>
                   </div>
                 </div>

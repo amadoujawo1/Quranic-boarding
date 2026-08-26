@@ -409,7 +409,7 @@ export const ParentPortal: React.FC = () => {
                     <h2 className="text-base font-black text-emerald-950 uppercase">
                       Imaam Naafi' Centre for Quranic Memorization
                     </h2>
-                    <p className="text-[10px] text-slate-600">Official Student Monthly Fee Receipt</p>
+                    <p className="text-[10px] text-slate-600 font-medium">Banjul, The Gambia • Tel: +220 87 7918643</p>
                   </div>
                 </div>
               </div>
