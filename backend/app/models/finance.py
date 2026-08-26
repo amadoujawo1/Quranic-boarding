@@ -151,6 +151,8 @@ class StudentPayment(db.Model):
     status = db.Column(db.String(20), default='Unpaid') # Paid, Partial, Unpaid
     remarks = db.Column(db.Text)
     recorded_by = db.Column(db.String(150))
+    last_edited_by = db.Column(db.String(150))
+    last_edited_at = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -195,6 +197,8 @@ class StudentPayment(db.Model):
             'status': self.status,
             'remarks': self.remarks or '',
             'recorded_by': self.recorded_by,
+            'last_edited_by': self.last_edited_by,
+            'last_edited_at': self.last_edited_at.isoformat() if self.last_edited_at else None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }

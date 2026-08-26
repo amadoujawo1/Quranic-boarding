@@ -1,13 +1,45 @@
 from datetime import datetime, date
 from flask import request
 from flask_restx import Namespace, Resource
-from flask_jwt_extended import jwt_required, get_jwt
+from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 from .. import db
 from ..models.finance import FeeInvoice, FeePayment, Donation, Expense, StudentPayment
 from ..models.student import Student
-from ..models.user import User as UserModel
+from ..models.user import User as UserModel, ActivityLog
 
 finance_ns = Namespace('finance', description='Tuition, Boarding, Payroll & Financial Records')
+
+
+def get_current_user_name():
+    """Retrieve full name of the currently authenticated user for audit tracking."""
+    claims = get_jwt()
+    if claims.get('full_name'):
+        return claims['full_name']
+    identity = get_jwt_identity()
+    if identity:
+        u = UserModel.query.filter_by(username=identity).first()
+        if u and u.full_name:
+            return u.full_name
+        return str(identity)
+    return 'Administrator'
+
+
+def log_finance_action(action, details):
+    """Safely log financial transactions and modifications to ActivityLog for transparency."""
+    try:
+        claims = get_jwt()
+        user_id = claims.get('user_id')
+        if not user_id:
+            identity = get_jwt_identity()
+            if identity:
+                u = UserModel.query.filter_by(username=identity).first()
+                if u:
+                    user_id = u.id
+        ip_addr = request.remote_addr if request else None
+        log_entry = ActivityLog(user_id=user_id, action=action, ip_address=ip_addr, details=details)
+        db.session.add(log_entry)
+    except Exception:
+        pass
 
 
 def calculate_invoice_total(invoice):
@@ -164,8 +196,15 @@ class InvoiceResource(Resource):
         else:
             invoice.status = 'Unpaid'
             
-        invoice.last_edited_by = get_jwt().get('full_name', 'Unknown Admin')
+        editor = get_current_user_name()
+        invoice.last_edited_by = editor
         invoice.last_edited_at = datetime.utcnow()
+        
+        student_name = invoice.student.user.full_name if invoice.student and invoice.student.user else f"Student #{invoice.student_id}"
+        log_finance_action(
+            'Edited Invoice',
+            f"{editor} edited invoice {invoice.invoice_number} for {student_name} (Total: GMD {invoice.total_amount:,.2f}, Status: {invoice.status})"
+        )
             
         db.session.commit()
         result = invoice.to_dict()
@@ -178,11 +217,19 @@ class InvoiceResource(Resource):
         if not is_admin():
             return {'message': 'Admin privileges required'}, 403
         invoice = FeeInvoice.query.get_or_404(id)
+        editor = get_current_user_name()
+        student_name = invoice.student.user.full_name if invoice.student and invoice.student.user else f"Student #{invoice.student_id}"
+        
+        log_finance_action(
+            'Deleted Invoice',
+            f"{editor} deleted invoice {invoice.invoice_number} for {student_name} (Total: GMD {invoice.total_amount:,.2f})"
+        )
+        
         # Delete child payment records first to avoid FK constraint errors
         FeePayment.query.filter_by(invoice_id=id).delete()
         db.session.delete(invoice)
         db.session.commit()
-        return {'message': 'Invoice deleted successfully'}, 200
+        return {'message': f'Invoice deleted successfully by {editor}'}, 200
 
 @finance_ns.route('/invoices/<int:id>/pay')
 class RecordPayment(Resource):
@@ -194,6 +241,7 @@ class RecordPayment(Resource):
         if amount <= 0:
             return {'message': 'Payment amount must be greater than zero'}, 400
 
+        editor = get_current_user_name()
         payment = FeePayment(
             receipt_number=f'RCP-{datetime.utcnow().strftime("%Y%m%d%H%M%S")}',
             invoice_id=invoice.id,
@@ -210,6 +258,15 @@ class RecordPayment(Resource):
             invoice.status = 'Paid'
         elif invoice.amount_paid > 0:
             invoice.status = 'Partial'
+
+        invoice.last_edited_by = editor
+        invoice.last_edited_at = datetime.utcnow()
+
+        student_name = invoice.student.user.full_name if invoice.student and invoice.student.user else f"Student #{invoice.student_id}"
+        log_finance_action(
+            'Recorded Invoice Payment',
+            f"{editor} recorded payment of GMD {amount:,.2f} on invoice {invoice.invoice_number} for {student_name}"
+        )
 
         db.session.commit()
         return invoice.to_dict(), 200
@@ -230,6 +287,7 @@ class DonationList(Resource):
 
     def post(self):
         data = request.get_json() or {}
+        editor = get_current_user_name() if request.headers.get('Authorization') else 'Online Donor'
         d = Donation(
             donor_name=data.get('donor_name', 'Anonymous'),
             donor_email=data.get('donor_email'),
@@ -238,6 +296,10 @@ class DonationList(Resource):
             purpose=data.get('purpose', 'General Sadaqah')
         )
         db.session.add(d)
+        log_finance_action(
+            'Recorded Donation',
+            f"Donation of GMD {d.amount:,.2f} recorded from {d.donor_name} for '{d.purpose}'"
+        )
         db.session.commit()
         return {'message': 'Thank you for your noble donation!', 'id': d.id}, 201
 
@@ -252,19 +314,33 @@ class DonationResource(Resource):
         if 'donor_name' in data: d.donor_name = data['donor_name']
         if 'amount' in data: d.amount = float(data['amount'])
         if 'purpose' in data: d.purpose = data['purpose']
-        d.last_edited_by = get_jwt().get('full_name', 'Unknown Admin')
+        editor = get_current_user_name()
+        d.last_edited_by = editor
         d.last_edited_at = datetime.utcnow()
+        
+        log_finance_action(
+            'Edited Donation',
+            f"{editor} edited donation #{d.id} by {d.donor_name} (GMD {d.amount:,.2f}, Purpose: {d.purpose})"
+        )
+        
         db.session.commit()
-        return {'message': 'Donation updated successfully', 'last_edited_by': d.last_edited_by, 'last_edited_at': d.last_edited_at.isoformat() if d.last_edited_at else None}, 200
+        return {'message': f'Donation updated by {editor}', 'last_edited_by': d.last_edited_by, 'last_edited_at': d.last_edited_at.isoformat() if d.last_edited_at else None}, 200
 
     @jwt_required()
     def delete(self, id):
         if not is_admin():
             return {'message': 'Admin privileges required'}, 403
         d = Donation.query.get_or_404(id)
+        editor = get_current_user_name()
+        
+        log_finance_action(
+            'Deleted Donation',
+            f"{editor} deleted donation #{d.id} from {d.donor_name} (GMD {d.amount:,.2f}, Purpose: {d.purpose})"
+        )
+        
         db.session.delete(d)
         db.session.commit()
-        return {'message': 'Donation deleted successfully'}, 200
+        return {'message': f'Donation deleted successfully by {editor}'}, 200
 
 
 @finance_ns.route('/expenses')
@@ -299,6 +375,10 @@ class ExpenseList(Resource):
             expense_month=expense_month
         )
         db.session.add(expense)
+        log_finance_action(
+            'Recorded Expense',
+            f"Expense of GMD {expense.amount:,.2f} logged for '{expense.description}' ({expense.category})"
+        )
         db.session.commit()
         return {'message': 'Expense recorded', 'id': expense.id}, 201
 
@@ -320,19 +400,34 @@ class ExpenseResource(Resource):
         elif 'expense_date' in data and data['expense_date']:
             # Update expense_month if expense_date changed
             expense.expense_month = expense.expense_date.strftime('%B %Y')
-        expense.last_edited_by = get_jwt().get('full_name', 'Unknown Admin')
+        editor = get_current_user_name()
+        expense.last_edited_by = editor
         expense.last_edited_at = datetime.utcnow()
+        
+        log_finance_action(
+            'Edited Expense',
+            f"{editor} edited expense #{expense.id}: '{expense.description}' (GMD {expense.amount:,.2f}, Category: {expense.category})"
+        )
+        
         db.session.commit()
-        return {'message': 'Expense updated successfully', 'last_edited_by': expense.last_edited_by, 'last_edited_at': expense.last_edited_at.isoformat() if expense.last_edited_at else None}, 200
+        return {'message': f'Expense updated by {editor}', 'last_edited_by': expense.last_edited_by, 'last_edited_at': expense.last_edited_at.isoformat() if expense.last_edited_at else None}, 200
 
     @jwt_required()
     def delete(self, id):
         if not is_admin():
             return {'message': 'Admin privileges required'}, 403
         expense = Expense.query.get_or_404(id)
+        editor = get_current_user_name()
+        
+        log_finance_action(
+            'Deleted Expense',
+            f"{editor} deleted expense #{expense.id}: '{expense.description}' (GMD {expense.amount:,.2f}, Category: {expense.category})"
+        )
+        
         db.session.delete(expense)
         db.session.commit()
-        return {'message': 'Expense deleted successfully'}, 200
+        return {'message': f'Expense deleted successfully by {editor}'}, 200
+
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -495,22 +590,36 @@ class StudentPaymentItem(Resource):
             except Exception:
                 pass
 
-        payment.recorded_by = get_jwt().get('full_name', payment.recorded_by or 'Administrator')
+        editor = get_current_user_name()
+        payment.last_edited_by = editor
+        payment.last_edited_at = datetime.utcnow()
         payment.compute_status()
+        
+        student_name = payment.student.user.full_name if payment.student and payment.student.user else f"Student #{payment.student_id}"
+        log_finance_action(
+            'Edited Student Payment',
+            f"{editor} edited payment {payment.receipt_number} for {student_name} ({payment.payment_month}, Due: GMD {payment.amount_due:,.2f}, Paid: GMD {payment.amount_paid:,.2f}, Balance: GMD {payment.balance:,.2f})"
+        )
+        
         db.session.commit()
-        result = payment.to_dict()
-        result['last_edited_by'] = payment.recorded_by
-        result['last_edited_at'] = payment.updated_at.isoformat() if payment.updated_at else None
-        return result, 200
+        return payment.to_dict(), 200
 
     @jwt_required()
     def delete(self, id):
         if not is_admin():
             return {'message': 'Admin privileges required'}, 403
         payment = StudentPayment.query.get_or_404(id)
+        editor = get_current_user_name()
+        student_name = payment.student.user.full_name if payment.student and payment.student.user else f"Student #{payment.student_id}"
+        
+        log_finance_action(
+            'Deleted Student Payment',
+            f"{editor} deleted payment {payment.receipt_number} for {student_name} ({payment.payment_month}, Due: GMD {payment.amount_due:,.2f}, Paid: GMD {payment.amount_paid:,.2f})"
+        )
+        
         db.session.delete(payment)
         db.session.commit()
-        return {'message': 'Student payment record deleted successfully'}, 200
+        return {'message': f'Student payment record deleted successfully by {editor}'}, 200
 
 
 @finance_ns.route('/student-payments/<int:id>/pay')
@@ -540,8 +649,17 @@ class StudentPaymentPay(Resource):
         else:
             payment.payment_date = datetime.utcnow().date()
 
-        payment.recorded_by = get_jwt().get('full_name', 'Administrator')
+        editor = get_current_user_name()
+        payment.last_edited_by = editor
+        payment.last_edited_at = datetime.utcnow()
         payment.compute_status()
+
+        student_name = payment.student.user.full_name if payment.student and payment.student.user else f"Student #{payment.student_id}"
+        log_finance_action(
+            'Recorded Fee Payment',
+            f"{editor} recorded payment of GMD {pay_add:,.2f} on receipt {payment.receipt_number} for {student_name} ({payment.payment_month}, New Balance: GMD {payment.balance:,.2f})"
+        )
+
         db.session.commit()
         return payment.to_dict(), 200
 
@@ -836,4 +954,27 @@ class StudentPaymentBatchGenerate(Resource):
             'created_count': created_count,
             'skipped_count': skipped_count
         }, 201
+
+
+@finance_ns.route('/audit-trail')
+class FinanceAuditTrail(Resource):
+    @jwt_required()
+    def get(self):
+        logs = (ActivityLog.query
+                .filter(
+                    db.or_(
+                        ActivityLog.action.ilike('%Payment%'),
+                        ActivityLog.action.ilike('%Invoice%'),
+                        ActivityLog.action.ilike('%Expense%'),
+                        ActivityLog.action.ilike('%Donation%'),
+                        ActivityLog.action.ilike('%Finance%'),
+                        ActivityLog.action.ilike('%Edited%'),
+                        ActivityLog.action.ilike('%Deleted%')
+                    )
+                )
+                .order_by(ActivityLog.created_at.desc())
+                .limit(100)
+                .all())
+        return [l.to_dict() for l in logs], 200
+
 
