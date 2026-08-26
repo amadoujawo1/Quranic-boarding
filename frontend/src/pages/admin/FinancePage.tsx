@@ -315,11 +315,13 @@ export const FinancePage: React.FC = () => {
     setExpensesCurrentPage(1);
   }, [expenseSearch, expenseCategoryFilter]);
 
-  // Filters for monthly payments
+  // Filters and pagination for monthly payments (10 entries per page)
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [monthFilter, setMonthFilter] = useState('All');
   const [academicYearFilter, setAcademicYearFilter] = useState('2026/2027');
+  const [paymentsCurrentPage, setPaymentsCurrentPage] = useState(1);
+  const paymentsPerPage = 10;
 
   // Student Ledger interactive view
   const [selectedLedgerStudentId, setSelectedLedgerStudentId] = useState<number>(1);
@@ -507,6 +509,17 @@ export const FinancePage: React.FC = () => {
 
     return matchSearch && matchStatus && matchMonth && matchYear;
   });
+
+  // Calculate paginated student payments (10 entries per page)
+  const totalPaymentPages = Math.max(1, Math.ceil(filteredPayments.length / paymentsPerPage));
+  const safePaymentsPage = Math.min(Math.max(1, paymentsCurrentPage), totalPaymentPages);
+  const indexOfLastPayment = safePaymentsPage * paymentsPerPage;
+  const indexOfFirstPayment = indexOfLastPayment - paymentsPerPage;
+  const currentPayments = filteredPayments.slice(indexOfFirstPayment, indexOfLastPayment);
+
+  useEffect(() => {
+    setPaymentsCurrentPage(1);
+  }, [search, statusFilter, monthFilter, academicYearFilter]);
 
   // Modal Student filtered list
   const filteredModalStudents = students.filter(s => {
@@ -1314,7 +1327,7 @@ export const FinancePage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {filteredPayments.map(payment => (
+                  {currentPayments.map(payment => (
                     <tr key={payment.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
                       <td className="p-4">
                         <div className="font-bold text-slate-900 dark:text-white">{payment.student_name}</div>
@@ -1409,6 +1422,14 @@ export const FinancePage: React.FC = () => {
                 </tbody>
               </table>
             </div>
+            {/* Pagination Controls (10 entries per page) */}
+            <Pagination
+              currentPage={safePaymentsPage}
+              totalItems={filteredPayments.length}
+              itemsPerPage={paymentsPerPage}
+              onPageChange={setPaymentsCurrentPage}
+              colorScheme="emerald"
+            />
           </div>
         </div>
       )}
