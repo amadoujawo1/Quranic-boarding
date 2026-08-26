@@ -116,8 +116,20 @@ export interface StudentPayment {
   status: 'Paid' | 'Partial' | 'Unpaid';
   remarks?: string;
   recorded_by?: string;
+  last_edited_by?: string;
+  last_edited_at?: string;
   created_at?: string;
   updated_at?: string;
+}
+
+export interface FinanceAuditLog {
+  id: number;
+  user_id?: number;
+  user_name: string;
+  action: string;
+  ip_address?: string;
+  details: string;
+  created_at: string;
 }
 
 export interface MonthlyCollectionReport {
