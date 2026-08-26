@@ -13,6 +13,10 @@ export const UserManagement: React.FC = () => {
   const [showStudentModal, setShowStudentModal] = useState(false);
   const [studentCount, setStudentCount] = useState(0);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   // Form State
   const [newUser, setNewUser] = useState({ username: '', email: '', password: '', full_name: '', role: 'Teacher' });
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
@@ -157,11 +161,22 @@ export const UserManagement: React.FC = () => {
     }
   };
 
-  const filteredUsers = users.filter(u => 
-    u.full_name.toLowerCase().includes(search.toLowerCase()) || 
+  const filteredUsers = users.filter(u =>
+    u.full_name.toLowerCase().includes(search.toLowerCase()) ||
     u.username.toLowerCase().includes(search.toLowerCase()) ||
     u.email.toLowerCase().includes(search.toLowerCase())
   );
+
+  // Calculate paginated users
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentUsers = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+
+  // Reset page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
 
   return (
     <div className="space-y-8">
@@ -211,7 +226,7 @@ export const UserManagement: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-            {filteredUsers.map(u => (
+            {currentUsers.map(u => (
               <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
                 <td className="p-4">
                   <div className="font-bold text-slate-900 dark:text-white">{u.full_name}</div>
@@ -256,6 +271,43 @@ export const UserManagement: React.FC = () => {
             )}
           </tbody>
         </table>
+        {/* Pagination Controls */}
+        {filteredUsers.length > 0 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-800">
+            <div className="text-xs text-slate-500 dark:text-slate-400">
+              Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredUsers.length)} of {filteredUsers.length} entries
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                Previous
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition ${
+                    currentPage === page
+                      ? 'bg-gold-500 text-white'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </motion.div>
 
       {/* MODALS */}
