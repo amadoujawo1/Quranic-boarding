@@ -285,6 +285,16 @@ export const FinancePage: React.FC = () => {
   const [students, setStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Expenses pagination
+  const [expensesCurrentPage, setExpensesCurrentPage] = useState(1);
+  const expensesPerPage = 10;
+
+  // Calculate paginated expenses
+  const indexOfLastExpense = expensesCurrentPage * expensesPerPage;
+  const indexOfFirstExpense = indexOfLastExpense - expensesPerPage;
+  const currentExpenses = expenses.slice(indexOfFirstExpense, indexOfLastExpense);
+  const totalPages = Math.ceil(expenses.length / expensesPerPage);
+
   // Filters for monthly payments
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -1735,7 +1745,7 @@ export const FinancePage: React.FC = () => {
                     </td>
                   </tr>
                 ) : (
-                  expenses.map(exp => (
+                  currentExpenses.map(exp => (
                     <tr key={exp.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
                       <td className="p-4">
                         <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 font-bold text-[10px]">{exp.category}</span>
@@ -1769,6 +1779,43 @@ export const FinancePage: React.FC = () => {
                 )}
               </tbody>
             </table>
+            {/* Pagination Controls */}
+            {expenses.length > 0 && (
+              <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-800">
+                <div className="text-xs text-slate-500 dark:text-slate-400">
+                  Showing {indexOfFirstExpense + 1} to {Math.min(indexOfLastExpense, expenses.length)} of {expenses.length} entries
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setExpensesCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={expensesCurrentPage === 1}
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    Previous
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <button
+                      key={page}
+                      onClick={() => setExpensesCurrentPage(page)}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-lg transition ${
+                        expensesCurrentPage === page
+                          ? 'bg-amber-500 text-white'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setExpensesCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={expensesCurrentPage === totalPages}
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
