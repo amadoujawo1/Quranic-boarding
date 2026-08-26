@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, PlusCircle, ShieldCheck, Search, X, Check, Edit, Trash2, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Pagination } from '../../components/common/Pagination';
 
 export const UserManagement: React.FC = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -167,11 +168,12 @@ export const UserManagement: React.FC = () => {
     u.email.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Calculate paginated users
-  const indexOfLastItem = currentPage * itemsPerPage;
+  // Calculate paginated users (10 entries per page)
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / itemsPerPage));
+  const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+  const indexOfLastItem = safeCurrentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentUsers = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
 
   // Reset page when search changes
   useEffect(() => {
@@ -272,42 +274,13 @@ export const UserManagement: React.FC = () => {
           </tbody>
         </table>
         {/* Pagination Controls */}
-        {filteredUsers.length > 0 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-800">
-            <div className="text-xs text-slate-500 dark:text-slate-400">
-              Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredUsers.length)} of {filteredUsers.length} entries
-            </div>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
-              >
-                Previous
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition ${
-                    currentPage === page
-                      ? 'bg-gold-500 text-white'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
+        <Pagination
+          currentPage={safeCurrentPage}
+          totalItems={filteredUsers.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          colorScheme="gold"
+        />
       </motion.div>
 
       {/* MODALS */}

@@ -14,6 +14,7 @@ import {
   ArcElement, Title, Tooltip, Legend, Filler
 } from 'chart.js';
 import { StudentPayment, MonthlyCollectionReport, StudentPaymentStatsData } from '../../types';
+import { Pagination } from '../../components/common/Pagination';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler);
 
@@ -285,15 +286,34 @@ export const FinancePage: React.FC = () => {
   const [students, setStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Expenses pagination
+  // Expenses state & pagination (10 entries per page)
   const [expensesCurrentPage, setExpensesCurrentPage] = useState(1);
+  const [expenseSearch, setExpenseSearch] = useState('');
+  const [expenseCategoryFilter, setExpenseCategoryFilter] = useState('All');
   const expensesPerPage = 10;
 
-  // Calculate paginated expenses
-  const indexOfLastExpense = expensesCurrentPage * expensesPerPage;
+  const filteredExpenses = expenses.filter(exp => {
+    const q = expenseSearch.toLowerCase();
+    const matchesSearch =
+      !q ||
+      (exp.description || '').toLowerCase().includes(q) ||
+      (exp.category || '').toLowerCase().includes(q) ||
+      (exp.expense_month || '').toLowerCase().includes(q) ||
+      (exp.expense_date || '').toLowerCase().includes(q) ||
+      String(exp.amount || '').includes(q);
+    const matchesCategory = expenseCategoryFilter === 'All' || exp.category === expenseCategoryFilter;
+    return matchesSearch && matchesCategory;
+  });
+
+  const totalExpensePages = Math.max(1, Math.ceil(filteredExpenses.length / expensesPerPage));
+  const safeExpensesPage = Math.min(Math.max(1, expensesCurrentPage), totalExpensePages);
+  const indexOfLastExpense = safeExpensesPage * expensesPerPage;
   const indexOfFirstExpense = indexOfLastExpense - expensesPerPage;
-  const currentExpenses = expenses.slice(indexOfFirstExpense, indexOfLastExpense);
-  const totalPages = Math.ceil(expenses.length / expensesPerPage);
+  const currentExpenses = filteredExpenses.slice(indexOfFirstExpense, indexOfLastExpense);
+
+  useEffect(() => {
+    setExpensesCurrentPage(1);
+  }, [expenseSearch, expenseCategoryFilter]);
 
   // Filters for monthly payments
   const [search, setSearch] = useState('');
@@ -1714,18 +1734,54 @@ export const FinancePage: React.FC = () => {
       {/* ── TAB 5: EXPENSES ─────────────────────────────────────────────────── */}
       {tab === 'expenses' && (
         <div className="space-y-4">
-          <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Operational &amp; Maintenance Expenses</h3>
-            {isAdmin && (
-              <button
-                onClick={() => setShowExpenseModal(true)}
-                className="px-3.5 py-2 text-xs font-bold rounded-xl bg-amber-500 text-white hover:bg-amber-600 transition flex items-center gap-1.5 cursor-pointer"
-              >
-                <Wallet className="w-3.5 h-3.5" /> Log Expense
-              </button>
-            )}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Operational &amp; Maintenance Expenses</h3>
+              <p className="text-xs text-slate-500 mt-0.5">Track and audit boarding school operational expenditures.</p>
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+              {isAdmin && (
+                <button
+                  onClick={() => setShowExpenseModal(true)}
+                  className="px-3.5 py-2 text-xs font-bold rounded-xl bg-amber-500 text-white hover:bg-amber-600 transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+                >
+                  <Wallet className="w-3.5 h-3.5" /> Log Expense
+                </button>
+              )}
+            </div>
           </div>
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+
+          {/* Expenses Filter Bar */}
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
+              <input
+                type="text"
+                placeholder="Search expenses by description, month, or amount..."
+                value={expenseSearch}
+                onChange={e => setExpenseSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-slate-400" />
+              <select
+                value={expenseCategoryFilter}
+                onChange={e => setExpenseCategoryFilter(e.target.value)}
+                className="px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 cursor-pointer"
+              >
+                <option value="All">All Categories</option>
+                <option value="Kitchen & Nutrition">Kitchen &amp; Nutrition</option>
+                <option value="Utilities & Fuel">Utilities &amp; Fuel</option>
+                <option value="Maintenance & Repairs">Maintenance &amp; Repairs</option>
+                <option value="Salaries & Honoraria">Salaries &amp; Honoraria</option>
+                <option value="Library & Books">Library &amp; Books</option>
+                <option value="Medical & Clinic">Medical &amp; Clinic</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs">
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 font-semibold uppercase border-b border-slate-200 dark:border-slate-700">
                 <tr>
@@ -1738,10 +1794,12 @@ export const FinancePage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {expenses.length === 0 ? (
+                {filteredExpenses.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="p-8 text-center text-slate-400">
-                      No expense records found. Click "Log Expense" to add one.
+                      {expenses.length === 0
+                        ? 'No expense records found. Click "Log Expense" to add one.'
+                        : 'No expenses matching the search criteria.'}
                     </td>
                   </tr>
                 ) : (
@@ -1779,43 +1837,14 @@ export const FinancePage: React.FC = () => {
                 )}
               </tbody>
             </table>
-            {/* Pagination Controls */}
-            {expenses.length > 0 && (
-              <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-800">
-                <div className="text-xs text-slate-500 dark:text-slate-400">
-                  Showing {indexOfFirstExpense + 1} to {Math.min(indexOfLastExpense, expenses.length)} of {expenses.length} entries
-                </div>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => setExpensesCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={expensesCurrentPage === 1}
-                    className="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                  >
-                    Previous
-                  </button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                    <button
-                      key={page}
-                      onClick={() => setExpensesCurrentPage(page)}
-                      className={`px-3 py-1.5 text-xs font-medium rounded-lg transition ${
-                        expensesCurrentPage === page
-                          ? 'bg-amber-500 text-white'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => setExpensesCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={expensesCurrentPage === totalPages}
-                    className="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                  >
-                    Next
-                  </button>
-                </div>
-              </div>
-            )}
+            {/* Pagination Controls (10 entries per page) */}
+            <Pagination
+              currentPage={safeExpensesPage}
+              totalItems={filteredExpenses.length}
+              itemsPerPage={expensesPerPage}
+              onPageChange={setExpensesCurrentPage}
+              colorScheme="amber"
+            />
           </div>
         </div>
       )}

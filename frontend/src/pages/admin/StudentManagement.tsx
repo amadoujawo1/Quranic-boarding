@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Users, Search, Plus, QrCode, Filter, Eye, CheckCircle2, ShieldAlert, Pencil, Trash2, X, Upload, Download, AlertCircle, CheckCircle } from 'lucide-react';
+import { Pagination } from '../../components/common/Pagination';
 
 export const StudentManagement: React.FC = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -27,7 +28,7 @@ export const StudentManagement: React.FC = () => {
   const fetchStudents = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/students', {
+      const response = await fetch('/api/students?per_page=1000', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.status === 401) {
@@ -191,11 +192,12 @@ export const StudentManagement: React.FC = () => {
     s.student_id_number.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Calculate paginated students
-  const indexOfLastItem = currentPage * itemsPerPage;
+  // Calculate paginated students (10 entries per page)
+  const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
+  const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+  const indexOfLastItem = safeCurrentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentStudents = filtered.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filtered.length / itemsPerPage);
 
   // Reset page when search changes
   React.useEffect(() => {
@@ -327,42 +329,13 @@ export const StudentManagement: React.FC = () => {
           </tbody>
         </table>
         {/* Pagination Controls */}
-        {filtered.length > 0 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-800">
-            <div className="text-xs text-slate-500 dark:text-slate-400">
-              Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filtered.length)} of {filtered.length} entries
-            </div>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
-              >
-                Previous
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition ${
-                    currentPage === page
-                      ? 'bg-gold-500 text-white'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
+        <Pagination
+          currentPage={safeCurrentPage}
+          totalItems={filtered.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          colorScheme="gold"
+        />
       </div>
 
       {/* Import Results Modal */}
