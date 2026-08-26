@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, KeyRound, AlertCircle, CheckCircle } from 'lucide-react';
+import { ShieldCheck, KeyRound, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
 
 interface LoginProps {
   onLoginSuccess: (user: any, token: string) => void;
@@ -8,15 +8,18 @@ interface LoginProps {
 
 export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const navigate = useNavigate();
+  const formRef = useRef<HTMLFormElement>(null);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [totpCode, setTotpCode] = useState('');
   const [requires2FA, setRequires2FA] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [showCredentials, setShowCredentials] = useState(false);
+  const [formKey, setFormKey] = useState(() => Date.now());
 
-  // Clear all login fields, errors, and stored tokens upon loading/logout
+  // Completely wipe all login fields, browser autofill, errors, and stored tokens upon loading/logout
   useEffect(() => {
     setUsername('');
     setPassword('');
@@ -25,10 +28,33 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setErrorMsg('');
     setShowCredentials(false);
     setLoading(false);
+    setFormKey(Date.now());
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     sessionStorage.clear();
+
+    // Aggressively clear any delayed browser autofill injections
+    const timers = [50, 150, 300, 500].map(delay =>
+      setTimeout(() => {
+        setUsername('');
+        setPassword('');
+        if (formRef.current) formRef.current.reset();
+      }, delay)
+    );
+    return () => timers.forEach(t => clearTimeout(t));
   }, []);
+
+  const handleToggleCredentials = () => {
+    setShowCredentials(prev => {
+      const next = !prev;
+      if (next) {
+        setUsername('');
+        setPassword('');
+        setFormKey(Date.now());
+      }
+      return next;
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -170,8 +196,8 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               <button
                 type="button"
                 id="btn-continue-school-account"
-                onClick={() => setShowCredentials((v) => !v)}
-                className="w-full flex items-center justify-center gap-3 border border-slate-300 rounded-xl py-3 px-4 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition-all duration-150 shadow-sm"
+                onClick={handleToggleCredentials}
+                className="w-full flex items-center justify-center gap-3 border border-slate-300 rounded-xl py-3 px-4 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition-all duration-150 shadow-sm cursor-pointer"
               >
                 <ShieldCheck className="w-5 h-5 text-emerald-700" />
                 <span>Continue with School Account</span>
@@ -180,38 +206,61 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               {/* Expandable credential form */}
               <div
                 className="overflow-hidden transition-all duration-300 ease-in-out"
-                style={{ maxHeight: showCredentials ? '260px' : '0px' }}
+                style={{ maxHeight: showCredentials ? '280px' : '0px' }}
               >
-                <form onSubmit={handleSubmit} autoComplete="off" className="pt-1 space-y-3">
+                <form ref={formRef} key={formKey} onSubmit={handleSubmit} autoComplete="off" className="pt-1 space-y-3">
+                  {/* Hidden dummy honeypots to capture browser autofill */}
+                  <input type="text" name="fakeusernameremembered" style={{ display: 'none' }} tabIndex={-1} autoComplete="off" />
+                  <input type="password" name="fakepasswordremembered" style={{ display: 'none' }} tabIndex={-1} autoComplete="off" />
+
                   <div>
                     <label className="block text-xs font-semibold text-slate-600 mb-1">Username or Email</label>
                     <input
                       id="input-username"
+                      name="qbsms_login_user"
                       type="text"
                       required
+                      readOnly
+                      onFocus={(e) => (e.target.readOnly = false)}
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
+                      autoComplete="off"
                       className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition"
                       placeholder="Enter username..."
                     />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-slate-600 mb-1">Password</label>
-                    <input
-                      id="input-password"
-                      type="password"
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition"
-                      placeholder="Enter password..."
-                    />
+                    <div className="relative">
+                      <input
+                        id="input-password"
+                        name="qbsms_login_secret"
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        readOnly
+                        onFocus={(e) => (e.target.readOnly = false)}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        autoComplete="new-password"
+                        className="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition"
+                        placeholder="Enter password..."
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(p => !p)}
+                        className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                        tabIndex={-1}
+                        title={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
                   <button
                     id="btn-sign-in-submit"
                     type="submit"
                     disabled={loading}
-                    className="w-full py-2.5 bg-emerald-900 text-white font-semibold text-sm rounded-xl hover:bg-emerald-800 transition-all duration-150 flex items-center justify-center gap-2 disabled:opacity-60"
+                    className="w-full py-2.5 bg-emerald-900 text-white font-semibold text-sm rounded-xl hover:bg-emerald-800 transition-all duration-150 flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
                   >
                     {loading ? (
                       <>
