@@ -7,16 +7,19 @@ services:
     branch: master
     autoDeploy: true
     dockerfilePath: ./Dockerfile
-    disk:
-      name: sqlite-data
-      mountPath: /data
-      sizeGB: 1
     envVars:
       - key: DATABASE_URL
-        value: sqlite:////data/prod.db
+        fromDatabase:
+          property: connectionString
+          name: qbsms-db
       - key: JWT_SECRET_KEY
         generateValue: true
       - key: DEFAULT_ADMIN_PASSWORD
         sync: false
       - key: FLASK_DEBUG
         value: false
+
+databases:
+  - name: qbsms-db
+    databaseName: qbsms
+    user: qbsms_user
