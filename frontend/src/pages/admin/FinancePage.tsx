@@ -1388,25 +1388,27 @@ export const FinancePage: React.FC = () => {
                             </button>
                           )}
 
-                          <button
-                            onClick={() => {
-                              setEditPaymentId(payment.id);
-                              setPaymentForm({ ...payment });
-                              setShowCreatePaymentModal(true);
-                            }}
-                            className="p-1 text-slate-400 hover:text-blue-500 transition cursor-pointer"
-                            title="Edit Record"
-                          >
-                            <Edit className="w-3.5 h-3.5" />
-                          </button>
                           {isAdmin && (
-                            <button
-                              onClick={() => handleDeletePayment(payment.id)}
-                              className="p-1 text-slate-400 hover:text-rose-500 transition cursor-pointer"
-                              title="Delete Record"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                            <>
+                              <button
+                                onClick={() => {
+                                  setEditPaymentId(payment.id);
+                                  setPaymentForm({ ...payment });
+                                  setShowCreatePaymentModal(true);
+                                }}
+                                className="p-1 text-slate-400 hover:text-blue-500 transition cursor-pointer"
+                                title="Edit Record"
+                              >
+                                <Edit className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDeletePayment(payment.id)}
+                                className="p-1 text-slate-400 hover:text-rose-500 transition cursor-pointer"
+                                title="Delete Record"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </>
                           )}
                         </div>
                       </td>
