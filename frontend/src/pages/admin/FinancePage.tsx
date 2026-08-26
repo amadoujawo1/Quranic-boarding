@@ -882,28 +882,41 @@ export const FinancePage: React.FC = () => {
     const expenseDate = newExpense.expense_month || new Date().toISOString().split('T')[0];
     const dateObj = new Date(expenseDate);
     const expenseMonth = dateObj.toLocaleString('default', { month: 'long', year: 'numeric' });
-    const newRecord = {
-      id: Date.now(),
+    const payload = {
       category: newExpense.category,
       description: newExpense.description,
       amount: amt,
       expense_date: expenseDate,
       expense_month: expenseMonth
     };
-    setExpenses(prev => [newRecord, ...prev]);
-    setShowExpenseModal(false);
-    setNewExpense({ category: 'Kitchen & Nutrition', description: '', amount: '', expense_month: '' });
 
     if (token) {
       try {
-        await fetch('/api/finance/expenses', {
+        const response = await fetch('/api/finance/expenses', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify(newRecord)
+          body: JSON.stringify(payload)
         });
-        loadData();
+        if (response.ok) {
+          const result = await response.json();
+          const newRecord = {
+            id: result.id,
+            category: newExpense.category,
+            description: newExpense.description,
+            amount: amt,
+            expense_date: expenseDate,
+            expense_month: expenseMonth
+          };
+          setExpenses(prev => [newRecord, ...prev]);
+          setShowExpenseModal(false);
+          setNewExpense({ category: 'Kitchen & Nutrition', description: '', amount: '', expense_month: '' });
+        } else {
+          const error = await response.json();
+          alert(error.message || 'Failed to save expense');
+        }
       } catch (err) {
         console.warn('Expense sync error:', err);
+        alert('Failed to save expense. Please try again.');
       }
     }
   };
