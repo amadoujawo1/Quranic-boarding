@@ -199,7 +199,11 @@ def create_app():
             file_path = os.path.join(target_dir, path)
             if path and os.path.isfile(file_path):
                 return send_from_directory(target_dir, path)
-            return send_from_directory(target_dir, 'index.html')
+            response = send_from_directory(target_dir, 'index.html')
+            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+            response.headers['Pragma'] = 'no-cache'
+            response.headers['Expires'] = '0'
+            return response
 
         # Fallback if no build is found
         return {
