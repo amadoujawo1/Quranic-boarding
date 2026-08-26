@@ -15,6 +15,9 @@ COPY frontend/dist ./backend/dist
 
 WORKDIR /app/backend
 
+# Initialize database with seed data if empty
+RUN python init_db.py
+
 EXPOSE 10000
 
 CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-10000} wsgi:app"]
