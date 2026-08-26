@@ -16,6 +16,10 @@ export const StudentManagement: React.FC = () => {
 
   const [students, setStudents] = useState<any[]>([]);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   React.useEffect(() => {
     fetchStudents();
   }, []);
@@ -182,10 +186,21 @@ export const StudentManagement: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
-  const filtered = students.filter(s => 
-    s.full_name.toLowerCase().includes(search.toLowerCase()) || 
+  const filtered = students.filter(s =>
+    s.full_name.toLowerCase().includes(search.toLowerCase()) ||
     s.student_id_number.toLowerCase().includes(search.toLowerCase())
   );
+
+  // Calculate paginated students
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentStudents = filtered.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+
+  // Reset page when search changes
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
 
   return (
     <div className="space-y-6">
@@ -256,7 +271,7 @@ export const StudentManagement: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-            {filtered.map((s) => (
+            {currentStudents.map((s) => (
               <tr key={s.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
                 <td className="p-4 font-bold text-gold-600 dark:text-gold-400">{s.student_id_number}</td>
                 <td className="p-4 font-semibold text-slate-900 dark:text-white">{s.full_name}</td>
@@ -311,6 +326,43 @@ export const StudentManagement: React.FC = () => {
             )}
           </tbody>
         </table>
+        {/* Pagination Controls */}
+        {filtered.length > 0 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-800">
+            <div className="text-xs text-slate-500 dark:text-slate-400">
+              Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filtered.length)} of {filtered.length} entries
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                Previous
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition ${
+                    currentPage === page
+                      ? 'bg-gold-500 text-white'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Import Results Modal */}
