@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, KeyRound, AlertCircle, CheckCircle } from 'lucide-react';
 
@@ -15,6 +15,20 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [showCredentials, setShowCredentials] = useState(false);
+
+  // Clear all login fields, errors, and stored tokens upon loading/logout
+  useEffect(() => {
+    setUsername('');
+    setPassword('');
+    setTotpCode('');
+    setRequires2FA(false);
+    setErrorMsg('');
+    setShowCredentials(false);
+    setLoading(false);
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    sessionStorage.clear();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +57,13 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       }
 
       onLoginSuccess(data.user, data.access_token);
+
+      setUsername('');
+      setPassword('');
+      setTotpCode('');
+      setRequires2FA(false);
+      setErrorMsg('');
+      setShowCredentials(false);
 
       const roles: string[] = data.user.roles || [];
       if (roles.includes('Super Administrator') || roles.includes('Principal') || roles.includes('Hifz Coordinator')) {
@@ -161,7 +182,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 className="overflow-hidden transition-all duration-300 ease-in-out"
                 style={{ maxHeight: showCredentials ? '260px' : '0px' }}
               >
-                <form onSubmit={handleSubmit} className="pt-1 space-y-3">
+                <form onSubmit={handleSubmit} autoComplete="off" className="pt-1 space-y-3">
                   <div>
                     <label className="block text-xs font-semibold text-slate-600 mb-1">Username or Email</label>
                     <input
