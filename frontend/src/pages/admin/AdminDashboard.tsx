@@ -4,6 +4,7 @@ import {
   TrendingUp, Activity, CheckCircle, AlertTriangle, ShieldCheck 
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useLanguage } from '../../context/LanguageContext';
 import {
   Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler
 } from 'chart.js';
@@ -12,6 +13,7 @@ import { Line, Bar } from 'react-chartjs-2';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler);
 
 export const AdminDashboard: React.FC = () => {
+  const { t, language, isRTL } = useLanguage();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
@@ -73,12 +75,12 @@ export const AdminDashboard: React.FC = () => {
   const hifzChartData = stats?.hifz_progress_chart || [];
   const schoolAttendanceRate = attendanceToday.school_attendance_percentage ?? (overview.total_students && attendanceToday.school_present ? Math.round((attendanceToday.school_present / overview.total_students) * 100) : 0);
   const fajrAttendanceRate = attendanceToday.fajr_attendance_percentage ?? (attendanceToday.school_present && attendanceToday.fajr_jamaat ? Math.round((attendanceToday.fajr_jamaat / attendanceToday.school_present) * 100) : 0);
-  const formatCurrency = (value: number | undefined) => `D${Number(value || 0).toLocaleString()}`;
+  const formatCurrency = (value: number | undefined) => `GMD ${Number(value || 0).toLocaleString()}`;
   const lineChartData = {
     labels: hifzChartData.length > 0 ? hifzChartData.map((d: any) => d.month) : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
     datasets: [
       {
-        label: 'Juz Completed (All Students)',
+        label: language === 'ar' ? 'الأجزاء المكتملة (جميع الطلاب)' : 'Juz Completed (All Students)',
         data: hifzChartData.length > 0 ? hifzChartData.map((d: any) => d.juz_completed) : [0, 0, 0, 0, 0, 0, 0],
         borderColor: '#d4af37',
         backgroundColor: 'rgba(212, 175, 55, 0.15)',
@@ -93,12 +95,12 @@ export const AdminDashboard: React.FC = () => {
     labels: finChartData.labels,
     datasets: [
       {
-        label: 'Collected Revenue (D)',
+        label: language === 'ar' ? 'الإيرادات المحصلة (GMD)' : 'Collected Revenue (GMD)',
         data: finChartData.revenue,
         backgroundColor: '#0f8a4f'
       },
       {
-        label: 'Operational Expenses (D)',
+        label: language === 'ar' ? 'المصروفات التشغيلية (GMD)' : 'Operational Expenses (GMD)',
         data: finChartData.expenses,
         backgroundColor: '#b89220'
       }
@@ -106,7 +108,7 @@ export const AdminDashboard: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 font-sans">
       {/* Top Banner */}
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
@@ -115,16 +117,20 @@ export const AdminDashboard: React.FC = () => {
         className="bg-gradient-to-r from-emerald-950 via-emerald-900 to-emerald-950 p-8 rounded-3xl border border-gold-500/30 text-white shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6"
       >
         <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-500/20 text-gold-400 text-xs font-semibold">
-            <ShieldCheck className="w-3.5 h-3.5" /> Executive Control Panel
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-500/20 text-gold-400 text-xs font-semibold font-arabic">
+            <ShieldCheck className="w-3.5 h-3.5" /> {language === 'ar' ? 'لوحة التحكم المركزية' : 'Executive Control Panel'}
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Imaam Naafi' Centre for Quranic Memorization Management</h1>
-          <p className="text-xs text-slate-300">Live operational metrics for Hifz, Academics, and Finances.</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight font-arabic">
+            {t('school_name')}
+          </h1>
+          <p className="text-xs text-slate-300 font-arabic">
+            {t('dash_subtitle')}
+          </p>
         </div>
         <div className="bg-emerald-900/80 border border-gold-500/40 px-6 py-4 rounded-2xl text-center">
-          <div className="text-xs text-gold-400 font-medium">Live Fajr Jamaat Attendance</div>
+          <div className="text-xs text-gold-400 font-medium font-arabic">{t('dash_fajr_jamaat')}</div>
           <div className="text-3xl font-extrabold text-white mt-1">{fajrAttendanceRate}%</div>
-          <div className="text-[10px] text-emerald-300">Updated {lastUpdated || 'just now'}</div>
+          <div className="text-[10px] text-emerald-300 font-arabic">{language === 'ar' ? 'محدث للتو' : `Updated ${lastUpdated || 'just now'}`}</div>
         </div>
       </motion.div>
 
@@ -135,12 +141,12 @@ export const AdminDashboard: React.FC = () => {
           className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between hover:shadow-md hover:-translate-y-1 transition group"
         >
           <div>
-            <div className="text-xs font-semibold text-slate-500">Total Enrolled Students</div>
+            <div className="text-xs font-semibold text-slate-500 font-arabic">{t('dash_total_students')}</div>
             <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
               {overview.total_enrolled_students ?? overview.total_students ?? 0}
             </div>
-            <div className="text-[11px] text-emerald-600 font-medium mt-1">
-              {overview.active_students ?? overview.total_students ?? 0} active learners
+            <div className="text-[11px] text-emerald-600 font-medium mt-1 font-arabic">
+              {overview.active_students ?? overview.total_students ?? 0} {language === 'ar' ? 'طالب نشط' : 'active learners'}
             </div>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-gold-400 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -153,12 +159,12 @@ export const AdminDashboard: React.FC = () => {
           className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between hover:shadow-md hover:-translate-y-1 transition group"
         >
           <div>
-            <div className="text-xs font-semibold text-slate-500">School Attendance Today</div>
+            <div className="text-xs font-semibold text-slate-500 font-arabic">{t('dash_avg_attendance')}</div>
             <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
               {schoolAttendanceRate}%
             </div>
-            <div className="text-[11px] text-emerald-600 font-medium mt-1">
-              {attendanceToday.school_present ?? 0} of {overview.total_enrolled_students ?? overview.total_students ?? 0} present
+            <div className="text-[11px] text-emerald-600 font-medium mt-1 font-arabic">
+              {attendanceToday.school_present ?? 0} / {overview.total_enrolled_students ?? overview.total_students ?? 0} {t('status_present')}
             </div>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -171,9 +177,9 @@ export const AdminDashboard: React.FC = () => {
           className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between hover:shadow-md hover:-translate-y-1 transition group"
         >
           <div>
-            <div className="text-xs font-semibold text-slate-500">Total Revenue</div>
+            <div className="text-xs font-semibold text-slate-500 font-arabic">{t('dash_fees_collected')}</div>
             <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{formatCurrency(financials.total_revenue)}</div>
-            <div className="text-[11px] text-rose-500 font-medium mt-1">{formatCurrency(financials.outstanding_fees)} outstanding</div>
+            <div className="text-[11px] text-rose-500 font-medium mt-1 font-arabic">{formatCurrency(financials.outstanding_fees)} {t('balance')}</div>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform">
             <DollarSign className="w-6 h-6" />
@@ -185,16 +191,15 @@ export const AdminDashboard: React.FC = () => {
           className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between hover:shadow-md hover:-translate-y-1 transition group"
         >
           <div>
-            <div className="text-xs font-semibold text-slate-500">Teaching Staff</div>
+            <div className="text-xs font-semibold text-slate-500 font-arabic">{language === 'ar' ? 'هيئة التدريس' : 'Teaching Staff'}</div>
             <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{overview.teachers ?? 0}</div>
-            <div className="text-[11px] text-emerald-600 font-medium mt-1">On-boarded instructors</div>
+            <div className="text-[11px] text-emerald-600 font-medium mt-1 font-arabic">{language === 'ar' ? 'معلم ومحفظ مسجل' : 'On-boarded instructors'}</div>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
             <Award className="w-6 h-6" />
           </div>
         </motion.div>
       </div>
-
 
       {/* Interactive Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -203,8 +208,10 @@ export const AdminDashboard: React.FC = () => {
           className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4"
         >
           <div className="flex justify-between items-center">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">Quran Memorization Cumulative Progress</h3>
-            <span className="text-xs text-gold-500 font-semibold">2026 Academic Year</span>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white font-arabic">
+              {t('dash_quran_stats')}
+            </h3>
+            <span className="text-xs text-gold-500 font-semibold font-arabic">2026/2027</span>
           </div>
           <div className="h-64">
             <Line data={lineChartData} options={{ responsive: true, maintainAspectRatio: false, animation: { duration: 2000, easing: 'easeOutQuart' } }} />
@@ -216,8 +223,10 @@ export const AdminDashboard: React.FC = () => {
           className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4"
         >
           <div className="flex justify-between items-center">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">Financial Breakdown (Term Comparison)</h3>
-            <span className="text-xs text-emerald-600 font-semibold">Revenue vs Expense</span>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white font-arabic">
+              {language === 'ar' ? 'الملخص المالي (مقارنة الفصول)' : 'Financial Breakdown (Term Comparison)'}
+            </h3>
+            <span className="text-xs text-emerald-600 font-semibold font-arabic">{language === 'ar' ? 'الإيرادات مقابل المصروفات' : 'Revenue vs Expense'}</span>
           </div>
           <div className="h-64">
             <Bar data={barChartData} options={{ responsive: true, maintainAspectRatio: false, animation: { duration: 2000, easing: 'easeOutBounce' } }} />
@@ -230,23 +239,25 @@ export const AdminDashboard: React.FC = () => {
         initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}
         className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-4"
       >
-        <h3 className="text-base font-bold text-slate-900 dark:text-white">Recent Academic & Financial Activity</h3>
+        <h3 className="text-base font-bold text-slate-900 dark:text-white font-arabic">
+          {t('dash_recent_activity')}
+        </h3>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left rtl:text-right text-xs font-arabic">
             <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 font-semibold uppercase">
               <tr>
-                <th className="p-3">Student Name</th>
-                <th className="p-3">ID Number</th>
-                <th className="p-3">Event / Milestone</th>
-                <th className="p-3">Module</th>
-                <th className="p-3">Status</th>
+                <th className="p-3">{t('full_name')}</th>
+                <th className="p-3">{language === 'ar' ? 'التاريخ' : 'Date / Time'}</th>
+                <th className="p-3">{language === 'ar' ? 'الحدث / الإنجاز' : 'Event / Milestone'}</th>
+                <th className="p-3">{language === 'ar' ? 'القسم' : 'Module'}</th>
+                <th className="p-3">{t('status')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {recentActivity.length > 0 ? recentActivity.map((activity: any, index: number) => (
-                <tr key={`${activity.module}-${activity.timestamp}-${index}`}>
+                <tr key={`${activity.module}-${activity.timestamp}-${index}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
                   <td className="p-3 font-semibold text-slate-900 dark:text-white">{activity.student_name}</td>
-                  <td className="p-3 text-slate-500">{activity.timestamp?.slice(0, 10) || 'Today'}</td>
+                  <td className="p-3 text-slate-500">{activity.timestamp?.slice(0, 10) || (language === 'ar' ? 'اليوم' : 'Today')}</td>
                   <td className="p-3">{activity.event}</td>
                   <td className={`p-3 font-semibold ${activity.module === 'Hifz' ? 'text-gold-500' : activity.module === 'Finance' ? 'text-blue-500' : 'text-emerald-600'}`}>{activity.module}</td>
                   <td className="p-3">
@@ -257,7 +268,7 @@ export const AdminDashboard: React.FC = () => {
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={5} className="p-4 text-center text-slate-500">No recent activity yet.</td>
+                  <td colSpan={5} className="p-4 text-center text-slate-500">{t('no_records')}</td>
                 </tr>
               )}
             </tbody>

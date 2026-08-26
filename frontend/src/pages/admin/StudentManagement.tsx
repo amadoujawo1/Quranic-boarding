@@ -1,8 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { Users, Search, Plus, QrCode, Filter, Eye, CheckCircle2, ShieldAlert, Pencil, Trash2, X, Upload, Download, AlertCircle, CheckCircle } from 'lucide-react';
 import { Pagination } from '../../components/common/Pagination';
+import { useLanguage } from '../../context/LanguageContext';
 
 export const StudentManagement: React.FC = () => {
+  const { t, language, isRTL } = useLanguage();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isAdmin = user?.roles?.includes('Admin') || user?.roles?.includes('Super Admin') || user?.roles?.includes('Super Administrator');
 
@@ -205,12 +207,12 @@ export const StudentManagement: React.FC = () => {
   }, [search]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Student Management</h1>
-          <p className="text-xs text-slate-500">Admissions, Student Profiles, QR Code Student IDs, and Documents.</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white font-arabic">{t('students_title')}</h1>
+          <p className="text-xs text-slate-500 font-arabic">{t('students_subtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
           {/* Hidden file input */}
@@ -223,23 +225,23 @@ export const StudentManagement: React.FC = () => {
           />
           <button
             onClick={downloadTemplate}
-            className="px-3 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl hover:brightness-110 flex items-center gap-2 shadow-sm transition border border-slate-200 dark:border-slate-700"
-            title="Download CSV template"
+            className="px-3 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl hover:brightness-110 flex items-center gap-2 shadow-sm transition border border-slate-200 dark:border-slate-700 cursor-pointer font-arabic"
+            title={language === 'ar' ? 'تنزيل نموذج CSV' : 'Download CSV template'}
           >
-            <Download className="w-4 h-4" /> Template
+            <Download className="w-4 h-4" /> {language === 'ar' ? 'نموذج CSV' : 'Template'}
           </button>
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={importing}
-            className="px-4 py-2.5 bg-blue-600 text-white font-bold text-xs rounded-xl hover:brightness-110 flex items-center gap-2 shadow-md transition disabled:opacity-60"
+            className="px-4 py-2.5 bg-blue-600 text-white font-bold text-xs rounded-xl hover:brightness-110 flex items-center gap-2 shadow-md transition disabled:opacity-60 cursor-pointer font-arabic"
           >
-            <Upload className="w-4 h-4" /> {importing ? 'Importing…' : 'Import CSV / XLSX'}
+            <Upload className="w-4 h-4" /> {importing ? (language === 'ar' ? 'جاري الاستيراد…' : 'Importing…') : (language === 'ar' ? 'استيراد CSV / Excel' : 'Import CSV / XLSX')}
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-4 py-2.5 bg-gradient-to-r from-gold-500 to-gold-600 text-emerald-950 font-bold text-xs rounded-xl hover:brightness-110 flex items-center gap-2 shadow-md transition"
+            className="px-4 py-2.5 bg-gradient-to-r from-gold-500 to-gold-600 text-emerald-950 font-bold text-xs rounded-xl hover:brightness-110 flex items-center gap-2 shadow-md transition cursor-pointer font-arabic"
           >
-            <Plus className="w-4 h-4" /> Register New Student
+            <Plus className="w-4 h-4" /> {t('btn_add_student')}
           </button>
         </div>
       </div>
@@ -247,51 +249,51 @@ export const StudentManagement: React.FC = () => {
       {/* Controls Bar */}
       <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row gap-4 justify-between">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 rtl:left-auto rtl:right-3.5 top-3" />
           <input
             type="text"
-            placeholder="Search by student name or ID..."
+            placeholder={language === 'ar' ? 'البحث باسم الطالب أو الرقم التعريفي...' : 'Search by student name or ID...'}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-gold-500"
+            className="w-full pl-10 pr-4 rtl:pr-10 rtl:pl-4 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-gold-500 font-arabic"
           />
         </div>
       </div>
 
       {/* Student Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <table className="w-full text-left text-xs">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden font-arabic">
+        <table className="w-full text-left rtl:text-right text-xs">
           <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 font-semibold uppercase border-b border-slate-200 dark:border-slate-700">
             <tr>
-              <th className="p-4">Student ID</th>
-              <th className="p-4">Full Name</th>
-              <th className="p-4">Gender</th>
-              <th className="p-4">Parent / Guardian</th>
-              <th className="p-4">Hifz Progress</th>
-              <th className="p-4">Status</th>
-              <th className="p-4 text-right">Actions</th>
+              <th className="p-4">{t('student_id')}</th>
+              <th className="p-4">{t('full_name')}</th>
+              <th className="p-4">{t('gender')}</th>
+              <th className="p-4">{t('student_parent')}</th>
+              <th className="p-4">{language === 'ar' ? 'مستوى الحفظ' : 'Hifz Progress'}</th>
+              <th className="p-4">{t('status')}</th>
+              <th className="p-4 text-right rtl:text-left">{language === 'ar' ? 'الإجراءات' : 'Actions'}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {currentStudents.map((s) => (
               <tr key={s.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
-                <td className="p-4 font-bold text-gold-600 dark:text-gold-400">{s.student_id_number}</td>
+                <td className="p-4 font-bold text-gold-600 dark:text-gold-400 font-mono">{s.student_id_number}</td>
                 <td className="p-4 font-semibold text-slate-900 dark:text-white">{s.full_name}</td>
-                <td className="p-4 text-slate-600 dark:text-slate-400">{s.gender}</td>
+                <td className="p-4 text-slate-600 dark:text-slate-400">{s.gender === 'Male' ? (language === 'ar' ? 'ذكر' : 'Male') : (language === 'ar' ? 'أنثى' : 'Female')}</td>
                 <td className="p-4 text-slate-600 dark:text-slate-400 font-medium">{s.parent_name || 'N/A'}</td>
-                <td className="p-4 font-semibold text-emerald-600 dark:text-emerald-400">{s.hifz_juz || 0} / 30 Juz</td>
+                <td className="p-4 font-semibold text-emerald-600 dark:text-emerald-400">{s.hifz_juz || 0} / 30 {language === 'ar' ? 'جزء' : 'Juz'}</td>
                 <td className="p-4">
                   <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-semibold text-[10px]">
-                    {s.status}
+                    {s.status === 'Active' ? (language === 'ar' ? 'نشط' : 'Active') : s.status}
                   </span>
                 </td>
-                <td className="p-4 text-right">
-                  <div className="flex items-center justify-end gap-1.5">
+                <td className="p-4 text-right rtl:text-left">
+                  <div className="flex items-center justify-end rtl:justify-start gap-1.5">
                     {/* QR Code — always visible */}
                     <button
                       onClick={() => setShowQrModal(s)}
-                      className="p-1.5 rounded-lg bg-gold-500/10 text-gold-600 dark:text-gold-400 hover:bg-gold-500/20 transition"
-                      title="View QR ID Card"
+                      className="p-1.5 rounded-lg bg-gold-500/10 text-gold-600 dark:text-gold-400 hover:bg-gold-500/20 transition cursor-pointer"
+                      title={language === 'ar' ? 'عرض بطاقة الطالب QR' : 'View QR ID Card'}
                     >
                       <QrCode className="w-4 h-4" />
                     </button>
@@ -300,8 +302,8 @@ export const StudentManagement: React.FC = () => {
                     {isAdmin && (
                       <button
                         onClick={() => setShowEditModal({ ...s, date_of_birth: s.date_of_birth || '' })}
-                        className="p-1.5 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition"
-                        title="Edit Student"
+                        className="p-1.5 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition cursor-pointer"
+                        title={t('btn_edit')}
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
@@ -311,8 +313,8 @@ export const StudentManagement: React.FC = () => {
                     {isAdmin && (
                       <button
                         onClick={() => setShowDeleteConfirm(s)}
-                        className="p-1.5 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 transition"
-                        title="Delete Student"
+                        className="p-1.5 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 transition cursor-pointer"
+                        title={t('btn_delete')}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -323,7 +325,7 @@ export const StudentManagement: React.FC = () => {
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={7} className="p-8 text-center text-slate-400 text-xs">No students found.</td>
+                <td colSpan={7} className="p-8 text-center text-slate-400 text-xs font-arabic">{t('no_records')}</td>
               </tr>
             )}
           </tbody>

@@ -76,6 +76,10 @@ export const translations: Translations = {
   btn_continue_school_account: { en: "Continue with School Account", ar: "المتابعة بحساب المركز" },
   btn_apply_admission: { en: "Apply for admission", ar: "تقديم طلب القبول" },
   btn_track_application: { en: "Track application", ar: "متابعة الطلب" },
+  btn_refresh: { en: "Refresh Data", ar: "تحديث البيانات" },
+  btn_generate_monthly: { en: "Generate Monthly Fees", ar: "توليد رسوم الشهر" },
+  btn_multi_month: { en: "Multi-Month Payment", ar: "دفع لعدة أشهر" },
+  btn_create_user: { en: "Create New User", ar: "إنشاء مستخدم جديد" },
 
   // Auth / Login
   login_title: { en: "Welcome back", ar: "مرحباً بكم من جديد" },
@@ -89,6 +93,21 @@ export const translations: Translations = {
   login_new_here: { en: "NEW HERE?", ar: "جديد معنا؟" },
   login_tagline_1: { en: "Excellence in Quranic Memorization & Islamic Studies", ar: "التميز في حفظ القرآن الكريم والدراسات الإسلامية" },
   login_tagline_2: { en: "A distinguished boarding institution dedicated to nurturing the next generation of Huffadh with authentic Tajweed and righteous character.", ar: "مؤسسة قرآنية داخلية رائدة مكرسة لإعداد أجيال من حفظة كتاب الله تعالى بأحكام التجويد والأخلاق الفاضلة." },
+
+  // Dashboard Overview
+  dash_title: { en: "Overview Dashboard", ar: "لوحة المتابعة العامة" },
+  dash_subtitle: { en: "Real-time summary of student enrolment, daily attendance, Hifz milestones, and fee collection.", ar: "ملخص فوري ومباشر لقيد الطلاب، وحضور الحلقات، وإنجازات الحفظ، وتحصيل الرسوم." },
+  dash_total_students: { en: "Total Students", ar: "إجمالي الطلاب" },
+  dash_boarding_students: { en: "Boarding Enrolled", ar: "طلاب السكن الداخلي" },
+  dash_hifz_completions: { en: "Hifz Completions", ar: "ختمات القرآن الكريم" },
+  dash_avg_attendance: { en: "Daily School Attendance", ar: "نسبة الحضور اليومي" },
+  dash_fajr_jamaat: { en: "Fajr Mosque Attendance", ar: "حضور صلاة الفجر جماعة" },
+  dash_fees_collected: { en: "Fees Collected (This Year)", ar: "إجمالي الرسوم المحصلة (العام الحالي)" },
+  dash_outstanding_balance: { en: "Outstanding Dues", ar: "المبالغ المستحقة غير المسددة" },
+  dash_quick_actions: { en: "Quick Operational Shortcuts", ar: "الإجراءات السريعة" },
+  dash_recent_activity: { en: "Recent System Activity", ar: "أحدث العمليات في النظام" },
+  dash_quran_stats: { en: "Quran Memorization Milestones", ar: "إحصائيات حفظ القرآن الكريم" },
+  dash_live_status: { en: "System Live & Operational", ar: "النظام متصل ويعمل بصورة طبيعية" },
 
   // Attendance & Prayers
   attendance_title: { en: "Daily School & Mosque Prayer Attendance", ar: "سجل الحضور اليومي والصلوات الخمس" },
@@ -121,8 +140,26 @@ export const translations: Translations = {
   prayer_maghrib: { en: "Maghrib", ar: "المغرب" },
   prayer_isha: { en: "Isha", ar: "العشاء" },
 
+  // Student Management
+  students_title: { en: "Student Management & Profiles", ar: "إدارة الطلاب والسجلات الأكاديمية" },
+  students_subtitle: { en: "Directory of enrolled students, guardians, boarding dorms, and Hifz stages.", ar: "دليل شامل للطلاب المسجلين، وأولياء الأمور، والغرف، ومراحل الحفظ." },
+  student_dob: { en: "Date of Birth", ar: "تاريخ الميلاد" },
+  student_parent: { en: "Guardian Name", ar: "اسم ولي الأمر" },
+  student_phone: { en: "Guardian Phone", ar: "هاتف ولي الأمر" },
+  student_dorm: { en: "Dorm / Bed", ar: "السكن / السرير" },
+  student_class: { en: "Class / Level", ar: "المستوى الدراسي" },
+  student_active: { en: "Active", ar: "نشط" },
+  student_graduated: { en: "Graduated", ar: "متخرج" },
+  student_suspended: { en: "Suspended", ar: "موقوف" },
+
   // Finance & Receipts
   finance_title: { en: "Fee & Financial Management", ar: "إدارة الرسوم والشؤون المالية" },
+  finance_subtitle: { en: "Manage student monthly fee payments, receipts, invoices, donations, and expenses.", ar: "إدارة تسديد الرسوم الشهرية، والإيصالات، والفواتير، والتبرعات، والمصروفات." },
+  tab_monthly_payments: { en: "All Student Payments", ar: "جميع مدفوعات الطلاب" },
+  tab_student_ledger: { en: "Monthly Payment View (Per Student)", ar: "كشف مدفوعات الطالب" },
+  tab_collection_report: { en: "Monthly Collection Report", ar: "تقرير التحصيل الشهري" },
+  tab_donations: { en: "Institutional Donations", ar: "التبرعات والهبات" },
+  tab_expenses: { en: "Expenses & Operations", ar: "المصروفات والتشغيل" },
   official_fee_receipt: { en: "Official Student Fee Receipt", ar: "إيصال رسوم الطالب الرسمي" },
   receipt_no: { en: "Receipt No.", ar: "رقم الإيصال" },
   payment_date: { en: "Payment Date", ar: "تاريخ الدفع" },
@@ -136,6 +173,37 @@ export const translations: Translations = {
   total: { en: "Total", ar: "المجموع" },
   fee_description: { en: "Fee Description", ar: "بيان الرسوم" },
 
+  // User Management
+  users_title: { en: "User Management & Role Permissions", ar: "إدارة المستخدمين وصلاحيات النظام" },
+  users_subtitle: { en: "Manage administrative personnel, teachers, parents, and student portal credentials.", ar: "إدارة حسابات المشرفين، والمعلمين، وأولياء الأمور، وصلاحيات بوابات الطلاب." },
+  user_full_name: { en: "Full Name", ar: "الاسم الكامل" },
+  user_email: { en: "Email Address", ar: "البريد الإلكتروني" },
+  user_role: { en: "Assigned Role", ar: "الصلاحية المسندة" },
+  user_phone: { en: "Phone Number", ar: "رقم الهاتف" },
+  user_last_login: { en: "Last Login", ar: "آخر تسجيل دخول" },
+
+  // Admissions
+  admissions_title: { en: "Admissions & Application Tracking", ar: "إدارة ومتابعة طلبات القبول" },
+  admissions_subtitle: { en: "Review prospective student applications, interviews, and entrance decisions.", ar: "مراجعة طلبات الالتحاق الجديدة، والمقابلات، وقرارات القبول." },
+  admission_app_no: { en: "Application ID", ar: "رقم الطلب" },
+  admission_applicant: { en: "Applicant Name", ar: "اسم المتقدم" },
+  admission_date: { en: "Applied Date", ar: "تاريخ التقديم" },
+  admission_status: { en: "Status", ar: "حالة الطلب" },
+  status_pending: { en: "Pending Review", ar: "قيد المراجعة" },
+  status_accepted: { en: "Accepted", ar: "مقبول" },
+  status_rejected: { en: "Rejected", ar: "مرفوض" },
+
+  // Portals
+  portal_parent_title: { en: "Parent Guardian Portal", ar: "بوابة ولي الأمر" },
+  portal_parent_subtitle: { en: "Monitor your children's Quranic memorization, daily prayer attendance, and fees.", ar: "متابعة تقدم أبنائكم في حفظ القرآن الكريم، وحضور الصلوات، والرسوم الدراسية." },
+  portal_student_title: { en: "Student Learning & Hifz Portal", ar: "بوابة الطالب القرآنية" },
+  portal_student_subtitle: { en: "Your personal Quranic memorization journey, revision schedules, and achievements.", ar: "مسيرتك القرآنية الشخصية، وجدول المراجعة والحفظ، والإنجازات." },
+  portal_teacher_title: { en: "Teacher Classroom & Hifz Portal", ar: "بوابة المعلم وحلقات التحفيظ" },
+  portal_teacher_subtitle: { en: "Evaluate student recitation, log daily Juz progress, and record attendance.", ar: "تقييم تلاوة الطلاب، وتدوين تقدم الأجزاء اليومي، ورصد الحضور." },
+  hifz_juz_completed: { en: "Juz Completed", ar: "الأجزاء المكتملة" },
+  hifz_current_surah: { en: "Current Surah", ar: "السورة الحالية" },
+  hifz_rating: { en: "Recitation Rating", ar: "تقييم التلاوة" },
+
   // Pagination & Common
   showing: { en: "Showing", ar: "عرض" },
   to: { en: "to", ar: "إلى" },
@@ -143,7 +211,7 @@ export const translations: Translations = {
   entries: { en: "entries", ar: "سجلات" },
   previous: { en: "Previous", ar: "السابق" },
   next: { en: "Next", ar: "التالي" },
-  no_records: { en: "No records found", ar: "لا توجد سجلات" },
+  no_records: { en: "No records found matching your filters.", ar: "لا توجد سجلات مطابقة للبحث." },
   all_caught_up: { en: "All caught up!", ar: "تم الاطلاع على كل الإشعارات!" },
   notifications: { en: "Notifications", ar: "الإشعارات" },
   mark_all_read: { en: "Mark all as read", ar: "تحديد الكل كمقروء" },

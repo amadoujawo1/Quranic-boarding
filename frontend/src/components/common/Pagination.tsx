@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 export interface PaginationProps {
   currentPage: number;
@@ -16,6 +17,7 @@ export const Pagination: React.FC<PaginationProps> = ({
   onPageChange,
   colorScheme = 'gold'
 }) => {
+  const { t, isRTL } = useLanguage();
   if (totalItems <= 0) return null;
 
   const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
@@ -63,22 +65,22 @@ export const Pagination: React.FC<PaginationProps> = ({
   const activeClass = activeColorClasses[colorScheme] || activeColorClasses.gold;
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-slate-200 dark:border-slate-800">
-      <div className="text-xs text-slate-500 dark:text-slate-400">
-        Showing <span className="font-semibold text-slate-700 dark:text-slate-300">{indexOfFirstItem}</span> to{' '}
-        <span className="font-semibold text-slate-700 dark:text-slate-300">{indexOfLastItem}</span> of{' '}
-        <span className="font-semibold text-slate-700 dark:text-slate-300">{totalItems}</span> entries
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-slate-200 dark:border-slate-800 font-sans">
+      <div className="text-xs text-slate-500 dark:text-slate-400 font-arabic">
+        {t('showing')} <span className="font-semibold text-slate-700 dark:text-slate-300">{indexOfFirstItem}</span> {t('to')}{' '}
+        <span className="font-semibold text-slate-700 dark:text-slate-300">{indexOfLastItem}</span> {t('of')}{' '}
+        <span className="font-semibold text-slate-700 dark:text-slate-300">{totalItems}</span> {t('entries')}
       </div>
       <div className="flex items-center gap-1">
         <button
           type="button"
           onClick={() => onPageChange(Math.max(safePage - 1, 1))}
           disabled={safePage === 1}
-          className="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center gap-1 cursor-pointer"
-          title="Previous Page"
+          className="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center gap-1 cursor-pointer font-arabic"
+          title={t('previous')}
         >
-          <ChevronLeft className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Previous</span>
+          <ChevronLeft className={`w-3.5 h-3.5 ${isRTL ? 'rotate-180' : ''}`} />
+          <span className="hidden sm:inline">{t('previous')}</span>
         </button>
 
         {getPageNumbers().map((p, idx) =>
@@ -106,13 +108,14 @@ export const Pagination: React.FC<PaginationProps> = ({
           type="button"
           onClick={() => onPageChange(Math.min(safePage + 1, totalPages))}
           disabled={safePage === totalPages}
-          className="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center gap-1 cursor-pointer"
-          title="Next Page"
+          className="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center gap-1 cursor-pointer font-arabic"
+          title={t('next')}
         >
-          <span className="hidden sm:inline">Next</span>
-          <ChevronRight className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">{t('next')}</span>
+          <ChevronRight className={`w-3.5 h-3.5 ${isRTL ? 'rotate-180' : ''}`} />
         </button>
       </div>
     </div>
   );
 };
+

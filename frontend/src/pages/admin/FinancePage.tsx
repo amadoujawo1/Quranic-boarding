@@ -15,6 +15,7 @@ import {
 } from 'chart.js';
 import { StudentPayment, MonthlyCollectionReport, StudentPaymentStatsData } from '../../types';
 import { Pagination } from '../../components/common/Pagination';
+import { useLanguage } from '../../context/LanguageContext';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler);
 
@@ -34,23 +35,24 @@ const Counter = ({ target, prefix = '', suffix = '' }: { target: number; prefix?
 
 // ── Status badge ──────────────────────────────────────────────────────────────
 const PaymentStatusBadge = ({ status }: { status: string }) => {
+  const { language } = useLanguage();
   if (status === 'Paid') {
     return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-        <CheckCircle className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> Paid
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 font-arabic">
+        <CheckCircle className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> {language === 'ar' ? 'مسدد بالكامل' : 'Paid'}
       </span>
     );
   }
   if (status === 'Partial') {
     return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
-        <AlertTriangle className="w-3 h-3 text-amber-600 dark:text-amber-400" /> Partial
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-800 font-arabic">
+        <AlertTriangle className="w-3 h-3 text-amber-600 dark:text-amber-400" /> {language === 'ar' ? 'مسدد جزئياً' : 'Partial'}
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
-      <XCircle className="w-3 h-3 text-rose-600 dark:text-rose-400" /> Unpaid
+    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-300 dark:border-rose-800 font-arabic">
+      <XCircle className="w-3 h-3 text-rose-600 dark:text-rose-400" /> {language === 'ar' ? 'غير مسدد' : 'Unpaid'}
     </span>
   );
 };
@@ -271,7 +273,7 @@ const YearCalendarMonthPicker: React.FC<YearCalendarMonthPickerProps> = ({
 };
 
 export const FinancePage: React.FC = () => {
-
+  const { t, language, isRTL } = useLanguage();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isAdmin = user?.roles?.includes('Admin') || user?.roles?.includes('Super Admin') || user?.roles?.includes('Super Administrator');
 
@@ -1063,7 +1065,7 @@ export const FinancePage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 font-sans">
       {/* ── Top Header ──────────────────────────────────────────────────────── */}
       <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
         className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -1072,19 +1074,19 @@ export const FinancePage: React.FC = () => {
             <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-gold-400">
               <DollarSign className="w-5 h-5" />
             </div>
-            <div>
+            <div className="font-arabic">
               <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                Student Monthly Payment &amp; Finance Module
+                {t('finance_title')}
               </h1>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Imaam Naafi' Centre for Quranic Memorization • Academic Year {academicYearFilter}
+                {t('school_name')} • {language === 'ar' ? 'العام الدراسي' : 'Academic Year'} {academicYearFilter}
               </p>
             </div>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-2 flex-wrap items-center">
+        <div className="flex gap-2 flex-wrap items-center font-arabic">
           <button
             onClick={() => {
               setPaymentForm(BLANK_STUDENT_PAYMENT);
@@ -1093,7 +1095,7 @@ export const FinancePage: React.FC = () => {
             }}
             className="px-4 py-2.5 text-xs font-extrabold rounded-xl bg-gradient-to-r from-gold-500 to-gold-600 text-emerald-950 hover:brightness-110 transition flex items-center gap-2 shadow-md cursor-pointer"
           >
-            <PlusCircle className="w-4 h-4" /> Record Payment
+            <PlusCircle className="w-4 h-4" /> {t('btn_record_payment')}
           </button>
           <button
             onClick={() => {
@@ -1104,17 +1106,17 @@ export const FinancePage: React.FC = () => {
             }}
             className="px-4 py-2.5 text-xs font-extrabold rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition flex items-center gap-2 shadow-md cursor-pointer"
           >
-            <Calendar className="w-4 h-4" /> Multi-Month Payment
+            <Calendar className="w-4 h-4" /> {language === 'ar' ? 'دفع عدة أشهر' : 'Multi-Month Payment'}
           </button>
           <button
             onClick={() => setShowGenerateDuesModal(true)}
             className="px-3.5 py-2.5 text-xs font-bold rounded-xl bg-emerald-800 text-emerald-100 hover:bg-emerald-700 transition flex items-center gap-1.5 shadow cursor-pointer"
           >
-            <Sparkles className="w-3.5 h-3.5 text-gold-400" /> Generate Monthly Dues
+            <Sparkles className="w-3.5 h-3.5 text-gold-400" /> {language === 'ar' ? 'توليد الرسوم الشهرية' : 'Generate Monthly Dues'}
           </button>
           <button
             onClick={loadData}
-            title="Refresh Data"
+            title={language === 'ar' ? 'تحديث البيانات' : 'Refresh Data'}
             className="p-2.5 text-xs font-bold rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -1123,84 +1125,84 @@ export const FinancePage: React.FC = () => {
       </motion.div>
 
       {/* ── 6 Recommended Dashboard KPIs ─────────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 font-arabic">
         {/* 1. Total Fees Due */}
         <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
-            <span>Total Fees Due</span>
+            <span>{t('total_due')}</span>
             <FileText className="w-3.5 h-3.5 text-slate-400" />
           </div>
-          <div className="mt-2 text-xl font-extrabold text-slate-900 dark:text-white">
+          <div className="mt-2 text-xl font-extrabold text-slate-900 dark:text-white font-mono">
             <Counter target={totalFeesDue} prefix="GMD " />
           </div>
-          <div className="mt-1 text-[10px] text-slate-400 font-medium">Total billed dues</div>
+          <div className="mt-1 text-[10px] text-slate-400 font-medium">{language === 'ar' ? 'إجمالي الرسوم المستحقة' : 'Total billed dues'}</div>
         </div>
 
         {/* 2. Total Collected */}
         <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
-            <span>Total Collected</span>
+            <span>{t('total_paid')}</span>
             <TrendingUp className="w-3.5 h-3.5" />
           </div>
-          <div className="mt-2 text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
+          <div className="mt-2 text-xl font-extrabold text-emerald-600 dark:text-emerald-400 font-mono">
             <Counter target={totalCollected} prefix="GMD " />
           </div>
           <div className="mt-1 text-[10px] text-emerald-600/80 font-semibold">
-            {totalFeesDue > 0 ? `${((totalCollected / totalFeesDue) * 100).toFixed(1)}% collected` : '100%'}
+            {totalFeesDue > 0 ? `${((totalCollected / totalFeesDue) * 100).toFixed(1)}% ${language === 'ar' ? 'نسبة التحصيل' : 'collected'}` : '100%'}
           </div>
         </div>
 
         {/* 3. Outstanding Balance */}
         <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-rose-500 dark:text-rose-400 text-xs font-semibold">
-            <span>Outstanding</span>
+            <span>{t('balance')}</span>
             <AlertTriangle className="w-3.5 h-3.5" />
           </div>
-          <div className="mt-2 text-xl font-extrabold text-rose-600 dark:text-rose-400">
+          <div className="mt-2 text-xl font-extrabold text-rose-600 dark:text-rose-400 font-mono">
             <Counter target={outstandingBalance} prefix="GMD " />
           </div>
-          <div className="mt-1 text-[10px] text-rose-500/80 font-medium">Pending arrears</div>
+          <div className="mt-1 text-[10px] text-rose-500/80 font-medium">{language === 'ar' ? 'المبالغ المتبقية غير المسددة' : 'Pending arrears'}</div>
         </div>
 
         {/* 4. Paid Students */}
         <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-emerald-200/60 dark:border-emerald-950 shadow-xs flex flex-col justify-between bg-emerald-50/20 dark:bg-emerald-950/20">
           <div className="flex items-center justify-between text-emerald-700 dark:text-emerald-300 text-xs font-bold">
-            <span>Paid Records</span>
+            <span>{language === 'ar' ? 'المسددون' : 'Paid Records'}</span>
             <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
           </div>
-          <div className="mt-2 text-xl font-black text-emerald-700 dark:text-emerald-300">
-            <Counter target={paidCount} suffix=" records" />
+          <div className="mt-2 text-xl font-black text-emerald-700 dark:text-emerald-300 font-mono">
+            <Counter target={paidCount} suffix={language === 'ar' ? ' سجل' : ' records'} />
           </div>
-          <div className="mt-1 text-[10px] text-emerald-600 font-semibold">✅ Full payment</div>
+          <div className="mt-1 text-[10px] text-emerald-600 font-semibold">✅ {language === 'ar' ? 'سداد كامل' : 'Full payment'}</div>
         </div>
 
         {/* 5. Partially Paid */}
         <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-amber-200/60 dark:border-amber-950 shadow-xs flex flex-col justify-between bg-amber-50/20 dark:bg-amber-950/20">
           <div className="flex items-center justify-between text-amber-700 dark:text-amber-300 text-xs font-bold">
-            <span>Partially Paid</span>
+            <span>{language === 'ar' ? 'سداد جزئي' : 'Partially Paid'}</span>
             <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
           </div>
-          <div className="mt-2 text-xl font-black text-amber-700 dark:text-amber-300">
-            <Counter target={partialCount} suffix=" records" />
+          <div className="mt-2 text-xl font-black text-amber-700 dark:text-amber-300 font-mono">
+            <Counter target={partialCount} suffix={language === 'ar' ? ' سجل' : ' records'} />
           </div>
-          <div className="mt-1 text-[10px] text-amber-600 font-semibold">⚠️ Partial balance</div>
+          <div className="mt-1 text-[10px] text-amber-600 font-semibold">⚠️ {language === 'ar' ? 'متبقي رصيد' : 'Partial balance'}</div>
         </div>
 
         {/* 6. Unpaid Students */}
         <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-rose-200/60 dark:border-rose-950 shadow-xs flex flex-col justify-between bg-rose-50/20 dark:bg-rose-950/20">
           <div className="flex items-center justify-between text-rose-700 dark:text-rose-300 text-xs font-bold">
-            <span>Unpaid Records</span>
+            <span>{language === 'ar' ? 'غير مسددين' : 'Unpaid Records'}</span>
             <XCircle className="w-3.5 h-3.5 text-rose-500" />
           </div>
-          <div className="mt-2 text-xl font-black text-rose-700 dark:text-rose-300">
-            <Counter target={unpaidCount} suffix=" records" />
+          <div className="mt-2 text-xl font-black text-rose-700 dark:text-rose-300 font-mono">
+            <Counter target={unpaidCount} suffix={language === 'ar' ? ' سجل' : ' records'} />
           </div>
-          <div className="mt-1 text-[10px] text-rose-600 font-semibold">❌ Zero payment</div>
+          <div className="mt-1 text-[10px] text-rose-600 font-semibold">❌ {language === 'ar' ? 'لم يسدد بعد' : 'Zero payment'}</div>
         </div>
       </div>
 
       {/* ── Navigation Tabs ─────────────────────────────────────────────────── */}
-      <div className="flex gap-1.5 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl w-full sm:w-fit overflow-x-auto">
+      <div className="flex gap-1.5 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl w-full sm:w-fit overflow-x-auto font-arabic">
         <button
           onClick={() => setTab('monthly_payments')}
           className={`px-4 py-2 text-xs font-bold rounded-xl transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
@@ -1209,7 +1211,7 @@ export const FinancePage: React.FC = () => {
               : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
-          <CreditCard className="w-3.5 h-3.5" /> All Student Payments
+          <CreditCard className="w-3.5 h-3.5" /> {t('tab_student_payments')}
         </button>
 
         <button
@@ -1220,7 +1222,7 @@ export const FinancePage: React.FC = () => {
               : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
-          <User className="w-3.5 h-3.5" /> Monthly Payment View (Per Student)
+          <User className="w-3.5 h-3.5" /> {language === 'ar' ? 'كشف حساب الطالب الشهري' : 'Monthly Payment View (Per Student)'}
         </button>
 
         <button
@@ -1231,7 +1233,7 @@ export const FinancePage: React.FC = () => {
               : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
-          <TrendingUp className="w-3.5 h-3.5" /> Monthly Collection Report
+          <TrendingUp className="w-3.5 h-3.5" /> {t('tab_collection_report')}
         </button>
 
         <button
@@ -1242,7 +1244,7 @@ export const FinancePage: React.FC = () => {
               : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
-          <Gift className="w-3.5 h-3.5" /> Donations
+          <Gift className="w-3.5 h-3.5" /> {t('tab_donations')}
         </button>
 
         <button
@@ -1253,7 +1255,7 @@ export const FinancePage: React.FC = () => {
               : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
-          <Wallet className="w-3.5 h-3.5" /> Expenses
+          <Wallet className="w-3.5 h-3.5" /> {t('tab_expenses')}
         </button>
       </div>
 

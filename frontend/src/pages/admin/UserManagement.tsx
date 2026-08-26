@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Users, PlusCircle, ShieldCheck, Search, X, Check, Edit, Trash2, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Pagination } from '../../components/common/Pagination';
+import { useLanguage } from '../../context/LanguageContext';
 
 export const UserManagement: React.FC = () => {
+  const { t, language, isRTL } = useLanguage();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isAdmin = user?.roles?.includes('Admin') || user?.roles?.includes('Super Admin') || user?.roles?.includes('Super Administrator');
 
@@ -181,27 +183,27 @@ export const UserManagement: React.FC = () => {
   }, [search]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 font-sans">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
         className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-            <Users className="w-6 h-6 text-gold-500" /> User & Role Management
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2 font-arabic">
+            <Users className="w-6 h-6 text-gold-500" /> {t('users_title')}
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">Create accounts, register students, and manage system privileges.</p>
+          <p className="text-xs text-slate-500 mt-0.5 font-arabic">{t('users_subtitle')}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 font-arabic">
           {isAdmin && (
             <button onClick={() => setShowStudentModal(true)}
-              className="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-gold-500 to-gold-600 text-emerald-950 hover:brightness-110 transition flex items-center gap-1.5 shadow-md">
-              <GraduationCap className="w-4 h-4" /> Register Student
+              className="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-gold-500 to-gold-600 text-emerald-950 hover:brightness-110 transition flex items-center gap-1.5 shadow-md cursor-pointer">
+              <GraduationCap className="w-4 h-4" /> {t('btn_add_student')}
             </button>
           )}
           {isAdmin && (
             <button onClick={() => setShowCreateModal(true)}
-              className="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 text-white hover:brightness-110 transition flex items-center gap-1.5 shadow-md">
-              <PlusCircle className="w-4 h-4" /> Add New User
+              className="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 text-white hover:brightness-110 transition flex items-center gap-1.5 shadow-md cursor-pointer">
+              <PlusCircle className="w-4 h-4" /> {t('btn_create_user')}
             </button>
           )}
         </div>
@@ -209,22 +211,22 @@ export const UserManagement: React.FC = () => {
 
       {/* Users Table */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
-        className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden font-arabic">
         
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-7 top-6" />
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search users by name, username, or email..."
-            className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-gold-500" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-7 rtl:left-auto rtl:right-7 top-6" />
+          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder={language === 'ar' ? 'البحث بالاسم أو اسم المستخدم أو البريد الإلكتروني...' : 'Search users by name, username, or email...'}
+            className="w-full pl-10 pr-4 rtl:pr-10 rtl:pl-4 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-gold-500" />
         </div>
 
-        <table className="w-full text-left text-xs">
+        <table className="w-full text-left rtl:text-right text-xs">
           <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 font-semibold uppercase border-b border-slate-200 dark:border-slate-700">
             <tr>
-              <th className="p-4">User</th>
-              <th className="p-4">Contact</th>
-              <th className="p-4">Roles / Privileges</th>
-              <th className="p-4">Status</th>
-              <th className="p-4 text-right">Actions</th>
+              <th className="p-4">{language === 'ar' ? 'المستخدم' : 'User'}</th>
+              <th className="p-4">{language === 'ar' ? 'بيانات التواصل' : 'Contact'}</th>
+              <th className="p-4">{t('user_role')}</th>
+              <th className="p-4">{t('status')}</th>
+              <th className="p-4 text-right rtl:text-left">{language === 'ar' ? 'الإجراءات' : 'Actions'}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -234,7 +236,7 @@ export const UserManagement: React.FC = () => {
                   <div className="font-bold text-slate-900 dark:text-white">{u.full_name}</div>
                   <div className="text-[10px] text-slate-500 font-mono">@{u.username}</div>
                 </td>
-                <td className="p-4 text-slate-600 dark:text-slate-400">{u.email}</td>
+                <td className="p-4 text-slate-600 dark:text-slate-400 font-mono">{u.email}</td>
                 <td className="p-4">
                   <div className="flex flex-wrap gap-1">
                     {u.roles.map((r: string) => (
@@ -242,26 +244,28 @@ export const UserManagement: React.FC = () => {
                         {r}
                       </span>
                     ))}
-                    {u.roles.length === 0 && <span className="text-slate-400 italic">No roles</span>}
+                    {u.roles.length === 0 && <span className="text-slate-400 italic">{language === 'ar' ? 'بدون صلاحية' : 'No roles'}</span>}
                   </div>
                 </td>
                 <td className="p-4">
                   <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${u.is_active ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'}`}>
-                    {u.is_active ? 'Active' : 'Inactive'}
+                    {u.is_active ? (language === 'ar' ? 'نشط' : 'Active') : (language === 'ar' ? 'معطل' : 'Inactive')}
                   </span>
                 </td>
-                <td className="p-4 text-right">
-                  <div className="flex items-center justify-end gap-2">
+                <td className="p-4 text-right rtl:text-left">
+                  <div className="flex items-center justify-end rtl:justify-start gap-2">
                     {isAdmin && (
                       <button onClick={() => { setShowRoleModal(u); setSelectedRoles(u.roles); }}
-                        className="px-2.5 py-1.5 text-[10px] font-bold rounded-lg bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200 transition flex items-center gap-1">
-                        <ShieldCheck className="w-3.5 h-3.5 text-purple-500" /> Manage Roles
+                        className="px-2.5 py-1.5 text-[10px] font-bold rounded-lg bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200 transition flex items-center gap-1 cursor-pointer"
+                        title={language === 'ar' ? 'تعديل الصلاحيات' : 'Manage Roles'}>
+                        <ShieldCheck className="w-3.5 h-3.5 text-purple-500" /> {language === 'ar' ? 'الصلاحيات' : 'Manage Roles'}
                       </button>
                     )}
                     {isAdmin && (
                       <button onClick={() => handleDeleteUser(u)}
-                        className="px-2.5 py-1.5 text-[10px] font-bold rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950 transition flex items-center gap-1">
-                        <Trash2 className="w-3.5 h-3.5" /> Delete
+                        className="px-2.5 py-1.5 text-[10px] font-bold rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950 transition flex items-center gap-1 cursor-pointer"
+                        title={t('btn_delete')}>
+                        <Trash2 className="w-3.5 h-3.5" /> {t('btn_delete')}
                       </button>
                     )}
                   </div>
@@ -269,7 +273,7 @@ export const UserManagement: React.FC = () => {
               </tr>
             ))}
             {filteredUsers.length === 0 && (
-              <tr><td colSpan={5} className="p-8 text-center text-slate-400 text-xs">No users found.</td></tr>
+              <tr><td colSpan={5} className="p-8 text-center text-slate-400 text-xs font-arabic">{t('no_records')}</td></tr>
             )}
           </tbody>
         </table>
