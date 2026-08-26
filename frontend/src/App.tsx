@@ -48,11 +48,14 @@ const LayoutWrapper: React.FC<{
 
   if (isAdminOrPortalRoute) {
     return (
-      <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
+      <div className="flex min-h-screen min-h-dvh bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans overflow-x-hidden">
         <AdminSidebar user={user} onLogout={onLogout} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
           <AdminHeader user={user} darkMode={darkMode} setDarkMode={setDarkMode} onLogout={onLogout} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-          <main className="p-4 md:p-8 flex-1 overflow-y-auto">
+          <main
+            className="p-3 sm:p-4 md:p-8 flex-1 overflow-y-auto overflow-x-hidden"
+            style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+          >
             {children}
           </main>
         </div>
@@ -61,9 +64,12 @@ const LayoutWrapper: React.FC<{
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
+    <div
+      className="min-h-screen min-h-dvh flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans overflow-x-hidden"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+    >
       <Navbar darkMode={darkMode} setDarkMode={setDarkMode} user={user} onLogout={onLogout} />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 overflow-x-hidden">{children}</main>
       <Footer />
     </div>
   );

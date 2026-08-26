@@ -3,6 +3,51 @@
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
+/* ── Global mobile-safe resets ───────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* Prevent iOS Safari from adjusting font sizes on orientation change */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Prevent horizontal scroll on all browsers */
+  overflow-x: hidden;
+}
+
+body {
+  /* Prevent content from hiding behind device notches/home indicators */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  /* Never allow horizontal overflow */
+  overflow-x: hidden;
+  /* Smooth native scroll on iOS */
+  -webkit-overflow-scrolling: touch;
+  /* Prevent tap highlight flicker on mobile */
+  -webkit-tap-highlight-color: transparent;
+}
+
+#root {
+  /* Ensure the app always occupies the full visible area */
+  min-height: 100dvh;
+  min-height: 100vh; /* fallback for older browsers */
+  overflow-x: hidden;
+}
+
+/* ── Scrollable containers: smooth on iOS ────────────────────────────── */
+.overflow-y-auto,
+.overflow-y-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Tables: horizontal scroll on narrow screens ─────────────────────── */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 @layer base {
   body {
     @apply bg-slate-50 text-slate-900 font-sans antialiased selection:bg-islamic-gold selection:text-islamic-deepGreen dark:bg-slate-950 dark:text-slate-100;
