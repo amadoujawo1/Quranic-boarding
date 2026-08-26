@@ -19,31 +19,32 @@ limiter = Limiter(key_func=get_remote_address)
 def _safe_add_columns(db):
     """Safely add missing columns to existing tables using raw SQL.
 
-    This is a lightweight migration shim for SQLite/MySQL that handles schema
+    This is a lightweight migration shim for SQLite/MySQL/PostgreSQL that handles schema
     changes that db.create_all() cannot apply to existing tables.
     Each ALTER TABLE is wrapped in a try/except so it's idempotent and safe
     to run on every startup.
     """
     migrations = [
-        "ALTER TABLE fee_invoices ADD COLUMN period_type VARCHAR(20) DEFAULT 'Term'",
-        "ALTER TABLE fee_invoices ADD COLUMN period_value VARCHAR(50) DEFAULT 'Term 1'",
-        "ALTER TABLE fee_invoices ADD COLUMN last_edited_by VARCHAR(150)",
-        "ALTER TABLE fee_invoices ADD COLUMN last_edited_at DATETIME",
-        "ALTER TABLE expenses ADD COLUMN expense_month VARCHAR(30) NOT NULL DEFAULT ''",
-        "ALTER TABLE expenses ADD COLUMN last_edited_by VARCHAR(150)",
-        "ALTER TABLE expenses ADD COLUMN last_edited_at DATETIME",
-        "ALTER TABLE donations ADD COLUMN last_edited_by VARCHAR(150)",
-        "ALTER TABLE donations ADD COLUMN last_edited_at DATETIME",
-        "ALTER TABLE student_payments ADD COLUMN last_edited_by VARCHAR(150)",
-        "ALTER TABLE student_payments ADD COLUMN last_edited_at DATETIME",
+        "ALTER TABLE fee_invoices ADD COLUMN IF NOT EXISTS period_type VARCHAR(20) DEFAULT 'Term'",
+        "ALTER TABLE fee_invoices ADD COLUMN IF NOT EXISTS period_value VARCHAR(50) DEFAULT 'Term 1'",
+        "ALTER TABLE fee_invoices ADD COLUMN IF NOT EXISTS last_edited_by VARCHAR(150)",
+        "ALTER TABLE fee_invoices ADD COLUMN IF NOT EXISTS last_edited_at TIMESTAMP",
+        "ALTER TABLE expenses ADD COLUMN IF NOT EXISTS expense_month VARCHAR(30) NOT NULL DEFAULT ''",
+        "ALTER TABLE expenses ADD COLUMN IF NOT EXISTS last_edited_by VARCHAR(150)",
+        "ALTER TABLE expenses ADD COLUMN IF NOT EXISTS last_edited_at TIMESTAMP",
+        "ALTER TABLE donations ADD COLUMN IF NOT EXISTS last_edited_by VARCHAR(150)",
+        "ALTER TABLE donations ADD COLUMN IF NOT EXISTS last_edited_at TIMESTAMP",
+        "ALTER TABLE student_payments ADD COLUMN IF NOT EXISTS last_edited_by VARCHAR(150)",
+        "ALTER TABLE student_payments ADD COLUMN IF NOT EXISTS last_edited_at TIMESTAMP",
     ]
     with db.engine.connect() as conn:
         for sql in migrations:
             try:
                 conn.execute(db.text(sql))
                 conn.commit()
-            except Exception:
-                # Column already exists or other benign error — skip silently
+            except Exception as e:
+                # Column already exists or other benign error — log and skip
+                print(f"Migration warning (may be safe): {e}")
                 pass
 
 
