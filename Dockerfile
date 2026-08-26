@@ -2,6 +2,9 @@ FROM node:18-alpine AS frontend-build
 
 WORKDIR /app/frontend
 
+# Cache bust: change this comment to force rebuild
+ARG BUILD_DATE=2024-08-26-3
+
 COPY frontend/package*.json ./
 RUN npm install
 
