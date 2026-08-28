@@ -1261,17 +1261,17 @@ export const FinancePage: React.FC = () => {
 
       {/* ── TAB 1: ALL STUDENT MONTHLY PAYMENTS ──────────────────────────────── */}
       {tab === 'monthly_payments' && (
-        <div className="space-y-4">
+        <div className="space-y-4 font-arabic">
           {/* Filter Toolbar */}
           <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 rtl:left-auto rtl:right-3" />
               <input
                 type="text"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder="Search by student name (e.g. Abdul Rahman), ID (INCM-2026-001), receipt #..."
-                className="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-gold-500"
+                placeholder={language === 'ar' ? 'البحث باسم الطالب (مثل: عبد الرحمن)، أو الرقم التعريفي، أو رقم الإيصال...' : 'Search by student name (e.g. Abdul Rahman), ID (INCM-2026-001), receipt #...'}
+                className="w-full pl-9 pr-4 rtl:pr-9 rtl:pl-4 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-gold-500"
               />
             </div>
 
@@ -1279,9 +1279,9 @@ export const FinancePage: React.FC = () => {
               <select
                 value={monthFilter}
                 onChange={e => setMonthFilter(e.target.value)}
-                className="px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none font-semibold"
+                className="px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none font-semibold cursor-pointer"
               >
-                <option value="All">All Months</option>
+                <option value="All">{language === 'ar' ? 'جميع الأشهر' : 'All Months'}</option>
                 {availableMonths.filter(m => m !== 'All').map(m => (
                   <option key={m} value={m}>{m}</option>
                 ))}
@@ -1290,18 +1290,18 @@ export const FinancePage: React.FC = () => {
               <select
                 value={statusFilter}
                 onChange={e => setStatusFilter(e.target.value)}
-                className="px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none font-semibold"
+                className="px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none font-semibold cursor-pointer"
               >
-                <option value="All">All Statuses</option>
-                <option value="Paid">✅ Paid</option>
-                <option value="Partial">⚠️ Partial</option>
-                <option value="Unpaid">❌ Unpaid</option>
+                <option value="All">{language === 'ar' ? 'جميع الحالات' : 'All Statuses'}</option>
+                <option value="Paid">{language === 'ar' ? '✅ مسدد' : '✅ Paid'}</option>
+                <option value="Partial">{language === 'ar' ? '⚠️ جزئي' : '⚠️ Partial'}</option>
+                <option value="Unpaid">{language === 'ar' ? '❌ غير مسدد' : '❌ Unpaid'}</option>
               </select>
 
               <select
                 value={academicYearFilter}
                 onChange={e => setAcademicYearFilter(e.target.value)}
-                className="px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none"
+                className="px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none cursor-pointer"
               >
                 <option value="2026/2027">2026/2027</option>
                 <option value="2025/2026">2025/2026</option>
@@ -1312,20 +1312,20 @@ export const FinancePage: React.FC = () => {
           {/* Table */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full text-left rtl:text-right text-xs">
                 <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 font-semibold uppercase border-b border-slate-200 dark:border-slate-700 text-[10px] tracking-wider">
                   <tr>
-                    <th className="p-4">Student ID / Name</th>
-                    <th className="p-4">Class / Level</th>
-                    <th className="p-4">Payment Month</th>
-                    <th className="p-4">Fee Type</th>
-                    <th className="p-4">Amount Due</th>
-                    <th className="p-4">Amount Paid</th>
-                    <th className="p-4">Balance</th>
-                    <th className="p-4">Method / Date</th>
-                    <th className="p-4">Receipt No.</th>
-                    <th className="p-4">Status</th>
-                    <th className="p-4 text-right">Actions</th>
+                    <th className="p-4">{language === 'ar' ? 'رقم القيد / اسم الطالب' : 'Student ID / Name'}</th>
+                    <th className="p-4">{language === 'ar' ? 'الفصل / المستوى' : 'Class / Level'}</th>
+                    <th className="p-4">{language === 'ar' ? 'شهر الدفع' : 'Payment Month'}</th>
+                    <th className="p-4">{language === 'ar' ? 'نوع الرسم' : 'Fee Type'}</th>
+                    <th className="p-4">{language === 'ar' ? 'المبلغ المستحق' : 'Amount Due'}</th>
+                    <th className="p-4">{language === 'ar' ? 'المبلغ المدفوع' : 'Amount Paid'}</th>
+                    <th className="p-4">{language === 'ar' ? 'المتبقي' : 'Balance'}</th>
+                    <th className="p-4">{language === 'ar' ? 'طريقة الدفع / التاريخ' : 'Method / Date'}</th>
+                    <th className="p-4">{language === 'ar' ? 'رقم الإيصال' : 'Receipt No.'}</th>
+                    <th className="p-4">{language === 'ar' ? 'الحالة' : 'Status'}</th>
+                    <th className="p-4 text-right rtl:text-left">{language === 'ar' ? 'الإجراءات' : 'Actions'}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -1346,13 +1346,13 @@ export const FinancePage: React.FC = () => {
                       <td className="p-4 text-slate-600 dark:text-slate-400 text-[11px]">
                         {payment.fee_type}
                       </td>
-                      <td className="p-4 font-bold text-slate-800 dark:text-slate-200">
+                      <td className="p-4 font-bold text-slate-800 dark:text-slate-200 font-mono">
                         GMD {payment.amount_due.toLocaleString()}
                       </td>
-                      <td className="p-4 font-bold text-emerald-600 dark:text-emerald-400">
+                      <td className="p-4 font-bold text-emerald-600 dark:text-emerald-400 font-mono">
                         GMD {payment.amount_paid.toLocaleString()}
                       </td>
-                      <td className="p-4 font-bold text-rose-600 dark:text-rose-400">
+                      <td className="p-4 font-bold text-rose-600 dark:text-rose-400 font-mono">
                         GMD {payment.balance.toLocaleString()}
                       </td>
                       <td className="p-4 text-slate-600 dark:text-slate-400">
@@ -1365,15 +1365,15 @@ export const FinancePage: React.FC = () => {
                       <td className="p-4">
                         <PaymentStatusBadge status={payment.status} />
                       </td>
-                      <td className="p-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
+                      <td className="p-4 text-right rtl:text-left">
+                        <div className="flex items-center justify-end rtl:justify-start gap-1.5">
                           {/* Receipt Button */}
                           <button
                             onClick={() => setShowReceiptModal(payment)}
                             className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-gold-400 border border-emerald-200 dark:border-emerald-800 hover:brightness-110 transition flex items-center gap-1 cursor-pointer"
                             title="View & Print Official Receipt"
                           >
-                            <Printer className="w-3 h-3" /> Receipt
+                            <Printer className="w-3 h-3" /> {language === 'ar' ? 'إيصال' : 'Receipt'}
                           </button>
 
                           {/* Pay Button for Partial or Unpaid */}
@@ -1386,7 +1386,7 @@ export const FinancePage: React.FC = () => {
                               className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition flex items-center gap-1 cursor-pointer"
                               title="Record payment"
                             >
-                              <CreditCard className="w-3 h-3" /> Pay
+                              <CreditCard className="w-3 h-3" /> {language === 'ar' ? 'سداد' : 'Pay'}
                             </button>
                           )}
 
@@ -1399,7 +1399,7 @@ export const FinancePage: React.FC = () => {
                                   setShowCreatePaymentModal(true);
                                 }}
                                 className="p-1 text-slate-400 hover:text-blue-500 transition cursor-pointer"
-                                title="Edit Record"
+                                title={language === 'ar' ? 'تعديل السجل' : 'Edit Record'}
                               >
                                 <Edit className="w-3.5 h-3.5" />
                               </button>
@@ -1516,19 +1516,19 @@ export const FinancePage: React.FC = () => {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full text-left rtl:text-right text-xs">
                 <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 font-semibold uppercase border-b border-slate-200 dark:border-slate-700 text-[10px]">
                   <tr>
-                    <th className="p-4">Student Name</th>
-                    <th className="p-4">Month</th>
-                    <th className="p-4">Amount Due</th>
-                    <th className="p-4">Paid</th>
-                    <th className="p-4">Balance</th>
-                    <th className="p-4">Fee Type</th>
-                    <th className="p-4">Payment Method</th>
-                    <th className="p-4">Receipt No.</th>
-                    <th className="p-4">Status</th>
-                    <th className="p-4 text-right">Action</th>
+                    <th className="p-4">{language === 'ar' ? 'اسم الطالب' : 'Student Name'}</th>
+                    <th className="p-4">{language === 'ar' ? 'الشهر' : 'Month'}</th>
+                    <th className="p-4">{language === 'ar' ? 'المبلغ المستحق' : 'Amount Due'}</th>
+                    <th className="p-4">{language === 'ar' ? 'المدفوع' : 'Paid'}</th>
+                    <th className="p-4">{language === 'ar' ? 'المتبقي' : 'Balance'}</th>
+                    <th className="p-4">{language === 'ar' ? 'نوع الرسم' : 'Fee Type'}</th>
+                    <th className="p-4">{language === 'ar' ? 'طريقة الدفع' : 'Payment Method'}</th>
+                    <th className="p-4">{language === 'ar' ? 'رقم الإيصال' : 'Receipt No.'}</th>
+                    <th className="p-4">{language === 'ar' ? 'الحالة' : 'Status'}</th>
+                    <th className="p-4 text-right rtl:text-left">{language === 'ar' ? 'الإجراء' : 'Action'}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -1641,24 +1641,24 @@ export const FinancePage: React.FC = () => {
           </div>
 
           {/* Monthly Collection Summary Table */}
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm font-arabic">
             <div className="p-5 border-b border-slate-100 dark:border-slate-800">
               <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                Monthly Fee Performance Report
+                {language === 'ar' ? 'تقرير أداء تحصيل الرسوم الشهري' : 'Monthly Fee Performance Report'}
               </h4>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full text-left rtl:text-right text-xs">
                 <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 font-semibold uppercase border-b border-slate-200 dark:border-slate-700 text-[10px]">
                   <tr>
-                    <th className="p-4">Payment Month</th>
-                    <th className="p-4">Total Expected (GMD)</th>
-                    <th className="p-4">Total Collected (GMD)</th>
-                    <th className="p-4">Outstanding (GMD)</th>
-                    <th className="p-4">Paid Count</th>
-                    <th className="p-4">Partial Count</th>
-                    <th className="p-4">Unpaid Count</th>
-                    <th className="p-4">Collection Rate (%)</th>
+                    <th className="p-4">{language === 'ar' ? 'شهر الدفع' : 'Payment Month'}</th>
+                    <th className="p-4">{language === 'ar' ? 'إجمالي المتوقع (GMD)' : 'Total Expected (GMD)'}</th>
+                    <th className="p-4">{language === 'ar' ? 'إجمالي المحصل (GMD)' : 'Total Collected (GMD)'}</th>
+                    <th className="p-4">{language === 'ar' ? 'المتبقي (GMD)' : 'Outstanding (GMD)'}</th>
+                    <th className="p-4">{language === 'ar' ? 'عدد المسددين' : 'Paid Count'}</th>
+                    <th className="p-4">{language === 'ar' ? 'عدد الجزئي' : 'Partial Count'}</th>
+                    <th className="p-4">{language === 'ar' ? 'عدد غير المسددين' : 'Unpaid Count'}</th>
+                    <th className="p-4">{language === 'ar' ? 'نسبة التحصيل (%)' : 'Collection Rate (%)'}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -1668,9 +1668,9 @@ export const FinancePage: React.FC = () => {
                     return (
                       <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
                         <td className="p-4 font-bold text-slate-900 dark:text-white">{m}</td>
-                        <td className="p-4 font-semibold text-slate-700 dark:text-slate-300">GMD {row.total_due.toLocaleString()}</td>
-                        <td className="p-4 font-bold text-emerald-600 dark:text-emerald-400">GMD {row.total_collected.toLocaleString()}</td>
-                        <td className="p-4 font-bold text-rose-600 dark:text-rose-400">GMD {row.outstanding.toLocaleString()}</td>
+                        <td className="p-4 font-semibold text-slate-700 dark:text-slate-300 font-mono">GMD {row.total_due.toLocaleString()}</td>
+                        <td className="p-4 font-bold text-emerald-600 dark:text-emerald-400 font-mono">GMD {row.total_collected.toLocaleString()}</td>
+                        <td className="p-4 font-bold text-rose-600 dark:text-rose-400 font-mono">GMD {row.outstanding.toLocaleString()}</td>
                         <td className="p-4 text-emerald-600 font-semibold">{row.paid_count}</td>
                         <td className="p-4 text-amber-600 font-semibold">{row.partial_count}</td>
                         <td className="p-4 text-rose-600 font-semibold">{row.unpaid_count}</td>
@@ -1682,7 +1682,7 @@ export const FinancePage: React.FC = () => {
                                 style={{ width: `${Math.min(100, rate)}%` }}
                               />
                             </div>
-                            <span className="font-bold">{rate}%</span>
+                            <span className="font-bold font-mono">{rate}%</span>
                           </div>
                         </td>
                       </tr>
@@ -1697,34 +1697,34 @@ export const FinancePage: React.FC = () => {
 
       {/* ── TAB 4: DONATIONS ────────────────────────────────────────────────── */}
       {tab === 'donations' && (
-        <div className="space-y-4">
+        <div className="space-y-4 font-arabic">
           <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Sadaqah &amp; Waqf Contributions</h3>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">{language === 'ar' ? 'مساهمات الصدقات والأوقاف' : 'Sadaqah & Waqf Contributions'}</h3>
             {isAdmin && (
               <button
                 onClick={() => setShowDonationModal(true)}
                 className="px-3.5 py-2 text-xs font-bold rounded-xl bg-purple-600 text-white hover:bg-purple-700 transition flex items-center gap-1.5 cursor-pointer"
               >
-                <Gift className="w-3.5 h-3.5" /> Record Donation
+                <Gift className="w-3.5 h-3.5" /> {language === 'ar' ? 'تسجيل تبرع' : 'Record Donation'}
               </button>
             )}
           </div>
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left rtl:text-right text-xs">
               <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 font-semibold uppercase border-b border-slate-200 dark:border-slate-700">
                 <tr>
-                  <th className="p-4">Donor</th>
-                  <th className="p-4">Amount</th>
-                  <th className="p-4">Purpose</th>
-                  <th className="p-4">Date</th>
-                  <th className="p-4 text-right">Actions</th>
+                  <th className="p-4">{language === 'ar' ? 'المتبرع' : 'Donor'}</th>
+                  <th className="p-4">{language === 'ar' ? 'المبلغ' : 'Amount'}</th>
+                  <th className="p-4">{language === 'ar' ? 'الغرض / الوصف' : 'Purpose'}</th>
+                  <th className="p-4">{language === 'ar' ? 'التاريخ' : 'Date'}</th>
+                  <th className="p-4 text-right rtl:text-left">{language === 'ar' ? 'الإجراءات' : 'Actions'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {donations.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="p-8 text-center text-slate-400">
-                      No donation records found. Click "Record Donation" to add one.
+                      {language === 'ar' ? 'لا توجد سجلات تبرعات. اضغط "تسجيل تبرع" لإضافة سجل جديد.' : 'No donation records found. Click "Record Donation" to add one.'}
                     </td>
                   </tr>
                 ) : (
@@ -1733,15 +1733,15 @@ export const FinancePage: React.FC = () => {
                       <td className="p-4 font-semibold text-slate-900 dark:text-white">
                         <div className="flex items-center gap-2"><UserCheck className="w-4 h-4 text-purple-500 shrink-0" />{d.donor_name}</div>
                       </td>
-                      <td className="p-4 font-extrabold text-purple-600 dark:text-purple-400">GMD {d.amount?.toLocaleString()}</td>
+                      <td className="p-4 font-extrabold text-purple-600 dark:text-purple-400 font-mono">GMD {d.amount?.toLocaleString()}</td>
                       <td className="p-4 text-slate-600 dark:text-slate-400">{d.purpose}</td>
-                      <td className="p-4 text-slate-500">{typeof d.created_at === 'string' ? d.created_at.split('T')[0] : d.created_at}</td>
-                      <td className="p-4 text-right">
+                      <td className="p-4 text-slate-500 font-mono">{typeof d.created_at === 'string' ? d.created_at.split('T')[0] : d.created_at}</td>
+                      <td className="p-4 text-right rtl:text-left">
                         {isAdmin && (
                           <button
                             onClick={() => handleDeleteDonation(d.id)}
                             className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition cursor-pointer"
-                            title="Delete Donation"
+                            title={language === 'ar' ? 'حذف التبرع' : 'Delete Donation'}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -1758,19 +1758,19 @@ export const FinancePage: React.FC = () => {
 
       {/* ── TAB 5: EXPENSES ─────────────────────────────────────────────────── */}
       {tab === 'expenses' && (
-        <div className="space-y-4">
+        <div className="space-y-4 font-arabic">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
             <div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Operational &amp; Maintenance Expenses</h3>
-              <p className="text-xs text-slate-500 mt-0.5">Track and audit boarding school operational expenditures.</p>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">{language === 'ar' ? 'المصروفات التشغيلية والصيانة' : 'Operational & Maintenance Expenses'}</h3>
+              <p className="text-xs text-slate-500 mt-0.5">{language === 'ar' ? 'متابعة وتدقيق نفقات ومصروفات السكن والمركز.' : 'Track and audit boarding school operational expenditures.'}</p>
             </div>
-            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-end rtl:justify-start">
               {isAdmin && (
                 <button
                   onClick={() => setShowExpenseModal(true)}
                   className="px-3.5 py-2 text-xs font-bold rounded-xl bg-amber-500 text-white hover:bg-amber-600 transition flex items-center gap-1.5 cursor-pointer shadow-xs"
                 >
-                  <Wallet className="w-3.5 h-3.5" /> Log Expense
+                  <Wallet className="w-3.5 h-3.5" /> {language === 'ar' ? 'تسجيل مصروف' : 'Log Expense'}
                 </button>
               )}
             </div>
@@ -1779,13 +1779,13 @@ export const FinancePage: React.FC = () => {
           {/* Expenses Filter Bar */}
           <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5 rtl:left-auto rtl:right-3.5" />
               <input
                 type="text"
-                placeholder="Search expenses by description, month, or amount..."
+                placeholder={language === 'ar' ? 'البحث في المصروفات بالبيان، أو الشهر، أو المبلغ...' : 'Search expenses by description, month, or amount...'}
                 value={expenseSearch}
                 onChange={e => setExpenseSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
+                className="w-full pl-10 pr-4 rtl:pr-10 rtl:pl-4 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
               />
             </div>
             <div className="flex items-center gap-2">
@@ -1795,27 +1795,27 @@ export const FinancePage: React.FC = () => {
                 onChange={e => setExpenseCategoryFilter(e.target.value)}
                 className="px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 cursor-pointer"
               >
-                <option value="All">All Categories</option>
-                <option value="Kitchen & Nutrition">Kitchen &amp; Nutrition</option>
-                <option value="Utilities & Fuel">Utilities &amp; Fuel</option>
-                <option value="Maintenance & Repairs">Maintenance &amp; Repairs</option>
-                <option value="Salaries & Honoraria">Salaries &amp; Honoraria</option>
-                <option value="Library & Books">Library &amp; Books</option>
-                <option value="Medical & Clinic">Medical &amp; Clinic</option>
+                <option value="All">{language === 'ar' ? 'جميع الفئات' : 'All Categories'}</option>
+                <option value="Kitchen & Nutrition">{language === 'ar' ? 'المطبخ والتغذية' : 'Kitchen & Nutrition'}</option>
+                <option value="Utilities & Fuel">{language === 'ar' ? 'المرافق والكهرباء والوقود' : 'Utilities & Fuel'}</option>
+                <option value="Maintenance & Repairs">{language === 'ar' ? 'الصيانة والإصلاحات' : 'Maintenance & Repairs'}</option>
+                <option value="Salaries & Honoraria">{language === 'ar' ? 'الرواتب والمكافآت' : 'Salaries & Honoraria'}</option>
+                <option value="Library & Books">{language === 'ar' ? 'المكتبة والكتب' : 'Library & Books'}</option>
+                <option value="Medical & Clinic">{language === 'ar' ? 'العيادة والرعاية الطبية' : 'Medical & Clinic'}</option>
               </select>
             </div>
           </div>
 
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left rtl:text-right text-xs">
               <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 font-semibold uppercase border-b border-slate-200 dark:border-slate-700">
                 <tr>
-                  <th className="p-4">Category</th>
-                  <th className="p-4">Description</th>
-                  <th className="p-4">Amount</th>
-                  <th className="p-4">Month</th>
-                  <th className="p-4">Date</th>
-                  <th className="p-4 text-right">Actions</th>
+                  <th className="p-4">{language === 'ar' ? 'الفئة' : 'Category'}</th>
+                  <th className="p-4">{language === 'ar' ? 'البيان / الوصف' : 'Description'}</th>
+                  <th className="p-4">{language === 'ar' ? 'المبلغ' : 'Amount'}</th>
+                  <th className="p-4">{language === 'ar' ? 'الشهر' : 'Month'}</th>
+                  <th className="p-4">{language === 'ar' ? 'التاريخ' : 'Date'}</th>
+                  <th className="p-4 text-right rtl:text-left">{language === 'ar' ? 'الإجراءات' : 'Actions'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -1823,8 +1823,8 @@ export const FinancePage: React.FC = () => {
                   <tr>
                     <td colSpan={6} className="p-8 text-center text-slate-400">
                       {expenses.length === 0
-                        ? 'No expense records found. Click "Log Expense" to add one.'
-                        : 'No expenses matching the search criteria.'}
+                        ? (language === 'ar' ? 'لا توجد سجلات مصروفات. اضغط "تسجيل مصروف" لإضافة سجل جديد.' : 'No expense records found. Click "Log Expense" to add one.')
+                        : (language === 'ar' ? 'لا توجد مصروفات مطابقة لمعايير البحث.' : 'No expenses matching the search criteria.')}
                     </td>
                   </tr>
                 ) : (
