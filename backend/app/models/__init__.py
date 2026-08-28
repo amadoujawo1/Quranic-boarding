@@ -1,6 +1,6 @@
 from .user import User, Role, UserRole, ActivityLog
 from .student import Student, Parent, MedicalRecord, StudentDocument, Alumni
-from .admission import AdmissionApplication
+from .admission import AdmissionApplication, AdmissionInquiry
 from .quran import HifzProgress, TajweedEvaluation
 from .academic import ClassGroup, Subject, Timetable, Homework, Exam, Grade
 from .attendance import SchoolAttendance, HostelAttendance, PrayerAttendance, MealAttendance
@@ -13,6 +13,7 @@ from .communication import Announcement, Message, Notification
 __all__ = [
     'User', 'Role', 'UserRole', 'ActivityLog',
     'Student', 'Parent', 'MedicalRecord', 'StudentDocument', 'Alumni',
+    'AdmissionApplication', 'AdmissionInquiry',
     'HifzProgress', 'TajweedEvaluation',
     'ClassGroup', 'Subject', 'Timetable', 'Homework', 'Exam', 'Grade',
     'SchoolAttendance', 'HostelAttendance', 'PrayerAttendance', 'MealAttendance',
@@ -22,3 +23,4 @@ __all__ = [
     'ClinicVisit', 'Vaccination',
     'Announcement', 'Message', 'Notification'
 ]
+

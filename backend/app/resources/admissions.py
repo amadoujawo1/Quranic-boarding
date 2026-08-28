@@ -1,13 +1,16 @@
 # pylint: disable=unexpected-keyword-arg
+import os
 from datetime import datetime
-from flask import request
+from flask import request, current_app
 # pyrefly: ignore [missing-import]
 from flask_restx import Namespace, Resource
 from flask_jwt_extended import jwt_required, get_jwt
-from .. import db
-from ..models.admission import AdmissionApplication
+from flask_mail import Message as MailMessage
+from .. import db, mail
+from ..models.admission import AdmissionApplication, AdmissionInquiry
 from ..models.student import Student, Parent
 from ..models.user import User, Role
+
 
 admissions_ns = Namespace('admissions', description='Admission Applications & Enrolment Management')
 
@@ -254,3 +257,145 @@ class AdmissionStats(Resource):
             stats[s] = AdmissionApplication.query.filter_by(status=s).count()
         stats['total'] = AdmissionApplication.query.count()
         return stats, 200
+
+
+# ── /admissions/inquiry ────────────────────────────────────────────────────────
+
+@admissions_ns.route('/inquiry')
+class AdmissionInquiryResource(Resource):
+
+    def post(self):
+        """Submit a public inquiry that is dispatched to ousainouss@yahoo.com."""
+        data = request.get_json() or {}
+        name = (data.get('name') or data.get('parent_name') or data.get('full_name') or '').strip()
+        email = (data.get('email') or data.get('guardian_email') or '').strip()
+        message_text = (data.get('message') or data.get('inquiry') or '').strip()
+        phone = (data.get('phone') or data.get('guardian_phone') or '').strip()
+
+        if not name or not email or not message_text:
+            return {'message': 'Name, email address, and message are required'}, 400
+
+        recipient = os.getenv('ADMISSIONS_INQUIRY_EMAIL', 'ousainouss@yahoo.com').strip()
+
+        # Save to database record
+        inquiry_obj = AdmissionInquiry(
+            name=name,
+            email=email,
+            phone=phone if phone else None,
+            message=message_text,
+            recipient_email=recipient,
+            status='New'
+        )
+        db.session.add(inquiry_obj)
+        db.session.commit()
+
+        # Dispatch email notification to designated recipient
+        email_sent = False
+        try:
+            msg = MailMessage(
+                subject=f"New Admissions Inquiry from {name} - Imaam Naafi' Centre",
+                recipients=[recipient],
+                reply_to=email,
+            )
+
+            # Plain text body
+            msg.body = f"""Assalamu Alaikum,
+
+You have received a new admissions inquiry via the website.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+INQUIRY DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Parent / Name:        {name}
+Email Address:        {email}
+Phone Number:         {phone if phone else 'Not provided'}
+Submitted On:         {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}
+Forwarded To:         {recipient}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MESSAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{message_text}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+You can reply directly to this email to contact {name} ({email}).
+
+Imaam Naafi' Centre for Quranic Memorization Management System
+"""
+
+            # HTML formatted body
+            msg.html = f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
+                <div style="background: linear-gradient(135deg, #064e3b, #022c22); padding: 20px; border-radius: 12px; text-align: center; color: #ffffff; border: 1px solid rgba(217, 119, 6, 0.3);">
+                    <h2 style="margin: 0; color: #f59e0b; font-size: 20px; font-weight: bold;">Imaam Naafi' Centre for Quranic Memorization</h2>
+                    <p style="margin: 6px 0 0 0; font-size: 13px; color: #a7f3d0;">New Admissions &amp; Program Inquiry</p>
+                </div>
+
+                <div style="padding: 24px 0 12px 0;">
+                    <p style="font-size: 15px; color: #0f172a; margin-top: 0;"><strong>Assalamu Alaikum,</strong></p>
+                    <p style="font-size: 14px; color: #475569; line-height: 1.5;">A new parent inquiry has been submitted via the website contact form:</p>
+
+                    <table style="width: 100%; border-collapse: collapse; margin: 18px 0; font-size: 13px;">
+                        <tr style="background-color: #f8fafc;">
+                            <td style="padding: 10px 14px; font-weight: bold; width: 140px; border: 1px solid #e2e8f0; color: #334155;">Parent / Name:</td>
+                            <td style="padding: 10px 14px; border: 1px solid #e2e8f0; color: #0f172a; font-weight: 600;">{name}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px 14px; font-weight: bold; border: 1px solid #e2e8f0; color: #334155;">Email Address:</td>
+                            <td style="padding: 10px 14px; border: 1px solid #e2e8f0;"><a href="mailto:{email}" style="color: #047857; text-decoration: underline; font-weight: 600;">{email}</a></td>
+                        </tr>
+                        <tr style="background-color: #f8fafc;">
+                            <td style="padding: 10px 14px; font-weight: bold; border: 1px solid #e2e8f0; color: #334155;">Phone:</td>
+                            <td style="padding: 10px 14px; border: 1px solid #e2e8f0; color: #0f172a;">{phone if phone else 'Not provided'}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px 14px; font-weight: bold; border: 1px solid #e2e8f0; color: #334155;">Date / Time:</td>
+                            <td style="padding: 10px 14px; border: 1px solid #e2e8f0; color: #64748b;">{datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}</td>
+                        </tr>
+                    </table>
+
+                    <div style="margin-top: 20px; padding: 16px; background-color: #f0fdf4; border-left: 4px solid #059669; border-radius: 8px;">
+                        <h4 style="margin: 0 0 8px 0; color: #065f46; font-size: 14px;">Message / Inquiry:</h4>
+                        <p style="margin: 0; color: #1e293b; font-size: 14px; white-space: pre-wrap; line-height: 1.6;">{message_text}</p>
+                    </div>
+
+                    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; text-align: center; line-height: 1.5;">
+                        <p style="margin: 0;"><strong>Tip:</strong> Click "Reply" in your email client to directly reply to {name} at <span style="color: #047857;">{email}</span>.</p>
+                        <p style="margin: 6px 0 0 0; color: #94a3b8;">Imaam Naafi' Centre for Quranic Memorization Management System</p>
+                    </div>
+                </div>
+            </div>
+            """
+
+            mail.send(msg)
+            email_sent = True
+        except Exception as e:
+            current_app.logger.warning(f"Notice: Email could not be dispatched via SMTP: {e}")
+
+        return {
+            'message': f'Thank you! Your inquiry has been forwarded to our admissions office ({recipient}).',
+            'recipient': recipient,
+            'email_sent': email_sent,
+            'inquiry_id': inquiry_obj.id,
+        }, 201
+
+    @jwt_required()
+    def get(self):
+        """List all inquiries (Admin / Admissions staff)."""
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 20, type=int)
+        status = request.args.get('status', '')
+
+        q = AdmissionInquiry.query
+        if status:
+            q = q.filter_by(status=status)
+        q = q.order_by(AdmissionInquiry.created_at.desc())
+
+        pagination = q.paginate(page=page, per_page=per_page, error_out=False)
+        return {
+            'inquiries': [i.to_dict() for i in pagination.items],
+            'total': pagination.total,
+            'page': page,
+            'pages': pagination.pages
+        }, 200
+

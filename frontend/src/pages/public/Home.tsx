@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Award, Users, Home as HomeIcon, CheckCircle2, ChevronRight, Calendar, Star, MapPin, Mail, Phone, Clock, GraduationCap, X, Search, Sparkles, Loader2 } from 'lucide-react';
+import { BookOpen, Award, Users, Home as HomeIcon, CheckCircle2, ChevronRight, Calendar, Star, MapPin, Mail, Phone, Clock, GraduationCap, X, Search, Sparkles, Loader2, AlertCircle, Send } from 'lucide-react';
 import { motion, useInView, animate } from 'framer-motion';
 
 type PublicOverviewStats = {
@@ -33,7 +33,15 @@ const StatCounter = ({ num, suffix }: { num: number, suffix: string }) => {
 
 export const Home: React.FC = () => {
   const [contactSubmitted, setContactSubmitted] = useState(false);
+  const [inquiryName, setInquiryName] = useState('');
+  const [inquiryEmail, setInquiryEmail] = useState('');
+  const [inquiryPhone, setInquiryPhone] = useState('');
+  const [inquiryMessage, setInquiryMessage] = useState('');
+  const [inquiryLoading, setInquiryLoading] = useState(false);
+  const [inquiryError, setInquiryError] = useState('');
+  const [inquirySuccessMsg, setInquirySuccessMsg] = useState('');
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+
   const [overviewStats, setOverviewStats] = useState<PublicOverviewStats>({
     total_students: 0,
     hifz_graduates: 0,
@@ -63,8 +71,41 @@ export const Home: React.FC = () => {
     }
   };
 
+  const handleInquirySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setInquiryLoading(true);
+    setInquiryError('');
+    try {
+      const res = await fetch('/api/admissions/inquiry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: inquiryName,
+          email: inquiryEmail,
+          phone: inquiryPhone,
+          message: inquiryMessage,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to submit inquiry');
+      }
+      setContactSubmitted(true);
+      setInquirySuccessMsg(data.message || 'Thank you for contacting us! Your inquiry has been forwarded to our admissions office (ousainouss@yahoo.com).');
+      setInquiryName('');
+      setInquiryEmail('');
+      setInquiryPhone('');
+      setInquiryMessage('');
+    } catch (err: any) {
+      setInquiryError(err.message || 'Unable to submit inquiry at this time. Please try again.');
+    } finally {
+      setInquiryLoading(false);
+    }
+  };
+
   useEffect(() => {
     let isMounted = true;
+
     let intervalId: number | undefined;
 
     const loadPublicStats = async () => {
@@ -324,25 +365,90 @@ export const Home: React.FC = () => {
             <p className="text-slate-300 text-sm">Have questions about admissions, entry assessments, or fee structures? Send us a message.</p>
 
             {contactSubmitted ? (
-              <div className="bg-emerald-900/90 border border-gold-400 text-gold-400 p-4 rounded-xl text-sm">
-                Thank you for contacting us! Our admissions officer will reply to your email shortly.
+              <div className="bg-emerald-900/90 border border-gold-400 text-gold-300 p-6 rounded-2xl text-sm space-y-3">
+                <div className="flex items-center gap-2 text-gold-400 font-bold text-base">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                  <span>Inquiry Sent Successfully!</span>
+                </div>
+                <p className="text-slate-200">
+                  {inquirySuccessMsg || 'Thank you for contacting us! Your inquiry has been forwarded to our admissions office (ousainouss@yahoo.com), and we will reply to your email shortly.'}
+                </p>
+                <button
+                  onClick={() => setContactSubmitted(false)}
+                  className="px-4 py-2 text-xs font-semibold rounded-lg bg-emerald-800 text-gold-300 hover:bg-emerald-700 transition cursor-pointer"
+                >
+                  Send another inquiry
+                </button>
               </div>
             ) : (
-              <form onSubmit={(e) => { e.preventDefault(); setContactSubmitted(true); }} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Parent / Guardian Name</label>
-                  <input required type="text" className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-gold-500" placeholder="Full name..." />
+              <form onSubmit={handleInquirySubmit} className="space-y-4">
+                {inquiryError && (
+                  <div className="p-3.5 rounded-xl bg-rose-950/80 border border-rose-500/50 text-rose-200 text-xs flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span>{inquiryError}</span>
+                  </div>
+                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">Parent / Guardian Name *</label>
+                    <input
+                      required
+                      type="text"
+                      value={inquiryName}
+                      onChange={(e) => setInquiryName(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-gold-500 placeholder:text-slate-500"
+                      placeholder="Full name..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">Phone Number (Optional)</label>
+                    <input
+                      type="tel"
+                      value={inquiryPhone}
+                      onChange={(e) => setInquiryPhone(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-gold-500 placeholder:text-slate-500"
+                      placeholder="+220 ... / +1 ..."
+                    />
+                  </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Email Address</label>
-                  <input required type="email" className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-gold-500" placeholder="name@domain.com" />
+                  <label className="block text-xs font-medium text-slate-300 mb-1">Email Address *</label>
+                  <input
+                    required
+                    type="email"
+                    value={inquiryEmail}
+                    onChange={(e) => setInquiryEmail(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-gold-500 placeholder:text-slate-500"
+                    placeholder="name@domain.com"
+                  />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Message / Inquiry</label>
-                  <textarea required rows={4} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-gold-500" placeholder="Tell us about your student..."></textarea>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">Message / Inquiry *</label>
+                  <textarea
+                    required
+                    rows={4}
+                    value={inquiryMessage}
+                    onChange={(e) => setInquiryMessage(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-gold-500 placeholder:text-slate-500"
+                    placeholder="Tell us about your student, requested grade, boarding needs..."
+                  />
                 </div>
-                <button type="submit" className="w-full py-3 bg-gradient-to-r from-gold-500 to-gold-600 text-emerald-950 font-bold text-sm rounded-xl hover:brightness-110 transition">
-                  Submit Inquiry
+                <button
+                  type="submit"
+                  disabled={inquiryLoading}
+                  className="w-full py-3 bg-gradient-to-r from-gold-500 to-gold-600 text-emerald-950 font-bold text-sm rounded-xl hover:brightness-110 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 shadow-lg"
+                >
+                  {inquiryLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Sending inquiry...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      <span>Submit Inquiry</span>
+                    </>
+                  )}
                 </button>
               </form>
             )}

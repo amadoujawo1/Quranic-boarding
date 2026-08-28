@@ -86,3 +86,33 @@ class AdmissionApplication(db.Model):
             'decision_notes': self.decision_notes,
             'student_id': self.student_id,
         }
+
+
+class AdmissionInquiry(db.Model):
+    __tablename__ = 'admission_inquiries'
+
+    def __init__(self, **kwargs):
+        """Allow keyword arguments for all fields."""
+        super().__init__(**kwargs)
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(150), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    phone = db.Column(db.String(30), nullable=True)
+    message = db.Column(db.Text, nullable=False)
+    recipient_email = db.Column(db.String(120), default='ousainouss@yahoo.com')
+    status = db.Column(db.String(30), default='New')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'email': self.email,
+            'phone': self.phone,
+            'message': self.message,
+            'recipient_email': self.recipient_email,
+            'status': self.status,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+        }
+
