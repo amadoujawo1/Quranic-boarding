@@ -86,7 +86,7 @@ export const ParentPortal: React.FC = () => {
     };
 
     loadPortalData();
-  }, []);
+  }, [isAr]);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,7 +104,7 @@ export const ParentPortal: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12 text-sm text-slate-500">
+      <div className="flex items-center justify-center py-12 text-sm text-slate-500 font-arabic">
         <Loader2 className="w-5 h-5 animate-spin mr-2 rtl:mr-0 rtl:ml-2" />
         {isAr ? 'جاري تحميل بوابة ولي الأمر…' : 'Loading parent portal…'}
       </div>
@@ -113,7 +113,7 @@ export const ParentPortal: React.FC = () => {
 
   if (error) {
     return (
-      <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700 flex items-center gap-2">
+      <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700 flex items-center gap-2 font-arabic">
         <AlertCircle className="w-4 h-4" />{error}
       </div>
     );
@@ -127,7 +127,7 @@ export const ParentPortal: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 font-arabic">
       {/* Banner */}
       <div className="bg-gradient-to-r from-emerald-950 via-emerald-900 to-emerald-950 text-white p-8 rounded-3xl border border-gold-500/30 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
