@@ -297,7 +297,7 @@ export const Admissions: React.FC = () => {
             </div>
             <div className="space-y-4 text-sm text-slate-600 dark:text-slate-300">
               <p>Keep your reference number safe. It is the fastest way to check where your application stands without logging in.</p>
-              <p>Questions? Contact our admissions team through the website or email <a href="mailto:ousainouss@yahoo.com" className="text-emerald-600 font-semibold underline">ousainouss@yahoo.com</a>.</p>
+              <p>Questions? Contact our admissions team through the website or email <a href="mailto:amadoujawo88@gmail.com" className="text-emerald-600 font-semibold underline">amadoujawo88@gmail.com</a>.</p>
             </div>
           </div>
         </div>

@@ -91,7 +91,7 @@ export const Home: React.FC = () => {
         throw new Error(data.message || 'Failed to submit inquiry');
       }
       setContactSubmitted(true);
-      setInquirySuccessMsg(data.message || 'Thank you for contacting us! Your inquiry has been forwarded to our admissions office (ousainouss@yahoo.com).');
+      setInquirySuccessMsg(data.message || 'Thank you for contacting us! Your inquiry has been forwarded to our admissions office (amadoujawo88@gmail.com).');
       setInquiryName('');
       setInquiryEmail('');
       setInquiryPhone('');
@@ -371,7 +371,7 @@ export const Home: React.FC = () => {
                   <span>Inquiry Sent Successfully!</span>
                 </div>
                 <p className="text-slate-200">
-                  {inquirySuccessMsg || 'Thank you for contacting us! Your inquiry has been forwarded to our admissions office (ousainouss@yahoo.com), and we will reply to your email shortly.'}
+                  {inquirySuccessMsg || 'Thank you for contacting us! Your inquiry has been forwarded to our admissions office (amadoujawo88@gmail.com), and we will reply to your email shortly.'}
                 </p>
                 <button
                   onClick={() => setContactSubmitted(false)}

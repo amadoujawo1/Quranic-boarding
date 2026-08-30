@@ -32,7 +32,7 @@ export const Contact: React.FC = () => {
         throw new Error(data.message || 'Failed to send message');
       }
       setContactSubmitted(true);
-      setSuccessMsg(data.message || 'Thank you for contacting us! Your message has been forwarded to our admissions office (ousainouss@yahoo.com).');
+      setSuccessMsg(data.message || 'Thank you for contacting us! Your message has been forwarded to our admissions office (amadoujawo88@gmail.com).');
       setName('');
       setEmail('');
       setPhone('');
@@ -64,7 +64,7 @@ export const Contact: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-slate-600 dark:text-slate-300 pb-2">
             <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
               <Mail className="w-4 h-4 text-gold-500 shrink-0" />
-              <span className="truncate">ousainouss@yahoo.com</span>
+              <span className="truncate">amadoujawo88@gmail.com</span>
             </div>
             <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
               <Phone className="w-4 h-4 text-gold-500 shrink-0" />
@@ -83,7 +83,7 @@ export const Contact: React.FC = () => {
                 <span>Message Sent Successfully!</span>
               </div>
               <p className="text-slate-200">
-                {successMsg || 'Thank you for contacting us! Your inquiry has been forwarded to our admissions office (ousainouss@yahoo.com), and we will reply to your email shortly.'}
+                {successMsg || 'Thank you for contacting us! Your inquiry has been forwarded to our admissions office (amadoujawo88@gmail.com), and we will reply to your email shortly.'}
               </p>
               <button
                 onClick={() => setContactSubmitted(false)}

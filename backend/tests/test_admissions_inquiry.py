@@ -38,7 +38,7 @@ def test_submit_admissions_inquiry_success(client, app):
     assert res.status_code == 201
     data = res.get_json()
     assert 'inquiry_id' in data
-    assert data['recipient'] == 'ousainouss@yahoo.com'
+    assert data['recipient'] == 'amadoujawo88@gmail.com'
 
     with app.app_context():
         inquiry = AdmissionInquiry.query.get(data['inquiry_id'])
@@ -46,7 +46,7 @@ def test_submit_admissions_inquiry_success(client, app):
         assert inquiry.name == 'Fatou Bah'
         assert inquiry.email == 'fatou.bah@example.com'
         assert inquiry.phone == '+220 7891234'
-        assert inquiry.recipient_email == 'ousainouss@yahoo.com'
+        assert inquiry.recipient_email == 'amadoujawo88@gmail.com'
         assert inquiry.status == 'New'
 
 
@@ -68,7 +68,7 @@ def test_get_admissions_inquiries_admin_only(client, app):
             name='Alieu Jallow',
             email='alieu@example.com',
             message='What are the school fees for 2026/2027?',
-            recipient_email='ousainouss@yahoo.com'
+            recipient_email='amadoujawo88@gmail.com'
         )
         db.session.add(inquiry)
 

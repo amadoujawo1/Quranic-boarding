@@ -265,7 +265,7 @@ class AdmissionStats(Resource):
 class AdmissionInquiryResource(Resource):
 
     def post(self):
-        """Submit a public inquiry that is dispatched to ousainouss@yahoo.com."""
+        """Submit a public inquiry that is dispatched to amadoujawo88@gmail.com."""
         data = request.get_json() or {}
         name = (data.get('name') or data.get('parent_name') or data.get('full_name') or '').strip()
         email = (data.get('email') or data.get('guardian_email') or '').strip()
@@ -275,7 +275,7 @@ class AdmissionInquiryResource(Resource):
         if not name or not email or not message_text:
             return {'message': 'Name, email address, and message are required'}, 400
 
-        recipient = os.getenv('ADMISSIONS_INQUIRY_EMAIL', 'ousainouss@yahoo.com').strip()
+        recipient = os.getenv('ADMISSIONS_INQUIRY_EMAIL', 'amadoujawo88@gmail.com').strip()
 
         # Save to database record
         inquiry_obj = AdmissionInquiry(
