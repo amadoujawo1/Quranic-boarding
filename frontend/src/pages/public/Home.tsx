@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Award, Users, Home as HomeIcon, CheckCircle2, ChevronRight, Calendar, Star, MapPin, Mail, Phone, Clock, GraduationCap, X, Search, Sparkles, Loader2, AlertCircle, Send } from 'lucide-react';
 import { motion, useInView, animate } from 'framer-motion';
+import { useLanguage } from '../../context/LanguageContext';
 
 type PublicOverviewStats = {
   total_students: number;
@@ -32,6 +33,7 @@ const StatCounter = ({ num, suffix }: { num: number, suffix: string }) => {
 };
 
 export const Home: React.FC = () => {
+  const { t } = useLanguage();
   const [contactSubmitted, setContactSubmitted] = useState(false);
   const [inquiryName, setInquiryName] = useState('');
   const [inquiryEmail, setInquiryEmail] = useState('');
@@ -149,23 +151,23 @@ export const Home: React.FC = () => {
   }, []);
 
   const stats = [
-    { title: 'Students Enrolled', num: overviewStats.total_students, suffix: '', icon: Users },
-    { title: 'Hifz Huffaz Graduates', num: overviewStats.hifz_graduates, suffix: '', icon: Award },
-    { title: 'Qualified Teachers', num: overviewStats.teachers, suffix: '', icon: BookOpen },
-    { title: 'Core Programmes', num: 4, suffix: '', icon: HomeIcon },
+    { title: t('home_stat_students'), num: overviewStats.total_students, suffix: '', icon: Users },
+    { title: t('home_stat_graduates'), num: overviewStats.hifz_graduates, suffix: '', icon: Award },
+    { title: t('home_stat_teachers'), num: overviewStats.teachers, suffix: '', icon: BookOpen },
+    { title: t('home_stat_programmes'), num: 4, suffix: '', icon: HomeIcon },
   ];
 
   const programmes = [
     {
-      title: 'Full-Time Hifz Programme',
-      desc: 'Complete Quran memorization within 2 to 3 years under master teachers (Huffaz & Quraa) with Tajweed mastery.',
-      badge: 'Core Program',
+      title: t('home_program_hifz_title'),
+      desc: t('home_program_hifz_desc'),
+      badge: t('home_program_hifz_badge'),
       link: '/hifz-programme'
     },
     {
-      title: 'Islamic Studies & Shariah',
-      desc: 'Comprehensive curriculum covering Aqeedah, Fiqh, Hadith, Tafsir, Seerah, and Classical Arabic literature.',
-      badge: 'Academic',
+      title: t('home_program_islamic_title'),
+      desc: t('home_program_islamic_desc'),
+      badge: t('home_program_islamic_badge'),
       link: '/programmes'
     }
   ];
@@ -201,23 +203,23 @@ export const Home: React.FC = () => {
               className="space-y-6 text-center lg:text-left"
             >
               <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight">
-                Empowering Minds with <span className="gold-gradient-text">Quranic Light</span> & Academic Excellence
+                {t('home_hero_title')}
               </h1>
               <p className="text-slate-300 text-base sm:text-lg leading-relaxed max-w-2xl">
-                Providing a world-class Islamic residential experience. We combine full Hifz memorization, authentic Shariah knowledge, and modern academic excellence.
+                {t('home_hero_subtitle')}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-2">
                 <Link
                   to="/admissions"
                   className="px-6 py-3 rounded-xl bg-gradient-to-r from-gold-500 to-gold-600 text-emerald-950 font-bold text-base shadow-lg hover:brightness-110 transition flex items-center justify-center gap-2"
                 >
-                  Apply for Admission <ChevronRight className="w-5 h-5" />
+                  {t('home_btn_apply')} <ChevronRight className="w-5 h-5" />
                 </Link>
                 <Link
                   to="/hifz-programme"
                   className="px-6 py-3 rounded-xl bg-emerald-900/80 border border-gold-500/40 text-gold-400 font-bold text-base hover:bg-emerald-900 transition flex items-center justify-center gap-2"
                 >
-                  Explore Hifz Curriculum
+                  {t('home_btn_explore_hifz')}
                 </Link>
               </div>
             </motion.div>
@@ -232,20 +234,20 @@ export const Home: React.FC = () => {
               <div className="w-full max-w-md bg-gradient-to-b from-emerald-900/90 to-emerald-950/90 backdrop-blur-md p-8 rounded-2xl border border-gold-500/40 shadow-2xl space-y-6">
                 <div className="text-center space-y-2">
                   <div className="font-arabic text-3xl text-gold-400">ٱقْرَأْ بِٱسْمِ رَبِّكَ ٱلَّذِى خَلَقَ</div>
-                  <p className="text-xs text-slate-300 italic">"Read in the name of your Lord who created"</p>
+                  <p className="text-xs text-slate-300 italic">"{t('home_quran_verse')}"</p>
                 </div>
                 <div className="space-y-3 pt-4 border-t border-gold-500/20 text-sm">
                   <div className="flex items-center gap-3 text-slate-200">
                     <CheckCircle2 className="w-5 h-5 text-gold-400 shrink-0" />
-                    <span>Structured 3-Tier Revision (Sabaq, Sabqi, Manzil)</span>
+                    <span>{t('home_feature_revision')}</span>
                   </div>
                   <div className="flex items-center gap-3 text-slate-200">
                     <CheckCircle2 className="w-5 h-5 text-gold-400 shrink-0" />
-                    <span>24/7 Boarding Supervision & Prayer Discipline</span>
+                    <span>{t('home_feature_boarding')}</span>
                   </div>
                   <div className="flex items-center gap-3 text-slate-200">
                     <CheckCircle2 className="w-5 h-5 text-gold-400 shrink-0" />
-                    <span>Healthy Halal Meals & Health Monitoring</span>
+                    <span>{t('home_feature_meals')}</span>
                   </div>
                 </div>
               </div>
@@ -279,7 +281,7 @@ export const Home: React.FC = () => {
               >
                 {isGraduateCard && (
                   <span className="absolute top-2 right-2 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider rounded-full bg-gold-500 text-emerald-950 shadow-sm animate-pulse">
-                    Click to View
+                    {t('home_click_to_view')}
                   </span>
                 )}
                 <div className="w-12 h-12 rounded-xl bg-gold-500/10 text-gold-500 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
@@ -305,19 +307,19 @@ export const Home: React.FC = () => {
           className="bg-white dark:bg-slate-900 rounded-3xl p-8 sm:p-12 border border-slate-200 dark:border-slate-800 shadow-xl grid grid-cols-1 lg:grid-cols-3 gap-8 items-center"
         >
           <div className="space-y-4 lg:col-span-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-gold-600 dark:text-gold-400">Leadership Insights</span>
-            <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Message from the Principal</h2>
+            <span className="text-xs font-bold uppercase tracking-wider text-gold-600 dark:text-gold-400">{t('home_principal_label')}</span>
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-white">{t('home_principal_title')}</h2>
             <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed italic">
-              "At the Centre for Quranic Memorization, our mission goes beyond academic instruction. We strive to mold young minds into upright, God-conscious leaders who carry the Holy Quran in their hearts and excel in modern sciences. Every student receives personal care in memorization, Tajweed, and character building."
+              "{t('home_principal_message')}"
             </p>
             <div>
-              <div className="font-bold text-slate-900 dark:text-white text-base">Sheikh Suwaibou Bah</div>
-              <div className="text-xs text-slate-500 dark:text-slate-400">Principal</div>
+              <div className="font-bold text-slate-900 dark:text-white text-base">{t('home_principal_name')}</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">{t('home_principal_role')}</div>
             </div>
           </div>
           <div className="bg-emerald-950 p-6 rounded-2xl border border-gold-500/30 text-center text-white space-y-3">
-            <div className="text-sm font-semibold">Verified Sanad & Ijazah</div>
-            <p className="text-xs text-slate-300">Our Quraa possess authentic chains of transmission (Sanad) connecting directly to the Prophet Muhammad (ﷺ).</p>
+            <div className="text-sm font-semibold">{t('home_sanad_title')}</div>
+            <p className="text-xs text-slate-300">{t('home_sanad_desc')}</p>
           </div>
         </motion.div>
       </section>
@@ -325,8 +327,8 @@ export const Home: React.FC = () => {
       {/* Programmes Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         <div className="text-center max-w-2xl mx-auto space-y-2">
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Educational Programmes</h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400">Tailored path for spiritual growth and academic brilliance.</p>
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">{t('home_programmes_title')}</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400">{t('home_programmes_subtitle')}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -361,23 +363,23 @@ export const Home: React.FC = () => {
         <div className="bg-emerald-950 text-white rounded-3xl p-8 sm:p-12 border border-gold-500/30">
           
           <div className="space-y-6">
-            <h2 className="text-3xl font-bold">Contact Our Admissions Office</h2>
-            <p className="text-slate-300 text-sm">Have questions about admissions, entry assessments, or fee structures? Send us a message.</p>
+            <h2 className="text-3xl font-bold">{t('home_contact_title')}</h2>
+            <p className="text-slate-300 text-sm">{t('home_contact_subtitle')}</p>
 
             {contactSubmitted ? (
               <div className="bg-emerald-900/90 border border-gold-400 text-gold-300 p-6 rounded-2xl text-sm space-y-3">
                 <div className="flex items-center gap-2 text-gold-400 font-bold text-base">
                   <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-                  <span>Inquiry Sent Successfully!</span>
+                  <span>{t('home_inquiry_success')}</span>
                 </div>
                 <p className="text-slate-200">
-                  {inquirySuccessMsg || 'Thank you for contacting us! Your inquiry has been forwarded to our admissions office (amadoujawo88@gmail.com), and we will reply to your email shortly.'}
+                  {inquirySuccessMsg || t('home_inquiry_success_msg')}
                 </p>
                 <button
                   onClick={() => setContactSubmitted(false)}
                   className="px-4 py-2 text-xs font-semibold rounded-lg bg-emerald-800 text-gold-300 hover:bg-emerald-700 transition cursor-pointer"
                 >
-                  Send another inquiry
+                  {t('home_inquiry_send_another')}
                 </button>
               </div>
             ) : (
@@ -390,47 +392,47 @@ export const Home: React.FC = () => {
                 )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">Parent / Guardian Name *</label>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">{t('home_label_name')}</label>
                     <input
                       required
                       type="text"
                       value={inquiryName}
                       onChange={(e) => setInquiryName(e.target.value)}
                       className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-gold-500 placeholder:text-slate-500"
-                      placeholder="Full name..."
+                      placeholder={t('home_placeholder_name')}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">Phone Number (Optional)</label>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">{t('home_label_phone')}</label>
                     <input
                       type="tel"
                       value={inquiryPhone}
                       onChange={(e) => setInquiryPhone(e.target.value)}
                       className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-gold-500 placeholder:text-slate-500"
-                      placeholder="+220 ... / +1 ..."
+                      placeholder={t('home_placeholder_phone')}
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Email Address *</label>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">{t('home_label_email')}</label>
                   <input
                     required
                     type="email"
                     value={inquiryEmail}
                     onChange={(e) => setInquiryEmail(e.target.value)}
                     className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-gold-500 placeholder:text-slate-500"
-                    placeholder="name@domain.com"
+                    placeholder={t('home_placeholder_email')}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Message / Inquiry *</label>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">{t('home_label_message')}</label>
                   <textarea
                     required
                     rows={4}
                     value={inquiryMessage}
                     onChange={(e) => setInquiryMessage(e.target.value)}
                     className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-gold-500 placeholder:text-slate-500"
-                    placeholder="Tell us about your student, requested grade, boarding needs..."
+                    placeholder={t('home_placeholder_message')}
                   />
                 </div>
                 <button
@@ -441,12 +443,12 @@ export const Home: React.FC = () => {
                   {inquiryLoading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Sending inquiry...</span>
+                      <span>{t('home_btn_sending')}</span>
                     </>
                   ) : (
                     <>
                       <Send className="w-4 h-4" />
-                      <span>Submit Inquiry</span>
+                      <span>{t('home_btn_submit')}</span>
                     </>
                   )}
                 </button>
@@ -476,12 +478,12 @@ export const Home: React.FC = () => {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Hifz Huffaz Graduates Honor Roll</h2>
+                  <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">{t('home_graduates_title')}</h2>
                   <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-gold-400 font-bold text-xs rounded-full">
                     {graduatesList.length} Huffaz
                   </span>
                 </div>
-                <p className="text-xs text-slate-500">Distinguished graduates who completed 30 Juz memorization with Tajweed mastery.</p>
+                <p className="text-xs text-slate-500">{t('home_graduates_subtitle')}</p>
               </div>
             </div>
 
@@ -490,7 +492,7 @@ export const Home: React.FC = () => {
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               <input
                 type="text"
-                placeholder="Search graduates by name, year, occupation, or university..."
+                placeholder={t('home_graduates_search')}
                 value={graduateSearch}
                 onChange={(e) => setGraduateSearch(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs"
@@ -501,11 +503,11 @@ export const Home: React.FC = () => {
             {loadingGraduatesModal ? (
               <div className="text-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-gold-500 mx-auto mb-2" />
-                <p className="text-xs text-slate-500">Loading Hifz Huffaz Graduates...</p>
+                <p className="text-xs text-slate-500">{t('home_graduates_loading')}</p>
               </div>
             ) : graduatesList.length === 0 ? (
               <div className="text-center py-12 text-xs text-slate-500">
-                No graduate records found.
+                {t('home_graduates_none')}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -532,24 +534,24 @@ export const Home: React.FC = () => {
                           </div>
                         </div>
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gold-500/20 text-gold-600 dark:text-gold-400 border border-gold-500/30">
-                          Class of {g.graduation_year}
+                          {t('home_graduates_class')} {g.graduation_year}
                         </span>
                       </div>
 
                       <div className="space-y-1 text-xs text-slate-600 dark:text-slate-300 border-t border-slate-200 dark:border-slate-700/50 pt-2">
                         <div className="flex justify-between">
-                          <span className="text-slate-400">Higher Education:</span>
+                          <span className="text-slate-400">{t('home_graduates_education')}</span>
                           <span className="font-semibold text-slate-800 dark:text-slate-200">{g.higher_education || 'Islamic Studies'}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-slate-400">Profession:</span>
+                          <span className="text-slate-400">{t('home_graduates_profession')}</span>
                           <span className="font-semibold text-slate-800 dark:text-slate-200">{g.current_occupation || 'Alumni Hafiz'}</span>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between text-[11px] text-emerald-600 dark:text-emerald-400 font-bold border-t border-slate-200 dark:border-slate-700/50 pt-2">
-                        <span>Completion Date: {g.hifz_completion_date || `${g.graduation_year}-05-15`}</span>
-                        <span className="flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" /> 30 Juz Complete</span>
+                        <span>{t('home_graduates_completion')}: {g.hifz_completion_date || `${g.graduation_year}-05-15`}</span>
+                        <span className="flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" /> {t('home_graduates_complete')}</span>
                       </div>
                     </div>
                   ))}
@@ -561,7 +563,7 @@ export const Home: React.FC = () => {
                 onClick={() => setShowGraduatesModal(false)}
                 className="px-6 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl"
               >
-                Close Showcase
+                {t('home_graduates_close')}
               </button>
             </div>
           </div>

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle2, AlertCircle, Loader2, Send, Mail, Phone, MapPin } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 export const Contact: React.FC = () => {
+  const { t } = useLanguage();
   const [contactSubmitted, setContactSubmitted] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -32,13 +34,13 @@ export const Contact: React.FC = () => {
         throw new Error(data.message || 'Failed to send message');
       }
       setContactSubmitted(true);
-      setSuccessMsg(data.message || 'Thank you for contacting us! Your message has been forwarded to our admissions office (amadoujawo88@gmail.com).');
+      setSuccessMsg(data.message || t('contact_success_msg'));
       setName('');
       setEmail('');
       setPhone('');
       setMessage('');
     } catch (err: any) {
-      setError(err.message || 'Unable to send message right now. Please try again.');
+      setError(err.message || t('contact_error_default'));
     } finally {
       setLoading(false);
     }
@@ -54,10 +56,10 @@ export const Contact: React.FC = () => {
       >
         <div className="max-w-2xl mx-auto space-y-6">
           <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-gold-600 dark:text-gold-400">Get in Touch</span>
-            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mt-2">Contact Imaam Naafi' Centre for Quranic Memorization</h1>
+            <span className="text-xs font-bold uppercase tracking-wider text-gold-600 dark:text-gold-400">{t('contact_label')}</span>
+            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mt-2">{t('contact_title')}</h1>
             <p className="text-slate-600 dark:text-slate-300 mt-3 text-sm sm:text-base leading-relaxed">
-              Reach out for admissions guidance, program inquiries, or general questions about our boarding and Hifz curriculum.
+              {t('contact_subtitle')}
             </p>
           </div>
 
@@ -80,16 +82,16 @@ export const Contact: React.FC = () => {
             <div className="bg-emerald-950 text-gold-300 border border-gold-500/40 p-6 rounded-2xl text-sm space-y-3 shadow-lg">
               <div className="flex items-center gap-2 text-gold-400 font-bold text-base">
                 <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-                <span>Message Sent Successfully!</span>
+                <span>{t('contact_success_title')}</span>
               </div>
               <p className="text-slate-200">
-                {successMsg || 'Thank you for contacting us! Your inquiry has been forwarded to our admissions office (amadoujawo88@gmail.com), and we will reply to your email shortly.'}
+                {successMsg || t('contact_success_msg')}
               </p>
               <button
                 onClick={() => setContactSubmitted(false)}
                 className="px-4 py-2 text-xs font-semibold rounded-lg bg-emerald-900 text-gold-300 hover:bg-emerald-800 transition cursor-pointer border border-emerald-700"
               >
-                Send another message
+                {t('contact_send_another')}
               </button>
             </div>
           ) : (
@@ -102,47 +104,47 @@ export const Contact: React.FC = () => {
               )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Your Name *</label>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">{t('contact_label_name')}</label>
                   <input
                     required
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white focus:outline-none focus:border-gold-500"
-                    placeholder="Full name..."
+                    placeholder={t('contact_placeholder_name')}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Phone Number (Optional)</label>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">{t('contact_label_phone')}</label>
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     className="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white focus:outline-none focus:border-gold-500"
-                    placeholder="+220 ... / +1 ..."
+                    placeholder={t('contact_placeholder_phone')}
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Email Address *</label>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">{t('contact_label_email')}</label>
                 <input
                   required
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white focus:outline-none focus:border-gold-500"
-                  placeholder="name@domain.com"
+                  placeholder={t('contact_placeholder_email')}
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Message / Inquiry *</label>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">{t('contact_label_message')}</label>
                 <textarea
                   required
                   rows={5}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   className="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white focus:outline-none focus:border-gold-500"
-                  placeholder="How can we help you regarding admissions, boarding, or Hifz classes?"
+                  placeholder={t('contact_placeholder_message')}
                 />
               </div>
               <button
@@ -153,12 +155,12 @@ export const Contact: React.FC = () => {
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Sending message...</span>
+                    <span>{t('contact_btn_sending')}</span>
                   </>
                 ) : (
                   <>
                     <Send className="w-4 h-4" />
-                    <span>Send Message</span>
+                    <span>{t('contact_btn_send')}</span>
                   </>
                 )}
               </button>

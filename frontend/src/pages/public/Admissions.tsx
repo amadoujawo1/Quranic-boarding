@@ -12,6 +12,7 @@ import {
   Search,
   XCircle,
 } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 const STATUS_META: Record<string, { color: string; bg: string; icon: React.ElementType }> = {
   Pending: { color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-950/50 border-amber-200 dark:border-amber-800/40', icon: Clock },
@@ -57,6 +58,7 @@ const getStepState = (current: string, step: string) => {
 };
 
 export const Admissions: React.FC = () => {
+  const { t } = useLanguage();
   const [reference, setReference] = useState('');
   const [tracking, setTracking] = useState<any>(null);
   const [trackError, setTrackError] = useState('');
@@ -75,7 +77,7 @@ export const Admissions: React.FC = () => {
 
   const handleTrack = async () => {
     if (!reference.trim()) {
-      setTrackError('Enter your application reference number.');
+      setTrackError(t('admissions_error_ref'));
       return;
     }
     setTrackingLoading(true);
@@ -85,12 +87,12 @@ export const Admissions: React.FC = () => {
       const res = await fetch(`/api/admissions/track?application_number=${encodeURIComponent(reference.trim())}`);
       const data = await res.json();
       if (!res.ok) {
-        setTrackError(data.message || 'Application not found.');
+        setTrackError(data.message || t('admissions_error_not_found'));
       } else {
         setTracking(data);
       }
     } catch {
-      setTrackError('Unable to reach the server. Please try again later.');
+      setTrackError(t('admissions_error_server'));
     } finally {
       setTrackingLoading(false);
     }
@@ -115,9 +117,9 @@ export const Admissions: React.FC = () => {
       });
       const data = await res.json();
       if (!res.ok) {
-        setSubmitError(data.message || 'Unable to submit application.');
+        setSubmitError(data.message || t('admissions_error_submit'));
       } else {
-        setSubmitMessage(`Application submitted successfully. Reference: ${data.application_number}`);
+        setSubmitMessage(`${t('admissions_success_submit')} ${data.application_number}`);
         setSubmitState({
           full_name: '',
           date_of_birth: '',
@@ -128,7 +130,7 @@ export const Admissions: React.FC = () => {
         });
       }
     } catch {
-      setSubmitError('Unable to reach the server. Please try again later.');
+      setSubmitError(t('admissions_error_server'));
     } finally {
       setSubmitLoading(false);
     }
@@ -138,16 +140,16 @@ export const Admissions: React.FC = () => {
     <div className="space-y-10 py-10 px-6 sm:px-8 lg:px-12">
       <div className="max-w-5xl mx-auto space-y-6">
         <div className="rounded-3xl bg-gradient-to-r from-emerald-700 to-slate-900 p-10 text-white shadow-2xl">
-          <h1 className="text-3xl sm:text-4xl font-extrabold">Admission Application Tracker</h1>
-          <p className="mt-3 text-sm sm:text-base text-emerald-100 max-w-3xl">Track your application progress by reference number, then review your current status and next steps. You can also submit a new admission application below.</p>
+          <h1 className="text-3xl sm:text-4xl font-extrabold">{t('admissions_public_title')}</h1>
+          <p className="mt-3 text-sm sm:text-base text-emerald-100 max-w-3xl">{t('admissions_public_subtitle')}</p>
         </div>
 
         <div className="grid gap-8 lg:grid-cols-[1fr_0.9fr]">
           <section className="rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
             <div className="flex items-center justify-between gap-4 mb-6">
               <div>
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Track Your Application</h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Use the reference number provided after submission.</p>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">{t('admissions_track_title')}</h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{t('admissions_track_subtitle')}</p>
               </div>
               <div className="text-xs uppercase tracking-[0.24em] text-emerald-600 dark:text-emerald-400 font-semibold">Public</div>
             </div>
@@ -158,7 +160,7 @@ export const Admissions: React.FC = () => {
                 <input
                   value={reference}
                   onChange={e => setReference(e.target.value)}
-                  placeholder="Enter application reference"
+                  placeholder={t('admissions_track_placeholder')}
                   className="w-full pl-11 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
                 />
               </div>
@@ -167,7 +169,7 @@ export const Admissions: React.FC = () => {
                 className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white hover:bg-emerald-700 transition"
                 disabled={trackingLoading}
               >
-                {trackingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />} Track Application
+                {trackingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />} {t('admissions_track_btn')}
               </button>
               {trackError && (
                 <div className="rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 p-4 text-sm text-rose-700 dark:text-rose-300 flex items-start gap-2">
@@ -181,7 +183,7 @@ export const Admissions: React.FC = () => {
                 <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-6">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                      <div className="text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400 font-semibold">Reference</div>
+                      <div className="text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400 font-semibold">{t('admissions_reference')}</div>
                       <div className="mt-2 text-base font-bold text-slate-900 dark:text-white">{tracking.application_number}</div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -190,30 +192,30 @@ export const Admissions: React.FC = () => {
                   </div>
                   <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4">
-                      <div className="text-[11px] uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400 font-semibold">Applicant</div>
+                      <div className="text-[11px] uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400 font-semibold">{t('admissions_applicant')}</div>
                       <div className="mt-2 text-sm text-slate-700 dark:text-slate-200 font-semibold">{tracking.full_name}</div>
                     </div>
                     <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4">
-                      <div className="text-[11px] uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400 font-semibold">Guardian</div>
+                      <div className="text-[11px] uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400 font-semibold">{t('admissions_guardian')}</div>
                       <div className="mt-2 text-sm text-slate-700 dark:text-slate-200 font-semibold">{tracking.guardian_name || 'N/A'}</div>
                     </div>
                     <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4">
-                      <div className="text-[11px] uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400 font-semibold">Guardian Email</div>
+                      <div className="text-[11px] uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400 font-semibold">{t('admissions_guardian_email')}</div>
                       <div className="mt-2 text-sm text-slate-700 dark:text-slate-200 font-semibold truncate" title={tracking.guardian_email || 'N/A'}>{tracking.guardian_email || 'N/A'}</div>
                     </div>
                     <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4">
-                      <div className="text-[11px] uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400 font-semibold">Programme</div>
+                      <div className="text-[11px] uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400 font-semibold">{t('admissions_programme')}</div>
                       <div className="mt-2 text-sm text-slate-700 dark:text-slate-200 font-semibold">{tracking.programme}</div>
                     </div>
                     <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4">
-                      <div className="text-[11px] uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400 font-semibold">Submitted</div>
+                      <div className="text-[11px] uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400 font-semibold">{t('admissions_submitted')}</div>
                       <div className="mt-2 text-sm text-slate-700 dark:text-slate-200 font-semibold">{formatDate(tracking.submission_date)}</div>
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">Application progress</h3>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">{t('admissions_progress')}</h3>
                   <div className="space-y-3">
                     {STATUS_STEPS.map(step => {
                       const state = getStepState(tracking.status, step);
@@ -224,7 +226,7 @@ export const Admissions: React.FC = () => {
                           </div>
                           <div>
                             <div className="text-sm font-semibold text-slate-900 dark:text-white">{step}</div>
-                            <div className="text-xs text-slate-500 dark:text-slate-400">{step === 'Interview Scheduled' ? formatDate(tracking.interview_date) : step === 'Accepted' || step === 'Enrolled' ? formatDate(tracking.decision_date) : state === 'upcoming' ? 'Waiting' : 'Completed'}</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">{step === 'Interview Scheduled' ? formatDate(tracking.interview_date) : step === 'Accepted' || step === 'Enrolled' ? formatDate(tracking.decision_date) : state === 'upcoming' ? t('admissions_waiting') : t('admissions_completed')}</div>
                           </div>
                         </div>
                       );
@@ -233,53 +235,53 @@ export const Admissions: React.FC = () => {
                 </div>
 
                 <div className="rounded-3xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-6">
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">Decision notes</h3>
-                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{tracking.decision_notes || 'No additional notes yet.'}</p>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">{t('admissions_decision_notes')}</h3>
+                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{tracking.decision_notes || t('admissions_no_notes')}</p>
                 </div>
               </div>
             )}
           </section>
 
           <aside className="rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Submit a New Application</h2>
-            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Complete the form and we will assign a reference number for tracking.</p>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">{t('admissions_submit_title')}</h2>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{t('admissions_submit_subtitle')}</p>
 
             <div className="mt-8 space-y-4">
               {submitError && <div className="rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 p-4 text-sm text-rose-700 dark:text-rose-300">{submitError}</div>}
               {submitMessage && <div className="rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 p-4 text-sm text-emerald-700 dark:text-emerald-300">{submitMessage}</div>}
 
               <div className="grid gap-4">
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400">Applicant Full Name</label>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400">{t('admissions_label_name')}</label>
                 <input value={submitState.full_name} onChange={e => setSubmitState(prev => ({ ...prev, full_name: e.target.value }))}
                   className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500" />
 
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400">Date of Birth</label>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400">{t('admissions_label_dob')}</label>
                 <input type="date" value={submitState.date_of_birth} onChange={e => setSubmitState(prev => ({ ...prev, date_of_birth: e.target.value }))}
                   className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500" />
 
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400">Gender</label>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400">{t('admissions_label_gender')}</label>
                 <select value={submitState.gender} onChange={e => setSubmitState(prev => ({ ...prev, gender: e.target.value }))}
                   className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500">
                   <option>Male</option>
                   <option>Female</option>
                 </select>
 
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400">Guardian Name</label>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400">{t('admissions_label_guardian_name')}</label>
                 <input value={submitState.guardian_name} onChange={e => setSubmitState(prev => ({ ...prev, guardian_name: e.target.value }))}
                   className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500" />
 
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400">Guardian Phone</label>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400">{t('admissions_label_guardian_phone')}</label>
                 <input value={submitState.guardian_phone} onChange={e => setSubmitState(prev => ({ ...prev, guardian_phone: e.target.value }))}
                   className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500" />
 
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400">Guardian Email</label>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400">{t('admissions_label_guardian_email')}</label>
                 <input type="email" value={submitState.guardian_email} onChange={e => setSubmitState(prev => ({ ...prev, guardian_email: e.target.value }))}
                   className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500" />
               </div>
 
               <button onClick={handleSubmit} disabled={submitLoading}
                 className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-700 px-5 py-3 text-sm font-semibold text-white hover:brightness-110 transition disabled:opacity-60">
-                {submitLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />} Submit Application
+                {submitLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />} {t('admissions_submit_btn')}
               </button>
             </div>
           </aside>
@@ -289,15 +291,15 @@ export const Admissions: React.FC = () => {
           <div className="grid gap-8 lg:grid-cols-3">
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-emerald-600 font-semibold">How it works</p>
-              <h3 className="mt-3 text-xl font-bold text-slate-900 dark:text-white">Simple status tracking for every application</h3>
+              <h3 className="mt-3 text-xl font-bold text-slate-900 dark:text-white">{t('admissions_how_title')}</h3>
             </div>
             <div className="space-y-4 text-sm text-slate-600 dark:text-slate-300">
-              <p>Submit your application and use the generated reference to track progress through each phase: pending, review, interview, acceptance, and enrolment.</p>
-              <p>If you already submitted through the admissions office, enter your application number above to view the current status and any decision notes.</p>
+              <p>{t('admissions_how_desc_1')}</p>
+              <p>{t('admissions_how_desc_2')}</p>
             </div>
             <div className="space-y-4 text-sm text-slate-600 dark:text-slate-300">
-              <p>Keep your reference number safe. It is the fastest way to check where your application stands without logging in.</p>
-              <p>Questions? Contact our admissions team through the website or email <a href="mailto:amadoujawo88@gmail.com" className="text-emerald-600 font-semibold underline">amadoujawo88@gmail.com</a>.</p>
+              <p>{t('admissions_how_desc_3')}</p>
+              <p>{t('admissions_how_desc_4')} <a href="mailto:amadoujawo88@gmail.com" className="text-emerald-600 font-semibold underline">amadoujawo88@gmail.com</a>.</p>
             </div>
           </div>
         </div>

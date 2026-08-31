@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { BookOpen, CheckCircle, Award, Star, GraduationCap, CheckCircle2, UserCheck, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useLanguage } from '../../context/LanguageContext';
 
 export const HifzProgramme: React.FC = () => {
+  const { t } = useLanguage();
   const [graduates, setGraduates] = useState<any[]>([]);
 
   useEffect(() => {
@@ -24,18 +26,18 @@ export const HifzProgramme: React.FC = () => {
         transition={{ duration: 0.6 }}
         className="text-center max-w-3xl mx-auto space-y-4"
       >
-        <span className="text-xs font-bold uppercase tracking-wider text-gold-600 dark:text-gold-400">Core Quranic Track</span>
-        <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white">Quran Memorization (Hifz) & Tajweed</h1>
+        <span className="text-xs font-bold uppercase tracking-wider text-gold-600 dark:text-gold-400">{t('hifz_label')}</span>
+        <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white">{t('hifz_title')}</h1>
         <p className="text-slate-600 dark:text-slate-300 text-base leading-relaxed">
-          Our specialized methodology ensures total memorization of the 30 Juz of the Holy Quran, accompanied by Tajweed rules, Makharij evaluation, and lifelong retention through structured revision.
+          {t('hifz_subtitle')}
         </p>
       </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {[
-          { title: "1. Sabaq (New Memorization)", desc: "Daily allocation of new verses recited to the Halaqah teacher every morning after Fajr prayer." },
-          { title: "2. Sabqi (Recent Revision)", desc: "Recitation of the last 5 to 10 pages memorized in previous days to solidify retention." },
-          { title: "3. Manzil (Old Revision)", desc: "Systematic revision of entire completed Juz on a revolving weekly schedule." }
+          { title: t('hifz_sabaq_title'), desc: t('hifz_sabaq_desc') },
+          { title: t('hifz_sabqi_title'), desc: t('hifz_sabqi_desc') },
+          { title: t('hifz_manzil_title'), desc: t('hifz_manzil_desc') }
         ].map((item, index) => (
           <motion.div 
             key={index}
@@ -56,9 +58,9 @@ export const HifzProgramme: React.FC = () => {
           <div className="w-12 h-12 rounded-2xl bg-gold-500/20 text-gold-400 flex items-center justify-center mx-auto">
             <GraduationCap className="w-7 h-7" />
           </div>
-          <h2 className="text-3xl font-extrabold text-white">Hifz Huffaz Graduates Honor Roll</h2>
+          <h2 className="text-3xl font-extrabold text-white">{t('hifz_graduates_title')}</h2>
           <p className="text-xs text-slate-300">
-            Celebrating our distinguished alumni who completed full Quranic memorization (30 Juz) and have gone on to excel in higher Islamic and secular academic paths worldwide.
+            {t('hifz_graduates_subtitle')}
           </p>
         </div>
 
@@ -79,24 +81,24 @@ export const HifzProgramme: React.FC = () => {
                   </div>
                 </div>
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gold-500/20 text-gold-400 border border-gold-500/40">
-                  {g.graduation_year} Hafiz
+                  {g.graduation_year} {t('hifz_graduates_hafiz')}
                 </span>
               </div>
 
               <div className="space-y-1.5 text-xs text-slate-300 border-t border-slate-800 pt-3">
                 <div className="flex justify-between">
-                  <span className="text-slate-400 flex items-center gap-1"><GraduationCap className="w-3.5 h-3.5 text-gold-400" /> Higher Ed:</span>
+                  <span className="text-slate-400 flex items-center gap-1"><GraduationCap className="w-3.5 h-3.5 text-gold-400" /> {t('hifz_graduates_higher_ed')}</span>
                   <span className="font-semibold text-white truncate max-w-[150px]">{g.higher_education || 'Islamic Studies'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400 flex items-center gap-1"><UserCheck className="w-3.5 h-3.5 text-emerald-400" /> Profession:</span>
+                  <span className="text-slate-400 flex items-center gap-1"><UserCheck className="w-3.5 h-3.5 text-emerald-400" /> {t('hifz_graduates_profession')}</span>
                   <span className="font-semibold text-white truncate max-w-[150px]">{g.current_occupation || 'Alumni Hafiz'}</span>
                 </div>
               </div>
 
               <div className="flex items-center justify-between text-[11px] text-gold-400 font-bold border-t border-slate-800 pt-2">
-                <span>Completed: {g.hifz_completion_date || `${g.graduation_year}-05-15`}</span>
-                <span className="flex items-center gap-1 text-emerald-400"><CheckCircle2 className="w-3.5 h-3.5" /> 30 Juz</span>
+                <span>{t('hifz_graduates_completed')} {g.hifz_completion_date || `${g.graduation_year}-05-15`}</span>
+                <span className="flex items-center gap-1 text-emerald-400"><CheckCircle2 className="w-3.5 h-3.5" /> {t('hifz_graduates_30_juz')}</span>
               </div>
             </div>
           ))}

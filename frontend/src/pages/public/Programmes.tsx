@@ -2,56 +2,58 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, GraduationCap, Compass, HeartHandshake, CheckCircle2, Clock, ArrowRight, ShieldCheck, Award, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useLanguage } from '../../context/LanguageContext';
 
 export const Programmes: React.FC = () => {
+  const { t } = useLanguage();
   const mainProgrammes = [
     {
       id: 'hifz',
       icon: BookOpen,
-      badge: 'Core Excellence',
+      badge: t('programmes_hifz_badge'),
       badgeColor: 'bg-gold-500/20 text-gold-600 dark:text-gold-400 border-gold-500/30',
-      title: 'Full-Time Hifz & Tajweed Track',
-      duration: '2 - 3 Years',
-      targetAge: 'Ages 9 - 17',
-      description: 'Intensive full-boarding Quranic memorization track featuring daily Sabaq, Sabqi, and Manzil sessions guided by Sanad-certified Quraa.',
+      title: t('programmes_hifz_title'),
+      duration: t('programmes_hifz_duration'),
+      targetAge: t('programmes_hifz_age'),
+      description: t('programmes_hifz_desc'),
       highlights: [
-        'Daily 3-phase revision methodology (Sabaq, Sabqi, Manzil)',
-        'Authentic Tajweed & Makharij perfection',
-        'Ijazah / Sanad path with connected chain to the Prophet (ﷺ)',
-        'Quarterly oral evaluation exams by external Shaykhs'
+        t('programmes_hifz_highlight_1'),
+        t('programmes_hifz_highlight_2'),
+        t('programmes_hifz_highlight_3'),
+        t('programmes_hifz_highlight_4')
       ],
       link: '/hifz-programme'
     },
     {
       id: 'islamic',
       icon: GraduationCap,
-      badge: 'Shariah & Language',
+      badge: t('programmes_islamic_badge'),
       badgeColor: 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
-      title: 'Islamic Studies & Shariah Sciences',
-      duration: 'Ongoing Secondary',
-      targetAge: 'Ages 10 - 18',
-      description: 'Grounded Islamic education instilling foundational knowledge in classical Shariah disciplines, Arabic syntax, and Quranic exegesis.',
+      title: t('programmes_islamic_title'),
+      duration: t('programmes_islamic_duration'),
+      targetAge: t('programmes_islamic_age'),
+      description: t('programmes_islamic_desc'),
       highlights: [
-        'Fiqh of Worship & Daily Transactions',
-        'Aqeedah (Islamic Creed) & Philosophy',
-        'Hadith Sciences & Prophetic Seerah',
-        'Classical Arabic Grammar (Nahw & Sarf)'
+        t('programmes_islamic_highlight_1'),
+        t('programmes_islamic_highlight_2'),
+        t('programmes_islamic_highlight_3'),
+        t('programmes_islamic_highlight_4')
       ]
     },
     {
       id: 'tarbiyah',
       icon: HeartHandshake,
-      badge: 'Spiritual Life',
+      badge: t('programmes_tarbiyah_badge'),
       badgeColor: 'bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-500/30',
-      title: 'Tarbiyah & Character Development',
-      duration: 'Integrated Daily',
-      targetAge: 'All Students',
-      description: 'Holistic residential mentoring focused on moral rectitude, leadership skills, emotional well-being, and daily Islamic etiquette.',
+      title: t('programmes_tarbiyah_title'),
+      duration: t('programmes_tarbiyah_duration'),
+      targetAge: t('programmes_tarbiyah_age'),
+      description: t('programmes_tarbiyah_desc'),
       highlights: [
-        'Daily congregational prayers & Qiyam-ul-Layl',
-        'Mentorship & personal spiritual counseling',
-        'Leadership workshops & public speaking in Arabic/English',
-        'Physical education, martial arts & outdoor activities'
+        t('programmes_tarbiyah_highlight_1'),
+        t('programmes_tarbiyah_highlight_2'),
+        t('programmes_tarbiyah_highlight_3'),
+        t('programmes_tarbiyah_highlight_4')
       ]
     }
   ];
@@ -78,13 +80,13 @@ export const Programmes: React.FC = () => {
         className="text-center max-w-3xl mx-auto space-y-4"
       >
         <span className="text-xs font-bold uppercase tracking-wider text-gold-600 dark:text-gold-400 bg-gold-500/10 px-4 py-1.5 rounded-full border border-gold-500/20 inline-flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5" /> Educational Excellence
+          <Sparkles className="w-3.5 h-3.5" /> {t('programmes_label')}
         </span>
         <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-          Educational Programmes & Curriculum
+          {t('programmes_title')}
         </h1>
         <p className="text-slate-600 dark:text-slate-300 text-base md:text-lg leading-relaxed">
-          Discover our balanced educational tracks combining intensive Quranic memorization, authentic Shariah knowledge, academic studies, and character development.
+          {t('programmes_subtitle')}
         </p>
       </motion.div>
 
@@ -124,7 +126,7 @@ export const Programmes: React.FC = () => {
                 </div>
 
                 <div className="space-y-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Key Highlights:</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('programmes_key_highlights')}</span>
                   <ul className="space-y-2">
                     {prog.highlights.map((item, idx) => (
                       <li key={idx} className="flex items-start gap-2.5 text-xs text-slate-600 dark:text-slate-300">
@@ -142,7 +144,7 @@ export const Programmes: React.FC = () => {
                     to={prog.link}
                     className="inline-flex items-center gap-2 text-sm font-semibold text-gold-600 dark:text-gold-400 hover:text-gold-500 transition group/link"
                   >
-                    View Detailed Hifz Structure <ArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
+                    {t('programmes_view_hifz')} <ArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
                   </Link>
                 </div>
               )}
@@ -159,10 +161,10 @@ export const Programmes: React.FC = () => {
         className="glass-card p-8 md:p-10 rounded-3xl border border-gold-500/20 bg-gradient-to-br from-emerald-950/90 to-slate-900 text-white space-y-8 shadow-2xl"
       >
         <div className="text-center max-w-2xl mx-auto space-y-3">
-          <span className="text-xs font-bold uppercase tracking-wider text-gold-400">Structured Daily Life</span>
-          <h2 className="text-3xl font-extrabold text-white">A Day in the Life of Our Boarding Students</h2>
+          <span className="text-xs font-bold uppercase tracking-wider text-gold-400">{t('programmes_daily_label')}</span>
+          <h2 className="text-3xl font-extrabold text-white">{t('programmes_daily_title')}</h2>
           <p className="text-slate-300 text-sm">
-            Our daily schedule balances spiritual worship, Quranic memorization, academic studies, physical activity, and adequate rest.
+            {t('programmes_daily_subtitle')}
           </p>
         </div>
 
@@ -191,22 +193,22 @@ export const Programmes: React.FC = () => {
         className="text-center bg-gradient-to-r from-gold-600 via-gold-500 to-gold-600 p-8 md:p-12 rounded-3xl text-slate-950 font-sans shadow-xl space-y-6"
       >
         <ShieldCheck className="w-12 h-12 mx-auto text-slate-950" />
-        <h2 className="text-3xl font-extrabold tracking-tight">Ready to Enroll Your Child?</h2>
+        <h2 className="text-3xl font-extrabold tracking-tight">{t('programmes_cta_title')}</h2>
         <p className="max-w-2xl mx-auto text-slate-900 font-medium text-sm md:text-base leading-relaxed">
-          Applications are open for the upcoming academic session. Provide your child with the gift of Quranic memorization and leadership.
+          {t('programmes_cta_subtitle')}
         </p>
         <div className="flex flex-wrap justify-center gap-4 pt-2">
           <Link
             to="/admissions"
             className="px-8 py-3.5 rounded-xl bg-slate-950 text-gold-400 font-bold hover:bg-slate-900 transition shadow-lg inline-flex items-center gap-2"
           >
-            Apply for Admission <ArrowRight className="w-4 h-4" />
+            {t('programmes_cta_apply')} <ArrowRight className="w-4 h-4" />
           </Link>
           <Link
             to="/contact"
             className="px-8 py-3.5 rounded-xl bg-white/30 backdrop-blur-sm text-slate-950 font-bold hover:bg-white/40 transition border border-slate-950/20"
           >
-            Contact Admissions Office
+            {t('programmes_cta_contact')}
           </Link>
         </div>
       </motion.div>
