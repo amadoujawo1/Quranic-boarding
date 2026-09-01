@@ -66,15 +66,15 @@ export const Contact: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-slate-600 dark:text-slate-300 pb-2">
             <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
               <Mail className="w-4 h-4 text-gold-500 shrink-0" />
-              <span className="truncate">amadoujawo88@gmail.com</span>
+              <span className="truncate">{t('contact_info_email')}</span>
             </div>
             <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
               <Phone className="w-4 h-4 text-gold-500 shrink-0" />
-              <span>+220 87 7918643</span>
+              <span>{t('contact_info_phone')}</span>
             </div>
             <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
               <MapPin className="w-4 h-4 text-gold-500 shrink-0" />
-              <span>Banjul, The Gambia</span>
+              <span>{t('contact_info_location')}</span>
             </div>
           </div>
 

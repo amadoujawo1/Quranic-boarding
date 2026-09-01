@@ -31,13 +31,24 @@ const STATUS_STEPS = [
   'Enrolled',
 ];
 
-const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
+const StatusBadge: React.FC<{ status: string; t: (key: string) => string }> = ({ status, t }) => {
+  // Map status values to translation keys
+  const statusMap: Record<string, string> = {
+    'Pending': t('admissions_status_pending'),
+    'Under Review': t('admissions_status_under_review'),
+    'Interview Scheduled': t('admissions_status_interview_scheduled'),
+    'Accepted': t('admissions_status_accepted'),
+    'Rejected': t('admissions_status_rejected'),
+    'Enrolled': t('admissions_status_enrolled'),
+  };
+
   const meta = STATUS_META[status] || STATUS_META['Pending'];
   const Icon = meta.icon;
+  const displayStatus = statusMap[status] || status;
   return (
     <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold border ${meta.bg} ${meta.color}`}>
       <Icon className="w-3.5 h-3.5" />
-      {status}
+      {displayStatus}
     </span>
   );
 };
@@ -187,7 +198,7 @@ export const Admissions: React.FC = () => {
                       <div className="mt-2 text-base font-bold text-slate-900 dark:text-white">{tracking.application_number}</div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <StatusBadge status={tracking.status} />
+                      <StatusBadge status={tracking.status} t={t} />
                     </div>
                   </div>
                   <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -219,13 +230,22 @@ export const Admissions: React.FC = () => {
                   <div className="space-y-3">
                     {STATUS_STEPS.map(step => {
                       const state = getStepState(tracking.status, step);
+                      // Map step to translation key
+                      const stepTranslationMap: Record<string, string> = {
+                        'Pending': t('admissions_status_pending'),
+                        'Under Review': t('admissions_status_under_review_label'),
+                        'Interview Scheduled': t('admissions_status_interview_scheduled_label'),
+                        'Accepted': t('admissions_status_accepted'),
+                        'Enrolled': t('admissions_status_enrolled'),
+                      };
+                      const stepLabel = stepTranslationMap[step] || step;
                       return (
                         <div key={step} className="flex items-center gap-4">
                           <div className="relative flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-500">
                             {state === 'complete' ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : state === 'active' ? <Clock className="w-4 h-4 text-emerald-600" /> : <span className="text-xs font-bold">•</span>}
                           </div>
                           <div>
-                            <div className="text-sm font-semibold text-slate-900 dark:text-white">{step}</div>
+                            <div className="text-sm font-semibold text-slate-900 dark:text-white">{stepLabel}</div>
                             <div className="text-xs text-slate-500 dark:text-slate-400">{step === 'Interview Scheduled' ? formatDate(tracking.interview_date) : step === 'Accepted' || step === 'Enrolled' ? formatDate(tracking.decision_date) : state === 'upcoming' ? t('admissions_waiting') : t('admissions_completed')}</div>
                           </div>
                         </div>

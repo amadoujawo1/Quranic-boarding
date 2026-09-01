@@ -400,4 +400,39 @@ export const translations: Translations = {
   contact_btn_sending: { en: "Sending message...", ar: "جاري إرسال الرسالة..." },
   contact_btn_send: { en: "Send Message", ar: "إرسال الرسالة" },
   contact_error_default: { en: "Unable to send message right now. Please try again.", ar: "تعذر إرسال الرسالة الآن. يرجى المحاولة مرة أخرى." },
+
+  // Daily Schedule - Programmes Page
+  schedule_time_0430: { en: "04:30 AM - 05:30 AM", ar: "04:30 صباحاً - 05:30 صباحاً" },
+  schedule_activity_fajr: { en: "Qiyam-ul-Layl & Fajr Congregational Prayer", ar: "قيام الليل وصلاة الفجر جماعة" },
+  schedule_time_0530: { en: "05:30 AM - 07:30 AM", ar: "05:30 صباحاً - 07:30 صباحاً" },
+  schedule_activity_sabaq: { en: "Morning Hifz Session: Sabaq (New Lesson Recitation)", ar: "جلسة الحفظ الصباحية: السباق (تلاوة الدرس الجديد)" },
+  schedule_time_0730: { en: "07:30 AM - 08:30 AM", ar: "07:30 صباحاً - 08:30 صباحاً" },
+  schedule_activity_breakfast: { en: "Healthy Breakfast & Morning Assembly", ar: "إفطار صحي وتجمع الصباح" },
+  schedule_time_0830: { en: "08:30 AM - 01:30 PM", ar: "08:30 صباحاً - 01:30 مساءً" },
+  schedule_activity_academics: { en: "Academic & Shariah Classes", ar: "الفصول الأكاديمية والشرعية" },
+  schedule_time_1330: { en: "01:30 PM - 02:30 PM", ar: "01:30 مساءً - 02:30 مساءً" },
+  schedule_activity_dhuhr: { en: "Dhuhr Prayer & Lunch Break", ar: "صلاة الظهر وراحة الغداء" },
+  schedule_time_1430: { en: "02:30 PM - 04:30 PM", ar: "02:30 مساءً - 04:30 مساءً" },
+  schedule_activity_sabqi: { en: "Afternoon Session: Sabqi (Recent Revision) & Islamic Studies", ar: "جلسة العصر: السبقي (المراجعة الحديثة) والدراسات الإسلامية" },
+  schedule_time_1630: { en: "04:30 PM - 06:00 PM", ar: "04:30 مساءً - 06:00 مساءً" },
+  schedule_activity_asr: { en: "Asr Prayer, Sports, Recreation & Personal Time", ar: "صلاة العصر والرياضة والترفيه والوقت الشخصي" },
+  schedule_time_1800: { en: "06:00 PM - 08:00 PM", ar: "06:00 مساءً - 08:00 مساءً" },
+  schedule_activity_manzil: { en: "Maghrib Prayer, Manzil (Old Revision) & Isha Prayer", ar: "صلاة المغرب والمنزيل (المراجعة القديمة) وصلاة العشاء" },
+  schedule_time_2000: { en: "08:00 PM - 09:30 PM", ar: "08:00 مساءً - 09:30 مساءً" },
+  schedule_activity_dinner: { en: "Dinner, Homework Prep & Lights Out", ar: "العشاء والإعداد للدروس والإضاءة الخافتة" },
+
+  // Admissions Status
+  admissions_status_pending: { en: "Pending", ar: "قيد الانتظار" },
+  admissions_status_under_review: { en: "Under Review", ar: "قيد المراجعة" },
+  admissions_status_interview_scheduled: { en: "Interview Scheduled", ar: "تمت جدولة المقابلة" },
+  admissions_status_accepted: { en: "Accepted", ar: "مقبول" },
+  admissions_status_rejected: { en: "Rejected", ar: "مرفوض" },
+  admissions_status_enrolled: { en: "Enrolled", ar: "مسجل" },
+  admissions_status_under_review_label: { en: "Under Review", ar: "قيد المراجعة" },
+  admissions_status_interview_scheduled_label: { en: "Interview Scheduled", ar: "تمت جدولة المقابلة" },
+
+  // Contact Info
+  contact_info_email: { en: "amadoujawo88@gmail.com", ar: "amadoujawo88@gmail.com" },
+  contact_info_phone: { en: "+220 87 7918643", ar: "+220 87 7918643" },
+  contact_info_location: { en: "Banjul, The Gambia", ar: "بانجول، غامبيا" },
 };

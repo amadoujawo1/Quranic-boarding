@@ -59,15 +59,15 @@ export const Programmes: React.FC = () => {
   ];
 
   const dailySchedule = [
-    { time: '04:30 AM - 05:30 AM', activity: 'Qiyam-ul-Layl & Fajr Congregational Prayer' },
-    { time: '05:30 AM - 07:30 AM', activity: 'Morning Hifz Session: Sabaq (New Lesson Recitation)' },
-    { time: '07:30 AM - 08:30 AM', activity: 'Healthy Breakfast & Morning Assembly' },
-    { time: '08:30 AM - 01:30 PM', activity: 'Academic & Shariah Classes' },
-    { time: '01:30 PM - 02:30 PM', activity: 'Zuhr Prayer & Lunch Break' },
-    { time: '02:30 PM - 04:30 PM', activity: 'Afternoon Session: Sabqi (Recent Revision) & Islamic Studies' },
-    { time: '04:30 PM - 06:00 PM', activity: 'Asr Prayer, Sports, Recreation & Personal Time' },
-    { time: '06:00 PM - 08:00 PM', activity: 'Maghrib Prayer, Manzil (Old Revision) & Isha Prayer' },
-    { time: '08:00 PM - 09:30 PM', activity: 'Dinner, Homework Prep & Lights Out' }
+    { time: t('schedule_time_0430'), activity: t('schedule_activity_fajr') },
+    { time: t('schedule_time_0530'), activity: t('schedule_activity_sabaq') },
+    { time: t('schedule_time_0730'), activity: t('schedule_activity_breakfast') },
+    { time: t('schedule_time_0830'), activity: t('schedule_activity_academics') },
+    { time: t('schedule_time_1330'), activity: t('schedule_activity_dhuhr') },
+    { time: t('schedule_time_1430'), activity: t('schedule_activity_sabqi') },
+    { time: t('schedule_time_1630'), activity: t('schedule_activity_asr') },
+    { time: t('schedule_time_1800'), activity: t('schedule_activity_manzil') },
+    { time: t('schedule_time_2000'), activity: t('schedule_activity_dinner') }
   ];
 
   return (
