@@ -442,4 +442,18 @@ export const translations: Translations = {
   home_read_full_details: { en: "Read Full Details", ar: "اقرأ التفاصيل الكاملة" },
   home_default_education: { en: "Islamic Studies", ar: "الدراسات الإسلامية" },
   home_default_occupation: { en: "Alumni Hafiz", ar: "خريج حافظ" },
+
+  // Footer
+  footer_centre_label: { en: "Centre", ar: "مركز" },
+  footer_description: { en: "Imaam Naafi' Centre for Quranic Memorization — Nurturing academic brilliance and spiritual perfection through authentic Islamic education and complete Hifz memorization.", ar: "مركز الإمام نافع لتحفيظ القرآن الكريم — نعتني بالتميز الأكاديمي والكمال الروحي من خلال التعليم الإسلامي الأصيل وحفظ القرآن الكريم الكامل." },
+  footer_quick_nav_title: { en: "Quick Navigation", ar: "الملاحة السريعة" },
+  footer_about_link: { en: "About Our Academy", ar: "عن أكاديميتنا" },
+  footer_hifz_link: { en: "Hifz & Tajweed Curriculum", ar: "منهج التحفيظ والتجويد" },
+  footer_admission_link: { en: "Online Admission Process", ar: "عملية القبول الإلكترونية" },
+  footer_access_title: { en: "Access & Support", ar: "الوصول والدعم" },
+  footer_parent_portal: { en: "Parent Portal", ar: "بوابة الآباء" },
+  footer_student_portal: { en: "Student Portal", ar: "بوابة الطلاب" },
+  footer_staff_portal: { en: "Staff & Teacher Portal", ar: "بوابة الموظفين والمعلمين" },
+  footer_copyright: { en: "© 2026 Imaam Naafi' Centre for Quranic Memorization. All rights reserved.", ar: "© 2026 مركز الإمام نافع لتحفيظ القرآن الكريم. جميع الحقوق محفوظة." },
+  footer_created_by: { en: "Created by Infra Vision Solutions", ar: "من إنشاء Infra Vision Solutions" },
 };
