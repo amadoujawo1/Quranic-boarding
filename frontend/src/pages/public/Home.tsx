@@ -261,7 +261,7 @@ export const Home: React.FC = () => {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-end mb-4">
           <div className="text-xs text-slate-500 dark:text-slate-400">
-            {lastUpdated ? `Updated ${new Date(lastUpdated).toLocaleTimeString()}` : 'Loading latest data...'}
+            {lastUpdated ? `${t('home_stats_updated')} ${new Date(lastUpdated).toLocaleTimeString()}` : t('home_stats_loading')}
           </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -350,7 +350,7 @@ export const Home: React.FC = () => {
               </div>
               <div className="pt-6">
                 <Link to={prog.link} className="text-xs font-bold text-gold-600 dark:text-gold-400 hover:underline inline-flex items-center gap-1">
-                  Read Full Details <ChevronRight className="w-4 h-4" />
+                  {t('home_read_full_details')} <ChevronRight className="w-4 h-4" />
                 </Link>
               </div>
             </motion.div>
@@ -541,11 +541,11 @@ export const Home: React.FC = () => {
                       <div className="space-y-1 text-xs text-slate-600 dark:text-slate-300 border-t border-slate-200 dark:border-slate-700/50 pt-2">
                         <div className="flex justify-between">
                           <span className="text-slate-400">{t('home_graduates_education')}</span>
-                          <span className="font-semibold text-slate-800 dark:text-slate-200">{g.higher_education || 'Islamic Studies'}</span>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">{g.higher_education || t('home_default_education')}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-slate-400">{t('home_graduates_profession')}</span>
-                          <span className="font-semibold text-slate-800 dark:text-slate-200">{g.current_occupation || 'Alumni Hafiz'}</span>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">{g.current_occupation || t('home_default_occupation')}</span>
                         </div>
                       </div>
 

@@ -435,4 +435,11 @@ export const translations: Translations = {
   contact_info_email: { en: "amadoujawo88@gmail.com", ar: "amadoujawo88@gmail.com" },
   contact_info_phone: { en: "+220 87 7918643", ar: "+220 87 7918643" },
   contact_info_location: { en: "Banjul, The Gambia", ar: "بانجول، غامبيا" },
+
+  // Home Page - Additional hardcoded strings
+  home_stats_updated: { en: "Updated", ar: "تم التحديث" },
+  home_stats_loading: { en: "Loading latest data...", ar: "جاري تحميل أحدث البيانات..." },
+  home_read_full_details: { en: "Read Full Details", ar: "اقرأ التفاصيل الكاملة" },
+  home_default_education: { en: "Islamic Studies", ar: "الدراسات الإسلامية" },
+  home_default_occupation: { en: "Alumni Hafiz", ar: "خريج حافظ" },
 };
